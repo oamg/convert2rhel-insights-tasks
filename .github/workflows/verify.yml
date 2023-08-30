@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["2.7"]
+        python-version: ["3.8"] # The tests and lint is running inside venv with 2.7 anyway
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
