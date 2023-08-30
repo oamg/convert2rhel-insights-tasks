@@ -7,23 +7,22 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test-lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"] # The tests and lint is running inside venv with 2.7 anyway
+    container:
+      image: python:2.7
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+    - name: Install requirements
+      run: pip install --upgrade -r requirements.txt
     - name: Lint
-      run: make lint
+      run: pylint --rcfile=.pylintrc main.py tests/*.py
     - name: Test
-      run: make tests
-    - name: Upload coverage to Codecov
+      run: python -m pytest --cov --cov-report=xml
+    - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         fail_ci_if_error: true
         verbose: true # optional (default = false)

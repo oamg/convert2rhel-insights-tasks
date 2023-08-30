@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/oamg/convert2rhel-analysis-script/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-analysis-script)
+
 # Convert2RHEL analysis script
 
 Script to set up convert2rhel and run pre-conversion analysis on centos 7.
