@@ -1,0 +1,24 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-ast
+        fail_fast: true
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-json
+      - id: requirements-txt-fixer
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+  - repo: local
+    hooks:
+      - id: lint
+        name: Lint - python2
+        entry: make lint
+        language: system
+        pass_filenames: false
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        stages: [manual, push]
