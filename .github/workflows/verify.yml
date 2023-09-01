@@ -16,7 +16,7 @@ jobs:
     - name: Install requirements
       run: pip install --upgrade -r requirements.txt
     - name: Lint
-      run: pylint --rcfile=.pylintrc main.py tests/*.py
+      run: pylint --rcfile=.pylintrc scripts/* tests/*
     - name: Test
       run: python -m pytest --cov --cov-report=xml
     - name: Upload coverage reports to Codecov

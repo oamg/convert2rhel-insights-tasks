@@ -7,6 +7,8 @@
 	.install-deps
 
 # Project constants
+PYTHONDONTWRITEBYTECODE = 1 # To avoid .pyc files
+
 PYTHON_VERSION ?= 2
 PYTHON = python$(PYTHON_VERSION)
 PYTHON_VENV = venv$(PYTHON_VERSION)
@@ -15,7 +17,7 @@ PYLINT_ARGS ?=
 PYTEST_ARGS ?= --cov
 
 PYTEST_CALL = python -m pytest $(PYTEST_ARGS)
-PYLINT_CALL = pylint --rcfile=.pylintrc $(PYLINT_ARGS) main.py tests/*.py
+PYLINT_CALL = pylint --rcfile=.pylintrc $(PYLINT_ARGS) scripts/* tests/*
 
 install-deps:
 	virtualenv -p '$(PYTHON)' $(PYTHON_VENV); \

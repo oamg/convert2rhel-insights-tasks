@@ -13,6 +13,7 @@ except ImportError:
 
 class RequiredFile(object):
     """Holds data about files needed to download convert2rhel"""
+
     def __init__(self, path="", host=""):
         self.path = path
         self.host = host
@@ -22,6 +23,7 @@ class RequiredFile(object):
 
 class ProcessError(Exception):
     """Custom exception to report errors during setup and run of conver2rhel"""
+
     def __init__(self, message):
         super(ProcessError, self).__init__(message)
         self.message = message
@@ -29,6 +31,7 @@ class ProcessError(Exception):
 
 class OutputCollector(object):
     """Wrapper class for script expected stdout"""
+
     def __init__(self, status="", message="", report="", report_json=None):
         if report_json is None:
             report_json = {}
@@ -43,9 +46,7 @@ class OutputCollector(object):
             "status": self.status,
             "message": self.message,
             "report": self.report,
-            "report_json": {
-                "entries": self.report_json
-            },
+            "report_json": {"entries": self.report_json},
         }
 
 
@@ -129,7 +130,10 @@ def setup_convert2rhel(required_files=None):
                 "File '%s' is already present on the system. Downloading a copy in order to check if they are the same."
                 % required_file.path
             )
-            if downloaded_file_sha512.hexdigest() != required_file.sha512_on_system.hexdigest():
+            if (
+                downloaded_file_sha512.hexdigest()
+                != required_file.sha512_on_system.hexdigest()
+            ):
                 raise ProcessError(
                     message="File '%s' present on the system does not match the one downloaded. Stopping the execution."
                     % required_file.path
@@ -220,7 +224,7 @@ def main():
 
         output.report_json = data
 
-        print('Collecting status.')
+        print("Collecting status.")
         combined_levels = collect_report_level(action_results=data["action_results"])
         output.status = combined_levels[0]
         # Set the first position of the list as being the final status, that's
@@ -243,5 +247,6 @@ def main():
         print(json.dumps(output.to_dict()))
         print("### JSON END ###")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,15 +1,15 @@
 from mock import patch, mock_open
 
-from main import (
+from scripts.preconversion_assessment_script import (
     verify_required_files_are_present,
-    RequiredFile
+    RequiredFile,
 )
 
 
 def test_verify_required_files_are_present_exist():
     required_files = [
         RequiredFile("/mock/path/file1.txt"),
-        RequiredFile("/mock/path/file2.txt")
+        RequiredFile("/mock/path/file2.txt"),
     ]
     mock_open_func = mock_open(read_data="dummy content")
 
@@ -22,10 +22,11 @@ def test_verify_required_files_are_present_exist():
         assert required_file.is_file_present
         assert required_file.sha512_on_system is not None
 
+
 def test_verify_required_files_are_present_not_found():
     required_files = [
         RequiredFile("/mock/path/file1.txt"),
-        RequiredFile("/mock/path/file2.txt")
+        RequiredFile("/mock/path/file2.txt"),
     ]
     with patch("__builtin__.open", new_callable=mock_open) as mock_file:
         mock_file.side_effect = IOError()
