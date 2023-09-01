@@ -10,6 +10,9 @@ Structure of repository is following:
 
 ```txt
 ├── requirements.txt  # DEV requirements - tests & lint
+├── schemas # All expected json outputs in the scripts stdouts
+|   |   ...
+│   └── preconversion_assessment_schema_1.0.json
 ├── scripts # All available scripts
 |   |   ...
 │   └── preconversion_assessment_script.py
@@ -17,20 +20,23 @@ Structure of repository is following:
     |   ...
     └── preconversion_assessment  # Unit tests for given script
 ```
+
+## Schemas
+
+Currently there is given format of the scripts stdout that is expected to be parsed by the Red Hat Insights Task UI. This stdout is JSON structure wrapped between agreed on separators. Schemas of the JSONs for each script can be found in [schemas](schemas) folder.
+
+* separators (common to all scripts):
+    * `### JSON START ###`
+    * `### JSON END ###`
+
 ## Scripts
 
 ### Pre-conversion assessment
 
-Script and tests written for `python 2.7`. Goal of script is to print to stdout in specified format, the script itself is executed by [rhc-worker-script](https://github.com/oamg/rhc-worker-script) as part of pre-conversion task, stdout is collected and send back to Insights Tasks UI.
+Script itself and tests are written for `python 2.7`. Goal of script is to print to stdout in specified format, the script itself is executed by [rhc-worker-script](https://github.com/oamg/rhc-worker-script) as part of pre-conversion task, stdout is collected and send back to Insights Tasks UI.
 
-
-**The stdout of script must**:
-* be wrapped in separators:
-    * `### JSON START ###`
-    * `### JSON END ###`
-* follow JSON spec:
-    * TODO: Expected spec for Insights Tasks UI
-        * where `report_json` conforms to expected output of `convert2rhel analysis`
+* [JSON schema](schemas/preconversion_assessment_schema_1.0.json)
+* [Script itself](scripts/preconversion_assessment_script.py)
 
 ## Local Development & Contributing
 
