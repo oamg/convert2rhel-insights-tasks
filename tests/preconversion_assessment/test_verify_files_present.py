@@ -7,6 +7,7 @@ from scripts.preconversion_assessment_script import (
 
 
 def test_verify_required_files_are_present_exist():
+    """Attribute is_file_present set to True and sha512 generated"""
     required_files = [
         RequiredFile("/mock/path/file1.txt"),
         RequiredFile("/mock/path/file2.txt"),
@@ -24,6 +25,7 @@ def test_verify_required_files_are_present_exist():
 
 
 def test_verify_required_files_are_present_not_found():
+    """If files do not exist on system then default attributes should be set"""
     required_files = [
         RequiredFile("/mock/path/file1.txt"),
         RequiredFile("/mock/path/file2.txt"),
