@@ -23,7 +23,7 @@
       }
     },
     "required": ["status", "message", "report", "report_json"],
-
+    "additionalProperties": false,
     "$defs": {
       "status_codes": {
           "description": "The severity of the results and messages",
