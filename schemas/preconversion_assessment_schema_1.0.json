@@ -1,0 +1,26 @@
+{
+    "title": "Convert2rhel pre-conversion script schema",
+    "description": "Script is expected to set up Convert2rhel and run pre-conversion assessment. This schema defines the output format that is expected by Red Hat Insights Task UI.",
+    "type": "object",
+    "properties": {
+      "alert": {
+        "type": "boolean"
+      },
+      "report": {
+        "type": "string"
+      },
+      "message": {
+        "type": "string"
+      },
+      "report_json": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "object"
+          }
+        },
+        "required": ["entries"]
+      }
+    },
+    "required": ["alert", "message", "report", "report_json"]
+  }

@@ -34,7 +34,7 @@ class OutputCollector(object):
 
     def __init__(self, status="", message="", report="", report_json=None):
         if report_json is None:
-            report_json = {}
+            report_json = {"entries": []}
 
         self.status = status
         self.message = message
