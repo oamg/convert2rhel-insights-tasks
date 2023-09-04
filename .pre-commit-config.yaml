@@ -16,6 +16,20 @@ repos:
     hooks:
     - id: black
 
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        types: [python]
+        language: python
+        language_version: python2.7
+        additional_dependencies: [pylint==1.9.5, mock==3.0.5, pytest==4.6.11]
+        args: [
+            "-sn", # Don't display the score
+            "--rcfile=.pylintrc", # Link to your config file
+          ]
+
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.0
     hooks:

@@ -1,8 +1,7 @@
 [run]
 omit =
     tests/*
-    venv2/*
-    venv2.7.18/*
+    venv*
 
 [report]
 fail_under = 80

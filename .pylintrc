@@ -12,7 +12,6 @@ disable=
  missing-docstring,
  too-few-public-methods,
  broad-except,
- bad-continuation,
 # python3 specific disabled
  useless-object-inheritance,
  super-with-arguments,

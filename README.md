@@ -51,6 +51,4 @@ Script itself and tests are written for `python 2.7`. Goal of script is to print
 ```sh
 make install # install pre-commit hooks and python virtualenv
 make tests # run pytest
-make lint # run pylint
-make verify # run both pylint and pytest
 ```
