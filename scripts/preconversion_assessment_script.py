@@ -52,6 +52,7 @@ class OutputCollector(object):
 
 STATUS_CODE = {
     "SUCCESS": 0,
+    "INFO": 25,
     "WARNING": 51,
     "SKIP": 101,
     "OVERRIDABLE": 152,
@@ -87,8 +88,11 @@ def collect_report_level(action_results):
         for message in value["messages"]:
             action_level_combined.append(message["level"])
 
-    action_level_combined.sort(key=lambda status: STATUS_CODE[status], reverse=True)
-    return action_level_combined
+    valid_action_levels = [
+        level for level in action_level_combined if level in STATUS_CODE
+    ]
+    valid_action_levels.sort(key=lambda status: STATUS_CODE[status], reverse=True)
+    return valid_action_levels
 
 
 def gather_textual_report():
