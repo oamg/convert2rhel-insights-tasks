@@ -23,8 +23,8 @@ repos:
         entry: pylint
         types: [python]
         language: python
-        language_version: python2.7
-        additional_dependencies: [pylint==1.9.5, mock==3.0.5, pytest==4.6.11]
+        # dependencies are based on freezed versions in requirements.txt
+        additional_dependencies: [pylint==2.17.5, mock==3.0.5, pytest==4.6.11, jsonschema==3.2.0]
         args: [
             "-sn", # Don't display the score
             "--rcfile=.pylintrc", # Link to your config file
