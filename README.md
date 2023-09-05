@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/oamg/convert2rhel-analysis-script/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-analysis-script)
+[![codecov](https://codecov.io/gh/oamg/convert2rhel-worker-scripts/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-worker-scripts)
 
 # Convert2RHEL worker scripts
 
@@ -36,7 +36,7 @@ Currently there is given format of the scripts stdout that is expected to be par
 Script itself and tests are written for `python 2.7`. Goal of script is to print to stdout in specified format, the script itself is executed by [rhc-worker-script](https://github.com/oamg/rhc-worker-script) as part of pre-conversion task, stdout is collected and send back to Insights Tasks UI.
 
 * [JSON schema](schemas/preconversion_assessment_schema_1.0.json)
-* [Script itself](scripts/preconversion_assessment_script.py)
+* [pre-conversion assessment script](scripts/preconversion_assessment_script.py)
 
 ## Local Development & Contributing
 

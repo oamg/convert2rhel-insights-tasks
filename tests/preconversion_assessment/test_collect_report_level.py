@@ -15,7 +15,7 @@ SAMPLE_ACTION_RESULTS = {
 
 
 def test_collect_report_level_expected():
-    """Should be sorted descending from the 'worst' status"""
+    """Should be sorted descending from the highest status to the lower one."""
     expected_output = ["ERROR", "ERROR", "WARNING", "WARNING", "SUCCESS", "SUCCESS"]
     result = collect_report_level(SAMPLE_ACTION_RESULTS)
     assert result == expected_output
