@@ -168,7 +168,7 @@ def run_convert2rhel():
         ]
 
     process = subprocess.Popen(
-        ["/usr/bin/convert2rhel", "analysis", "--debug"],
+        ["/usr/bin/convert2rhel", "analyze", "--debug"],
         env=env,
         bufsize=1,
     )

@@ -16,7 +16,7 @@ def test_run_convert2rhel():
         run_convert2rhel()
 
     mock_popen.assert_called_once_with(
-        ["/usr/bin/convert2rhel", "analysis", "--debug"],
+        ["/usr/bin/convert2rhel", "analyze", "--debug"],
         env={"PATH": "/fake/path", "CONVERT2RHEL_DISABLE_TELEMETRY": "1"},
         bufsize=1,
     )
