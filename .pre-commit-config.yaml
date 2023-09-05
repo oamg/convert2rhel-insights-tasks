@@ -10,13 +10,26 @@ repos:
       - id: requirements-txt-fixer
       - id: no-commit-to-branch
         args: ['--branch', 'main']
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+    - id: black
+
   - repo: local
     hooks:
-      - id: lint
-        name: Lint - python2
-        entry: make lint
-        language: system
-        pass_filenames: false
+      - id: pylint
+        name: pylint
+        entry: pylint
+        types: [python]
+        language: python
+        # dependencies are based on freezed versions in requirements.txt
+        additional_dependencies: [pylint==2.17.5, mock==3.0.5, pytest==4.6.11, jsonschema==3.2.0]
+        args: [
+            "-sn", # Don't display the score
+            "--rcfile=.pylintrc", # Link to your config file
+          ]
+
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.0
     hooks:

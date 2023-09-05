@@ -8,5 +8,4 @@
 install-deps
 pre-commit
 
-main.pyc
-__init__.pyc
+*.pyc

@@ -7,12 +7,12 @@ function-rgx=[a-z_][a-z0-9_]{2,50}$
 
 disable=
 # do not warn about pylint checks being disabled through comments in the code
+ import-error,
  locally-disabled,
  superfluous-parens,
  missing-docstring,
  too-few-public-methods,
  broad-except,
-# python3 specific disabled
  useless-object-inheritance,
  super-with-arguments,
  consider-using-f-string,
