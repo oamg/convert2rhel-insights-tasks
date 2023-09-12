@@ -9,3 +9,6 @@ install-deps
 pre-commit
 
 *.pyc
+
+*.log
+htmlcov/
