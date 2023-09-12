@@ -276,6 +276,7 @@ def _generate_message_key(message, action_id):
     """
     Helper method to generate a key field in the message composed by action_id
     and message_id.
+    Returns modified copy of original message.
     """
     new_message = copy.deepcopy(message)
 
@@ -289,6 +290,7 @@ def _generate_detail_block(message):
     """
     Helper method to generate the detail key that is composed by the
     remediation and diagnosis fields.
+    Returns modified copy of original message.
     """
     new_message = copy.deepcopy(message)
     detail_block = {
