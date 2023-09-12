@@ -4,13 +4,7 @@ import os
 import subprocess
 import copy
 
-try:
-    # Python3
-    from urllib.request import urlopen
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-
+from urllib2 import urlopen
 
 STATUS_CODE = {
     "SUCCESS": 0,
@@ -402,6 +396,7 @@ def main():
         # Insights.
         output.message = generate_report_message(highest_level)
         output.entries = transform_raw_data(data)
+        print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
         output = OutputCollector(status="ERROR", report=exception.message)
     except Exception as exception:
@@ -410,7 +405,6 @@ def main():
         print("Cleaning up modifications to the system.")
         cleanup(required_files)
 
-        print("Analysis was successfully executed.")
         print("### JSON START ###")
         print(json.dumps(output.to_dict(), indent=4))
         print("### JSON END ###")
