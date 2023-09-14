@@ -325,8 +325,23 @@ def _rename_dictionary_key(message, new_key, old_key):
     return new_message
 
 
+def _filter_message_level(message, level):
+    """
+    Filter for messages with specific level. If any of the message matches the
+    level, return None, otherwise, if it is different from what is expected,
+    return the message received to continue with the other transformations.
+    """
+    if message["level"] != level:
+        return message
+
+    return {}
+
+
 def apply_message_transform(message, action_id):
     """Apply the necessary data transformation to the given messages."""
+    if not _filter_message_level(message, level="SUCCESS"):
+        return {}
+
     new_message = _generate_message_key(message, action_id)
     new_message = _rename_dictionary_key(new_message, "severity", "level")
     new_message = _rename_dictionary_key(new_message, "summary", "description")
@@ -354,7 +369,9 @@ def transform_raw_data(raw_data):
             new_data.append(apply_message_transform(message, action_id))
 
         new_data.append(apply_message_transform(result["result"], action_id))
-    return new_data
+
+    # Filter out None values before returning
+    return [data for data in new_data if data]
 
 
 def main():

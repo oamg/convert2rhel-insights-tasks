@@ -1,0 +1,319 @@
+{
+    "actions": {
+        "TAINTED_KMODS": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "REMOVE_IWLAX2XX_FIRMWARE": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "VALIDATE_PACKAGE_MANAGER_TRANSACTION": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "PACKAGE_UPDATES": {
+            "messages": [
+                {
+                    "description": "Please refer to the diagnosis for further information",
+                    "level": "WARNING",
+                    "variables": {},
+                    "title": "Outdated packages detected",
+                    "diagnosis": "The system has 8 package(s) not updated based on the enabled system repositories.\nList of packages to update: kernel openssh-clients bind-export-libs openssh-server openssh kernel-tools-libs python-perf kernel-tools.\n\nNot updating the packages may cause the conversion to fail.\nConsider updating the packages before proceeding with the conversion.",
+                    "remediation": "",
+                    "id": "PACKAGE_NOT_UP_TO_DATE_MESSAGE"
+                }
+            ],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "Outdated packages detected",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "OUT_OF_DATE_PACKAGES"
+            }
+        },
+        "PRE_SUBSCRIPTION": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "INSTALL_RED_HAT_GPG_KEY": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "REMOVE_EXCLUDED_PACKAGES": {
+            "messages": [
+                {
+                    "description": "Excluded packages that have been removed",
+                    "level": "INFO",
+                    "variables": {},
+                    "title": "Excluded packages removed",
+                    "diagnosis": "The following packages were removed: ",
+                    "remediation": "",
+                    "id": "EXCLUDED_PACKAGES_REMOVED"
+                }
+            ],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "LIST_THIRD_PARTY_PACKAGES": {
+            "messages": [
+                {
+                    "description": "Third party packages will not be replaced during the conversion.",
+                    "level": "WARNING",
+                    "variables": {},
+                    "title": "Third party packages detected",
+                    "diagnosis": "Only packages signed by CentOS Linux are to be replaced. Red Hat support won't be provided for the following third party packages:\nconvert2rhel-1.4.1-2.20230908090045064368.main.0.g5b720b9.el7.noarch",
+                    "remediation": "",
+                    "id": "THIRD_PARTY_PACKAGE_DETECTED_MESSAGE"
+                }
+            ],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "Third party packages detected",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "THIRD_PARTY_PACKAGE_DETECTED"
+            }
+        },
+        "CUSTOM_REPOSITORIES_ARE_VALID": {
+            "messages": [
+                {
+                    "description": "Skipping the check of repositories due to the use of RHSM for the conversion.",
+                    "level": "INFO",
+                    "variables": {},
+                    "title": "Skipping the custom repos are valid check",
+                    "diagnosis": "",
+                    "remediation": "",
+                    "id": "CUSTOM_REPOSITORIES_ARE_VALID_CHECK_SKIP"
+                }
+            ],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "INSTALL_RED_HAT_CERT_FOR_YUM": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "READ_ONLY_MOUNTS_MNT": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "BACKUP_REDHAT_RELEASE": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "RHEL_COMPATIBLE_KERNEL": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "READ_ONLY_MOUNTS_SYS": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "EFI": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "SUBSCRIBE_SYSTEM": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "BACKUP_REPOSITORY": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "DBUS_IS_RUNNING": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "REMOVE_REPOSITORY_FILES_PACKAGES": {
+            "messages": [
+                {
+                    "description": "Repository file packages that were removed",
+                    "level": "INFO",
+                    "variables": {},
+                    "title": "Repository file packages removed",
+                    "diagnosis": "The following packages were removed: centos-release-7-9.2009.1.el7.centos.x86_64",
+                    "remediation": "",
+                    "id": "REPOSITORY_FILE_PACKAGES_REMOVED"
+                }
+            ],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "ENSURE_KERNEL_MODULES_COMPATIBILITY": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        },
+        "IS_LOADED_KERNEL_LATEST": {
+            "messages": [],
+            "result": {
+                "description": "The loaded kernel version mismatch the latest one available in the enabled system repositories",
+                "level": "ERROR",
+                "variables": {},
+                "title": "Invalid kernel version detected",
+                "diagnosis": "The version of the loaded kernel is different from the latest version in the enabled system repositories.\n Latest kernel version available in updates: 3.10.0-1160.95.1.el7\n Loaded kernel version: 3.10.0-1160.92.1.el7",
+                "remediation": "To proceed with the conversion, update the kernel version by executing the following step:\n\n1. yum install kernel-3.10.0-1160.95.1.el7 -y\n2. reboot",
+                "id": "INVALID_KERNEL_VERSION"
+            }
+        },
+        "CONVERT2RHEL_LATEST_VERSION": {
+            "messages": [],
+            "result": {
+                "description": "",
+                "level": "SUCCESS",
+                "variables": {},
+                "title": "",
+                "diagnosis": "",
+                "remediation": "",
+                "id": "SUCCESS"
+            }
+        }
+    },
+    "format_version": "1.0"
+}
