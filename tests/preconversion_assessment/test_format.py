@@ -1,4 +1,3 @@
-from pprint import pprint
 import pytest
 
 from scripts.preconversion_assessment_script import (
@@ -7,6 +6,7 @@ from scripts.preconversion_assessment_script import (
     _rename_dictionary_key,
     apply_message_transform,
     transform_raw_data,
+    _filter_message_level,
 )
 
 
@@ -97,6 +97,17 @@ def test_rename_dictionary_key(data, new_key, old_key, expected):
                 "modifiers": [],
             },
         ),
+        (
+            {
+                "id": "SUCCESS",
+                "remediation": "",
+                "diagnosis": "",
+                "level": "SUCCESS",
+                "description": "",
+            },
+            "test",
+            {},
+        ),
     ),
 )
 def test_apply_message_transform(data, action_id, expected):
@@ -104,11 +115,11 @@ def test_apply_message_transform(data, action_id, expected):
 
     assert result == expected
     # All transformations that are done now
-    assert not "remediation" in result
-    assert not "diagnosis" in result
-    assert not "id" in result
-    assert not "level" in result
-    assert not "description" in result
+    assert "remediation" not in result
+    assert "diagnosis" not in result
+    assert "id" not in result
+    assert "level" not in result
+    assert "description" not in result
 
 
 @pytest.mark.parametrize(
@@ -163,20 +174,6 @@ def test_apply_message_transform(data, action_id, expected):
             },
             [
                 {
-                    "key": "RHEL_COMPATIBLE_KERNEL::SUCCESS",
-                    "title": "Ensure the booted kernel is compatible with RHEL.",
-                    "variables": {"kernel_version": "3.10.0-1160.88.1.el7.x86_64"},
-                    "detail": {
-                        "remediation": {"context": ""},
-                        "diagnosis": {
-                            "context": "The booted kernel {{ kernel_version }} is compatible with RHEL."
-                        },
-                    },
-                    "summary": "Check that the kernel currently loaded on the host is signed, is standard (not UEK, realtime, etc), and has the same version as in RHEL.  These criteria are designed to check whether the RHEL kernel will provide the same capabilities as the original system.",
-                    "severity": "SUCCESS",
-                    "modifiers": [],
-                },
-                {
                     "key": "LIST_THIRD_PARTY_PACKAGES::THIRD_PARTY_PACKAGES_LIST",
                     "title": "List packages not packaged by the original OS vendor.",
                     "variables": {
@@ -193,18 +190,6 @@ def test_apply_message_transform(data, action_id, expected):
                     },
                     "summary": "Only packages from the original OS vendor and Red Hat will be converted.  List any other packages so the user knows they won't be converted and can choose whether they think it is safe to proceed.",
                     "severity": "WARNING",
-                    "modifiers": [],
-                },
-                {
-                    "key": "LIST_THIRD_PARTY_PACKAGES::SUCCESS",
-                    "title": "List packages not packaged by the original OS vendor.",
-                    "variables": {},
-                    "detail": {
-                        "remediation": {"context": ""},
-                        "diagnosis": {"context": ""},
-                    },
-                    "summary": "Only packages from the original OS vendor and Red Hat will be converted.  List any other packages so the user knows they won't be converted and can choose whether they think it is safe to proceed.",
-                    "severity": "SUCCESS",
                     "modifiers": [],
                 },
             ],
@@ -251,9 +236,53 @@ def test_apply_message_transform(data, action_id, expected):
                 }
             ],
         ),
+        (
+            {
+                "actions": {
+                    "LIST_THIRD_PARTY_PACKAGES": {
+                        "messages": [],
+                        "result": {
+                            "title": "List packages not packaged by the original OS vendor.",
+                            "description": "Only packages from the original OS vendor and Red Hat will be converted.  List any other packages so the user knows they won't be converted and can choose whether they think it is safe to proceed.",
+                            "diagnosis": "",
+                            "id": "SUCCESS",
+                            "level": "SUCCESS",
+                            "remediation": "",
+                            "variables": {},
+                        },
+                    },
+                    "RHEL_COMPATIBLE_KERNEL": {
+                        "messages": [],
+                        "result": {
+                            "title": "Ensure the booted kernel is compatible with RHEL.",
+                            "description": "Check that the kernel currently loaded on the host is signed, is standard (not UEK, realtime, etc), and has the same version as in RHEL.  These criteria are designed to check whether the RHEL kernel will provide the same capabilities as the original system.",
+                            "diagnosis": "The booted kernel {{ kernel_version }} is compatible with RHEL.",
+                            "id": "SUCCESS",
+                            "level": "SUCCESS",
+                            "remediation": "",
+                            "variables": {
+                                "kernel_version": "3.10.0-1160.88.1.el7.x86_64"
+                            },
+                        },
+                    },
+                }
+            },
+            [],
+        ),
     ),
 )
 def test_transform_raw_data(data, expected):
     result = transform_raw_data(data)
-    print(pprint(result))
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("data", "level", "expected"),
+    (
+        ({"level": "SUCCESS"}, "SUCCESS", {}),
+        ({"level": "WARNING"}, "SUCCESS", {"level": "WARNING"}),
+    ),
+)
+def test_filter_message_level(data, level, expected):
+    result = _filter_message_level(data, level)
     assert result == expected
