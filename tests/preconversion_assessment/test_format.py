@@ -279,7 +279,7 @@ def test_transform_raw_data(data, expected):
 @pytest.mark.parametrize(
     ("data", "level", "expected"),
     (
-        ({"level": "SUCCESS"}, "SUCCESS", None),
+        ({"level": "SUCCESS"}, "SUCCESS", {}),
         ({"level": "WARNING"}, "SUCCESS", {"level": "WARNING"}),
     ),
 )
