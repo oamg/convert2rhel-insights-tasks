@@ -303,16 +303,16 @@ def _generate_message_key(message, action_id):
 def _generate_detail_block(message):
     """
     Helper method to generate the detail key that is composed by the
-    remediation and diagnosis fields.
+    remediations and diagnosis fields.
     Returns modified copy of original message.
     """
     new_message = copy.deepcopy(message)
     detail_block = {
-        "remediation": {"context": ""},
+        "remediations": {"context": ""},
         "diagnosis": {"context": ""},
     }
 
-    detail_block["remediation"]["context"] = new_message.pop("remediation", "")
+    detail_block["remediations"]["context"] = new_message.pop("remediation", "")
     detail_block["diagnosis"]["context"] = new_message.pop("diagnosis", "")
     new_message["detail"] = detail_block
     return new_message
