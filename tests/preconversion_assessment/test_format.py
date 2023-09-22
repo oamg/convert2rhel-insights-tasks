@@ -35,7 +35,7 @@ def test_generate_message_key(data, action_id, expected):
             {"remediation": "test", "diagnosis": "test"},
             {
                 "detail": {
-                    "remediation": {"context": "test"},
+                    "remediations": {"context": "test"},
                     "diagnosis": {"context": "test"},
                 }
             },
@@ -44,7 +44,7 @@ def test_generate_message_key(data, action_id, expected):
             {"remediation": "test", "diagnosis": "test", "test-key": "test-value"},
             {
                 "detail": {
-                    "remediation": {"context": "test"},
+                    "remediations": {"context": "test"},
                     "diagnosis": {"context": "test"},
                 },
                 "test-key": "test-value",
@@ -89,7 +89,7 @@ def test_rename_dictionary_key(data, new_key, old_key, expected):
             {
                 "key": "test::ultra",
                 "detail": {
-                    "remediation": {"context": "test"},
+                    "remediations": {"context": "test"},
                     "diagnosis": {"context": "test"},
                 },
                 "severity": "WARNING",
@@ -181,7 +181,7 @@ def test_apply_message_transform(data, action_id, expected):
                         "source_distro": "CentOS",
                     },
                     "detail": {
-                        "remediation": {
+                        "remediations": {
                             "context": "You may want to remove those packages before performing the conversion or manually evaluate if those packages are working after the conversion finishes."
                         },
                         "diagnosis": {
@@ -223,7 +223,7 @@ def test_apply_message_transform(data, action_id, expected):
                         "latest_kernel": "3.10.0-1160.90.1.el7",
                     },
                     "detail": {
-                        "remediation": {
+                        "remediations": {
                             "context": "To proceed with the conversion, update the kernel version by executing the following steps:\n1. yum install {{latest_kernel}} -y\n2. reboot"
                         },
                         "diagnosis": {
