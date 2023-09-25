@@ -308,12 +308,12 @@ def _generate_detail_block(message):
     """
     new_message = copy.deepcopy(message)
     detail_block = {
-        "remediations": {"context": ""},
-        "diagnosis": {"context": ""},
+        "remediations": [],
+        "diagnosis": [],
     }
 
-    detail_block["remediations"]["context"] = new_message.pop("remediation", "")
-    detail_block["diagnosis"]["context"] = new_message.pop("diagnosis", "")
+    detail_block["remediations"].append({"context": new_message.pop("remediation", "")})
+    detail_block["diagnosis"].append({"context": new_message.pop("diagnosis", "")})
     new_message["detail"] = detail_block
     return new_message
 

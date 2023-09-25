@@ -35,8 +35,8 @@ def test_generate_message_key(data, action_id, expected):
             {"remediation": "test", "diagnosis": "test"},
             {
                 "detail": {
-                    "remediations": {"context": "test"},
-                    "diagnosis": {"context": "test"},
+                    "remediations": [{"context": "test"}],
+                    "diagnosis": [{"context": "test"}],
                 }
             },
         ),
@@ -44,8 +44,8 @@ def test_generate_message_key(data, action_id, expected):
             {"remediation": "test", "diagnosis": "test", "test-key": "test-value"},
             {
                 "detail": {
-                    "remediations": {"context": "test"},
-                    "diagnosis": {"context": "test"},
+                    "remediations": [{"context": "test"}],
+                    "diagnosis": [{"context": "test"}],
                 },
                 "test-key": "test-value",
             },
@@ -89,8 +89,8 @@ def test_rename_dictionary_key(data, new_key, old_key, expected):
             {
                 "key": "test::ultra",
                 "detail": {
-                    "remediations": {"context": "test"},
-                    "diagnosis": {"context": "test"},
+                    "remediations": [{"context": "test"}],
+                    "diagnosis": [{"context": "test"}],
                 },
                 "severity": "WARNING",
                 "summary": "test",
@@ -181,12 +181,16 @@ def test_apply_message_transform(data, action_id, expected):
                         "source_distro": "CentOS",
                     },
                     "detail": {
-                        "remediations": {
-                            "context": "You may want to remove those packages before performing the conversion or manually evaluate if those packages are working after the conversion finishes."
-                        },
-                        "diagnosis": {
-                            "context": "Only packages signed by {{source_distro}} are to be replaced. Red Hat support won't be provided for the following third party packages:\n{% for pkg in third_party_pkgs %}\n* {{pkg}}\n{% endfor %}\n"
-                        },
+                        "remediations": [
+                            {
+                                "context": "You may want to remove those packages before performing the conversion or manually evaluate if those packages are working after the conversion finishes."
+                            }
+                        ],
+                        "diagnosis": [
+                            {
+                                "context": "Only packages signed by {{source_distro}} are to be replaced. Red Hat support won't be provided for the following third party packages:\n{% for pkg in third_party_pkgs %}\n* {{pkg}}\n{% endfor %}\n"
+                            }
+                        ],
                     },
                     "summary": "Only packages from the original OS vendor and Red Hat will be converted.  List any other packages so the user knows they won't be converted and can choose whether they think it is safe to proceed.",
                     "severity": "WARNING",
@@ -223,12 +227,16 @@ def test_apply_message_transform(data, action_id, expected):
                         "latest_kernel": "3.10.0-1160.90.1.el7",
                     },
                     "detail": {
-                        "remediations": {
-                            "context": "To proceed with the conversion, update the kernel version by executing the following steps:\n1. yum install {{latest_kernel}} -y\n2. reboot"
-                        },
-                        "diagnosis": {
-                            "context": "The version of the loaded kernel is different from the latest version in the enabled system repositories.\n* Latest kernel version available in updates: {{latest_kernel}}\n* Loaded kernel version: {{loaded_kernel}}"
-                        },
+                        "remediations": [
+                            {
+                                "context": "To proceed with the conversion, update the kernel version by executing the following steps:\n1. yum install {{latest_kernel}} -y\n2. reboot"
+                            }
+                        ],
+                        "diagnosis": [
+                            {
+                                "context": "The version of the loaded kernel is different from the latest version in the enabled system repositories.\n* Latest kernel version available in updates: {{latest_kernel}}\n* Loaded kernel version: {{loaded_kernel}}"
+                            }
+                        ],
                     },
                     "summary": "Check whether RHEL contains a kernel of the same or more recent version as the one currently loaded on the host.",
                     "severity": "ERROR",
