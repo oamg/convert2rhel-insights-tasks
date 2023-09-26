@@ -383,10 +383,6 @@ def main():
             host="https://www.redhat.com/security/data/fd431d51.txt",
         ),
         RequiredFile(
-            path="/etc/rhsm/ca/redhat-uep.pem",
-            host="https://ftp.redhat.com/redhat/convert2rhel/redhat-uep.pem",
-        ),
-        RequiredFile(
             path="/etc/yum.repos.d/convert2rhel.repo",
             host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
         ),
