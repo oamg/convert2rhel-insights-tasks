@@ -216,14 +216,20 @@ def install_convert2rhel():
         print(
             "Failed to install convert2rhel package. Output: %s\n" % output.rstrip("\n")
         )
-        raise ProcessError(message="Yum install exited with code '%s'." % returncode)
+        raise ProcessError(
+            message="Yum install exited with code '%s' and output: %s."
+            % (returncode, output.rstrip("\n"))
+        )
 
     output, returncode = run_subprocess(["yum", "update", "convert2rhel", "-y"])
     if returncode:
         print(
             "Failed to update convert2rhel package. Output: %s\n" % output.rstrip("\n")
         )
-        raise ProcessError(message="Yum update exited with code '%s'." % returncode)
+        raise ProcessError(
+            message="Yum update exited with code '%s' and output: %s."
+            % (returncode, output.rstrip("\n"))
+        )
 
 
 def run_convert2rhel():
