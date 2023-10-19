@@ -36,8 +36,9 @@ class RequiredFile(object):
 class ProcessError(Exception):
     """Custom exception to report errors during setup and run of conver2rhel"""
 
-    def __init__(self, report):
+    def __init__(self, message, report):
         super(ProcessError, self).__init__(report)
+        self.message = message
         self.report = report
 
 
@@ -100,8 +101,9 @@ def gather_json_report():
 
     if not data:
         raise ProcessError(
-            report="The file '%s' doesn't contain any JSON data in it."
-            % C2R_REPORT_FILE
+            message="Content missing in convert2rhel analysis report",
+            report="The convert2rhel analysis report file '%s' does not contain any JSON data in it."
+            % C2R_REPORT_FILE,
         )
 
     return data
@@ -152,8 +154,9 @@ def setup_convert2rhel(required_files):
                 != required_file.sha512_on_system.hexdigest()
             ):
                 raise ProcessError(
+                    message="Mismatch hash between downloaded file and the one present on the system.",
                     report="File '%s' present on the system does not match the one downloaded. Stopping the execution."
-                    % required_file.path
+                    % required_file.path,
                 )
         else:
             directory = os.path.dirname(required_file.path)
@@ -213,15 +216,17 @@ def install_convert2rhel():
     )
     if returncode:
         raise ProcessError(
+            message="Failed to install convert2rhel RPM.",
             report="Installing convert2rhel with yum exited with code '%s' and output: %s."
-            % (returncode, output.rstrip("\n"))
+            % (returncode, output.rstrip("\n")),
         )
 
     output, returncode = run_subprocess(["yum", "update", "convert2rhel", "-y"])
     if returncode:
         raise ProcessError(
+            message="Failed to update convert2rhel RPM.",
             report="Updating convert2rhel with yum exited with code '%s' and output: %s."
-            % (returncode, output.rstrip("\n"))
+            % (returncode, output.rstrip("\n")),
         )
 
 
@@ -240,7 +245,8 @@ def run_convert2rhel():
     _, returncode = run_subprocess(["/usr/bin/convert2rhel", "analyze", "-y"], env=env)
     if returncode:
         raise ProcessError(
-            report="convert2rhel execution exited with code '%s'." % returncode
+            message="An error occurred during the convert2rhel analysis.",
+            report="convert2rhel execution exited with code '%s'." % returncode,
         )
 
 
@@ -412,7 +418,7 @@ def main():
         print(exception.report)
         output = OutputCollector(
             status="ERROR",
-            message="An error occurred. Expand the row for more details.",
+            message=exception.message,
             report=exception.report,
         )
     except Exception as exception:
