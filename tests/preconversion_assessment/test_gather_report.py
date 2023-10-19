@@ -39,6 +39,7 @@ def test_gather_json_report_no_content(tmpdir):
     with patch("scripts.preconversion_assessment_script.C2R_REPORT_FILE", file):
         with pytest.raises(
             ProcessError,
-            match="The file '%s' doesn't contain any JSON data in it." % file,
+            match="The convert2rhel analysis report file '%s' does not contain any JSON data in it."
+            % file,
         ):
             gather_json_report()
