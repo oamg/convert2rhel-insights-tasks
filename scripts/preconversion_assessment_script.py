@@ -410,10 +410,18 @@ def main():
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
         print(exception.message)
-        output = OutputCollector(status="ERROR", report=exception.message)
+        output = OutputCollector(
+            status="ERROR",
+            message="An error occurred. Expand the row for more details.",
+            report=exception.message,
+        )
     except Exception as exception:
         print(str(exception))
-        output = OutputCollector(status="ERROR", report=str(exception))
+        output = OutputCollector(
+            status="ERROR",
+            message="An error occurred. Expand the row for more details.",
+            report=str(exception),
+        )
     finally:
         print("Cleaning up modifications to the system.")
         cleanup(required_files)
