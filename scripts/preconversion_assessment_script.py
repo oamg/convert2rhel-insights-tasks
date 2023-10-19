@@ -312,7 +312,10 @@ def _generate_detail_block(message):
         "diagnosis": [],
     }
 
-    detail_block["remediations"].append({"context": new_message.pop("remediation", "")})
+    remediation_key = "remediations" if "remediations" in new_message else "remediation"
+    detail_block["remediations"].append(
+        {"context": new_message.pop(remediation_key, "")}
+    )
     detail_block["diagnosis"].append({"context": new_message.pop("diagnosis", "")})
     new_message["detail"] = detail_block
     return new_message

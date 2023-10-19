@@ -31,6 +31,8 @@ def test_generate_message_key(data, action_id, expected):
 @pytest.mark.parametrize(
     ("data", "expected"),
     (
+        # To be removed in the convert2rhel 1.8 or when we can move this to the
+        # transformation layer.
         (
             {"remediation": "test", "diagnosis": "test"},
             {
@@ -40,8 +42,18 @@ def test_generate_message_key(data, action_id, expected):
                 }
             },
         ),
+        # End of the test to be removed.
         (
-            {"remediation": "test", "diagnosis": "test", "test-key": "test-value"},
+            {"remediations": "test", "diagnosis": "test"},
+            {
+                "detail": {
+                    "remediations": [{"context": "test"}],
+                    "diagnosis": [{"context": "test"}],
+                }
+            },
+        ),
+        (
+            {"remediations": "test", "diagnosis": "test", "test-key": "test-value"},
             {
                 "detail": {
                     "remediations": [{"context": "test"}],
@@ -56,7 +68,7 @@ def test_generate_detail_block(data, expected):
     result = _generate_detail_block(data)
 
     assert result == expected
-    assert not "remediation" in expected
+    assert not "remediations" in expected
     assert not "diagnosis" in expected
 
 
@@ -80,7 +92,7 @@ def test_rename_dictionary_key(data, new_key, old_key, expected):
         (
             {
                 "id": "ultra",
-                "remediation": "test",
+                "remediations": "test",
                 "diagnosis": "test",
                 "level": "WARNING",
                 "description": "test",
@@ -100,7 +112,7 @@ def test_rename_dictionary_key(data, new_key, old_key, expected):
         (
             {
                 "id": "SUCCESS",
-                "remediation": "",
+                "remediations": "",
                 "diagnosis": "",
                 "level": "SUCCESS",
                 "description": "",
@@ -115,7 +127,7 @@ def test_apply_message_transform(data, action_id, expected):
 
     assert result == expected
     # All transformations that are done now
-    assert "remediation" not in result
+    assert "remediations" not in result
     assert "diagnosis" not in result
     assert "id" not in result
     assert "level" not in result
@@ -136,7 +148,7 @@ def test_apply_message_transform(data, action_id, expected):
                                 "diagnosis": "Only packages signed by {{source_distro}} are to be replaced. Red Hat support won't be provided for the following third party packages:\n{% for pkg in third_party_pkgs %}\n* {{pkg}}\n{% endfor %}\n",
                                 "id": "THIRD_PARTY_PACKAGES_LIST",
                                 "level": "WARNING",
-                                "remediation": "You may want to remove those packages before performing the conversion or manually evaluate if those packages are working after the conversion finishes.",
+                                "remediations": "You may want to remove those packages before performing the conversion or manually evaluate if those packages are working after the conversion finishes.",
                                 "variables": {
                                     "source_distro": "CentOS",
                                     "third_party_pkgs": [
@@ -152,7 +164,7 @@ def test_apply_message_transform(data, action_id, expected):
                             "diagnosis": "",
                             "id": "SUCCESS",
                             "level": "SUCCESS",
-                            "remediation": "",
+                            "remediations": "",
                             "variables": {},
                         },
                     },
@@ -164,7 +176,7 @@ def test_apply_message_transform(data, action_id, expected):
                             "diagnosis": "The booted kernel {{ kernel_version }} is compatible with RHEL.",
                             "id": "SUCCESS",
                             "level": "SUCCESS",
-                            "remediation": "",
+                            "remediations": "",
                             "variables": {
                                 "kernel_version": "3.10.0-1160.88.1.el7.x86_64"
                             },
@@ -209,7 +221,7 @@ def test_apply_message_transform(data, action_id, expected):
                             "diagnosis": "The version of the loaded kernel is different from the latest version in the enabled system repositories.\n* Latest kernel version available in updates: {{latest_kernel}}\n* Loaded kernel version: {{loaded_kernel}}",
                             "id": "INVALID_KERNEL_VERSION",
                             "level": "ERROR",
-                            "remediation": "To proceed with the conversion, update the kernel version by executing the following steps:\n1. yum install {{latest_kernel}} -y\n2. reboot",
+                            "remediations": "To proceed with the conversion, update the kernel version by executing the following steps:\n1. yum install {{latest_kernel}} -y\n2. reboot",
                             "variables": {
                                 "latest_kernel": "3.10.0-1160.90.1.el7",
                                 "loaded_kernel": "3.10.0-1160.88.1.el7",
@@ -255,7 +267,7 @@ def test_apply_message_transform(data, action_id, expected):
                             "diagnosis": "",
                             "id": "SUCCESS",
                             "level": "SUCCESS",
-                            "remediation": "",
+                            "remediations": "",
                             "variables": {},
                         },
                     },
@@ -267,7 +279,7 @@ def test_apply_message_transform(data, action_id, expected):
                             "diagnosis": "The booted kernel {{ kernel_version }} is compatible with RHEL.",
                             "id": "SUCCESS",
                             "level": "SUCCESS",
-                            "remediation": "",
+                            "remediations": "",
                             "variables": {
                                 "kernel_version": "3.10.0-1160.88.1.el7.x86_64"
                             },
