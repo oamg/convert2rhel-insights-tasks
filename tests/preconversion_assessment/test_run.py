@@ -22,7 +22,9 @@ def test_run_convert2rhel_failure():
     with patch(
         "scripts.preconversion_assessment_script.run_subprocess", return_value=(b"", 1)
     ) as mock_popen:
-        with pytest.raises(ProcessError, match="Convert2RHEL exited with code '1'."):
+        with pytest.raises(
+            ProcessError, match="convert2rhel execution exited with code '1'."
+        ):
             run_convert2rhel()
 
     mock_popen.assert_called_once()

@@ -99,7 +99,6 @@ def gather_json_report():
         data = json.load(handler)
 
     if not data:
-        print("The JSON report exists, but doesn't contain any data in it.")
         raise ProcessError(
             message="The file '%s' doesn't contain any JSON data in it."
             % C2R_REPORT_FILE
@@ -213,21 +212,15 @@ def install_convert2rhel():
         ["yum", "install", "convert2rhel", "-y"],
     )
     if returncode:
-        print(
-            "Failed to install convert2rhel package. Output: %s\n" % output.rstrip("\n")
-        )
         raise ProcessError(
-            message="Yum install exited with code '%s' and output: %s."
+            message="Installing convert2rhel with yum exited with code '%s' and output: %s."
             % (returncode, output.rstrip("\n"))
         )
 
     output, returncode = run_subprocess(["yum", "update", "convert2rhel", "-y"])
     if returncode:
-        print(
-            "Failed to update convert2rhel package. Output: %s\n" % output.rstrip("\n")
-        )
         raise ProcessError(
-            message="Yum update exited with code '%s' and output: %s."
+            message="Updating convert2rhel with yum exited with code '%s' and output: %s."
             % (returncode, output.rstrip("\n"))
         )
 
@@ -244,15 +237,11 @@ def run_convert2rhel():
             "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
         ]
 
-    output, returncode = run_subprocess(
-        ["/usr/bin/convert2rhel", "analyze", "-y"], env=env
-    )
+    _, returncode = run_subprocess(["/usr/bin/convert2rhel", "analyze", "-y"], env=env)
     if returncode:
-        print(
-            "The process convert2rhel exited with code '%s' and output: %s\n"
-            % (returncode, output)
+        raise ProcessError(
+            message="convert2rhel execution exited with code '%s'." % returncode
         )
-        raise ProcessError(message="Convert2RHEL exited with code '%s'." % returncode)
 
 
 def cleanup(required_files):
@@ -417,8 +406,10 @@ def main():
         output.entries = transform_raw_data(data)
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
+        print(exception.message)
         output = OutputCollector(status="ERROR", report=exception.message)
     except Exception as exception:
+        print(str(exception))
         output = OutputCollector(status="ERROR", report=str(exception))
     finally:
         print("Cleaning up modifications to the system.")

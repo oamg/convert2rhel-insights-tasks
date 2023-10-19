@@ -28,7 +28,10 @@ def test_install_convert2rhel_raise_exception():
         "scripts.preconversion_assessment_script.run_subprocess",
         return_value=(b"failed", 1),
     ) as mock_run_subprocess:
-        with pytest.raises(ProcessError, match="Yum install exited with code '1'."):
+        with pytest.raises(
+            ProcessError,
+            match="Installing convert2rhel with yum exited with code '1' and output: failed.",
+        ):
             install_convert2rhel()
 
     expected_calls = [["yum", "install", "convert2rhel", "-y"]]
@@ -41,7 +44,10 @@ def test_update_convert2rhel_raise_exception():
         "scripts.preconversion_assessment_script.run_subprocess",
         side_effect=[(b"output", 0), (b"failed", 1)],
     ) as mock_run_subprocess:
-        with pytest.raises(ProcessError, match="Yum update exited with code '1'."):
+        with pytest.raises(
+            ProcessError,
+            match="Updating convert2rhel with yum exited with code '1' and output: failed.",
+        ):
             install_convert2rhel()
 
     expected_calls = [
