@@ -101,7 +101,7 @@ def gather_json_report():
 
     if not data:
         raise ProcessError(
-            message="Content missing in convert2rhel analysis report",
+            message="Expected content missing in the pre-conversion analysis report.",
             report="The convert2rhel analysis report file '%s' does not contain any JSON data in it."
             % C2R_REPORT_FILE,
         )
@@ -154,7 +154,7 @@ def setup_convert2rhel(required_files):
                 != required_file.sha512_on_system.hexdigest()
             ):
                 raise ProcessError(
-                    message="Mismatch hash between downloaded file and the one present on the system.",
+                    message="Hash mismatch between the downloaded file and the one present on the system.",
                     report="File '%s' present on the system does not match the one downloaded. Stopping the execution."
                     % required_file.path,
                 )
