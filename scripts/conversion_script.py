@@ -386,12 +386,15 @@ def parse_migration_results():
     with open(C2R_MIGRATION_RESULTS_FILE) as handler:
         contents = json.load(handler)
 
-    activities = contents["activities"]
+    if not contents:
+        return False
+
+    activities = contents.get("activities", [{}])
     # Pick the latest run as it is the only one that matters for the decision
     # process.
     latest_run = activities[-1]
 
-    return latest_run["success"]
+    return latest_run.get("success", False)
 
 
 def update_insights_inventory():
@@ -428,7 +431,6 @@ def main():
         setup_convert2rhel(required_files)
         install_convert2rhel()
         run_convert2rhel()
-        update_insights_inventory()
 
         # Gather JSON & Textual report
         data = gather_json_report()
@@ -446,6 +448,7 @@ def main():
         # Insights.
         output.message = generate_report_message(migration_result, highest_level)
         output.entries = transform_raw_data(data)
+        update_insights_inventory()
         print("Conversion script finish successfully!")
     except ProcessError as exception:
         print(exception.report)
