@@ -6,9 +6,6 @@
     "status": {
       "$ref": "#/$defs/status_codes"
     },
-    "alert": {
-      "type": "boolean"
-    },
     "report": {
       "type": "string"
     },
@@ -44,7 +41,6 @@
   },
   "required": [
     "status",
-    "alert",
     "message",
     "report",
     "report_json"
