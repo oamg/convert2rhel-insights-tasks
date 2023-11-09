@@ -43,3 +43,18 @@ def test_gather_json_report_no_content(tmpdir):
             % file,
         ):
             gather_json_report()
+
+
+def test_gather_json_report_missing_file(tmpdir):
+    file = tmpdir.join("report.json")
+    file = str(file)
+    with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
+        with pytest.raises(
+            ProcessError,
+            match=(
+                "The convert2rhel analysis report file '%s' was not found in the system. "
+                "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+            )
+            % file,
+        ):
+            gather_json_report()
