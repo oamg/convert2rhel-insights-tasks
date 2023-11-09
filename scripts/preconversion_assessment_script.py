@@ -45,8 +45,13 @@ class ProcessError(Exception):
 class OutputCollector(object):
     """Wrapper class for script expected stdout"""
 
-    def __init__(self, status="", message="", report="", entries=None):
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
+    # Eight and five is reasonable in this case.
+
+    def __init__(self, status="", message="", report="", entries=None, alert=False):
         self.status = status
+        self.alert = alert
         self.message = message
         self.report = report
         self.tasks_format_version = "1.0"
@@ -67,6 +72,7 @@ class OutputCollector(object):
 
         return {
             "status": self.status,
+            "alert": self.alert,
             "message": self.message,
             "report": self.report,
             "report_json": self.report_json,
@@ -121,6 +127,8 @@ def gather_textual_report():
 def generate_report_message(highest_status):
     """Generate a report message based on the status severity."""
     message = ""
+    alert = False
+
     if STATUS_CODE[highest_status] < STATUS_CODE["WARNING"]:
         message = "No problems found. The system is ready for conversion."
 
@@ -132,8 +140,9 @@ def generate_report_message(highest_status):
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
+        alert = True
 
-    return message
+    return message, alert
 
 
 def setup_convert2rhel(required_files):
@@ -414,13 +423,16 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        output.message = generate_report_message(highest_level)
+        message, alert = generate_report_message(highest_level)
+        output.message = message
+        output.alert = alert
         output.entries = transform_raw_data(data)
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
         print(exception.report)
         output = OutputCollector(
             status="ERROR",
+            alert=True,
             message=exception.message,
             report=exception.report,
         )
@@ -428,6 +440,7 @@ def main():
         print(str(exception))
         output = OutputCollector(
             status="ERROR",
+            alert=True,
             message="An unexpected error occurred. Expand the row for more details.",
             report=str(exception),
         )
