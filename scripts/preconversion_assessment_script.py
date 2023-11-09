@@ -259,7 +259,10 @@ def run_convert2rhel():
     _, returncode = run_subprocess(["/usr/bin/convert2rhel", "analyze", "-y"], env=env)
     if returncode:
         raise ProcessError(
-            message="An error occurred during the convert2rhel analysis.",
+            message=(
+                "An error occurred during the pre-conversion analysis. "
+                "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+            ),
             report="convert2rhel execution exited with code '%s'." % returncode,
         )
 
@@ -419,8 +422,8 @@ def main():
 
         highest_level = find_highest_report_level(actions=data["actions"])
         # Set the first position of the list as being the final status, that's
-        # needed because `find_highest_report_level` will sort out the list with the
-        # highest priority first.
+        # needed because `find_highest_report_level` will sort out the list
+        # with the highest priority first.
         output.status = highest_level
 
         # Generate report message and transform the raw data into entries for
@@ -439,7 +442,7 @@ def main():
         print(str(exception))
         output = OutputCollector(
             status="ERROR",
-            message="An error occurred. Expand the row for more details.",
+            message="An unexpected error occurred. Expand the row for more details.",
             report=str(exception),
         )
     finally:
