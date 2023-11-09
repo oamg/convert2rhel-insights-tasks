@@ -9,6 +9,9 @@
       "alert": {
         "type": "boolean"
       },
+      "error": {
+        "type": "boolean"
+      },
       "report": {
         "type": "string"
       },

@@ -49,9 +49,10 @@ class OutputCollector(object):
     # pylint: disable=too-many-arguments
     # Eight and five is reasonable in this case.
 
-    def __init__(self, status="", message="", report="", entries=None, alert=False):
+    def __init__(self, status="", message="", report="", entries=None, alert=False, error=False):
         self.status = status
-        self.alert = alert
+        self.alert = alert  # true if error true or if conversion inhibited
+        self.error = error  # true if the script wasn't able to finish, otherwise false
         self.message = message
         self.report = report
         self.tasks_format_version = "1.0"
@@ -73,6 +74,7 @@ class OutputCollector(object):
         return {
             "status": self.status,
             "alert": self.alert,
+            "error": self.error,
             "message": self.message,
             "report": self.report,
             "report_json": self.report_json,
@@ -423,9 +425,7 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        message, alert = generate_report_message(highest_level)
-        output.message = message
-        output.alert = alert
+        output.message, output.alert = generate_report_message(highest_level)
         output.entries = transform_raw_data(data)
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
@@ -433,6 +433,7 @@ def main():
         output = OutputCollector(
             status="ERROR",
             alert=True,
+            error=True,
             message=exception.message,
             report=exception.report,
         )
@@ -441,6 +442,7 @@ def main():
         output = OutputCollector(
             status="ERROR",
             alert=True,
+            error=True,
             message="An unexpected error occurred. Expand the row for more details.",
             report=str(exception),
         )
