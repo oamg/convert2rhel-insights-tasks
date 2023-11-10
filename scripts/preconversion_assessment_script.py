@@ -49,7 +49,9 @@ class OutputCollector(object):
     # pylint: disable=too-many-arguments
     # Eight and five is reasonable in this case.
 
-    def __init__(self, status="", message="", report="", entries=None, alert=False, error=False):
+    def __init__(
+        self, status="", message="", report="", entries=None, alert=False, error=False
+    ):
         self.status = status
         self.alert = alert  # true if error true or if conversion inhibited
         self.error = error  # true if the script wasn't able to finish, otherwise false
