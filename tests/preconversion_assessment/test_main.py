@@ -13,7 +13,7 @@ from scripts.preconversion_assessment_script import main, ProcessError
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
@@ -52,7 +52,7 @@ def test_main_success(
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
@@ -89,7 +89,7 @@ def test_main_process_error(
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
