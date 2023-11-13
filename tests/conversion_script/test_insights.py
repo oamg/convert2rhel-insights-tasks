@@ -9,7 +9,7 @@ def test_update_insights_inventory_successfully():
     ) as mock_popen:
         update_insights_inventory()
 
-    mock_popen.assert_called_once_with(cmd=["/usr/bin/insights-client", "--register"])
+    mock_popen.assert_called_once_with(cmd=["/usr/bin/insights-client"])
 
 
 def test_update_insights_inventory_non_success():
@@ -21,4 +21,4 @@ def test_update_insights_inventory_non_success():
         ):
             update_insights_inventory()
 
-    mock_popen.assert_called_once_with(cmd=["/usr/bin/insights-client", "--register"])
+    mock_popen.assert_called_once_with(cmd=["/usr/bin/insights-client"])

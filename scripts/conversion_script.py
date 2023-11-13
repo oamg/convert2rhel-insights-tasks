@@ -114,11 +114,11 @@ def gather_json_report():
         # This is expected and we want to control the flow with ProcessError
         # instead of re-raising the exception.
         raise ProcessError(
-            message="Expected pre-conversion analysis report not found.",
-            report=(
-                "The convert2rhel analysis report file '%s' was not found in the system. "
+            message=(
+                "Expected pre-conversion analysis report not found. "
                 "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-            )
+            ),
+            report="The convert2rhel analysis report file '%s' was not found in the system."
             % C2R_REPORT_FILE,
         )
 
@@ -400,7 +400,7 @@ def transform_raw_data(raw_data):
 
 def update_insights_inventory():
     """Call insights-client to update insights inventory."""
-    output, returncode = run_subprocess(cmd=["/usr/bin/insights-client", "--register"])
+    output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
         raise ProcessError(
