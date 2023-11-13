@@ -14,7 +14,7 @@ from scripts.conversion_script import main, ProcessError
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 # fmt: on
@@ -55,7 +55,7 @@ def test_main_success(
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
@@ -92,7 +92,7 @@ def test_main_process_error(
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=""))
+@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
