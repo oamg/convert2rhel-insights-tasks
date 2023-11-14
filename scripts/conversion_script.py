@@ -413,7 +413,7 @@ def transform_raw_data(raw_data):
 
 def update_insights_inventory():
     """Call insights-client to update insights inventory."""
-    print('Updating system status in Red Hat Insights.')
+    print("Updating system status in Red Hat Insights.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
