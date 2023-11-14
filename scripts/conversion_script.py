@@ -143,6 +143,7 @@ def gather_textual_report():
             It's fine if the textual report does not exist, but the JSON one is
             required.
     """
+    print("Collecting TXT report.")
     data = ""
     if os.path.exists(C2R_REPORT_TXT_FILE):
         with open(C2R_REPORT_TXT_FILE, mode="r") as handler:
@@ -412,6 +413,7 @@ def transform_raw_data(raw_data):
 
 def update_insights_inventory():
     """Call insights-client to update insights inventory."""
+    print('Updating system status in Red Hat Insights.')
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
