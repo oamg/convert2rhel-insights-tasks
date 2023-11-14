@@ -449,7 +449,7 @@ def main():
         output = OutputCollector(
             status="ERROR",
             alert=True,
-            error=True,
+            error=False,
             message=exception.message,
             report=exception.report,
         )
@@ -458,7 +458,7 @@ def main():
         output = OutputCollector(
             status="ERROR",
             alert=True,
-            error=True,
+            error=False,
             message="An unexpected error occurred. Expand the row for more details.",
             report=str(exception),
         )
