@@ -44,8 +44,10 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_success_c2r_installed(
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
@@ -81,6 +83,7 @@ def test_main_success_c2r_installed(
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 1
 
 
 # fmt: off
@@ -139,7 +142,7 @@ def test_main_inhibited_c2r_installed(
 
 # fmt: off
 @patch("__builtin__.open", new_callable=mock_open())
-@patch("scripts.conversion_script.gather_json_report", side_effect=[{"actions": []}])
+@patch("scripts.conversion_script.gather_json_report", side_effect=None)
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
@@ -150,8 +153,12 @@ def test_main_inhibited_c2r_installed(
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
+    mock_update_insights_inventory,
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -171,14 +178,16 @@ def test_main_process_error(
     assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
-    assert mock_gather_json_report.call_count == 0
-    assert mock_find_highest_report_level.call_count == 0
+    assert mock_gather_json_report.call_count == 1
+    assert mock_find_highest_report_level.call_count == 1
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_open_func.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_update_insights_inventory.call_count == 1
 
 
 # fmt: off
@@ -193,8 +202,12 @@ def test_main_process_error(
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
+    mock_update_insights_inventory,
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -220,6 +233,8 @@ def test_main_general_exception(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_update_insights_inventory.call_count == 1
 
 
 # fmt: off
