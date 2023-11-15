@@ -269,14 +269,14 @@ def run_convert2rhel():
             "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
         ]
 
-    _, returncode = run_subprocess(["/usr/bin/convert2rhel", "analyze", "-y"], env=env)
+    output, returncode = run_subprocess(["/usr/bin/convert2rhel", "analyze", "-y"], env=env)
     if returncode:
         raise ProcessError(
             message=(
                 "An error occurred during the pre-conversion analysis. "
                 "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
             ),
-            report="convert2rhel execution exited with code '%s'." % returncode,
+            report="convert2rhel execution exited with code '%s' and output: %s." % (returncode, output.rstrip("\n"))
         )
 
 
