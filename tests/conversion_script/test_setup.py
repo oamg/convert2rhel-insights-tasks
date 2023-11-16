@@ -23,9 +23,15 @@ class MockResponse(object):
 @patch("scripts.conversion_script._create_or_restore_backup_file")
 @patch("__builtin__.open")
 @patch("os.chmod")
-def test_setup_convert2rhel_file_exist_backup_called(
-    mock_chmod, mock_open_fn, mock_backup, mock_makedirs, mock_exist, mock_urlopen
+def test_setup_file_exist_backup_called(
+    mock_chmod,
+    mock_open_fn,
+    mock_backup,
+    mock_makedirs,
+    mock_exist,
+    mock_urlopen,
 ):
+    # pylint: disable=too-many-arguments
     test_file = RequiredFile("/mock/path/file.txt", "exist_not_match")
     required_files = [test_file]
 
@@ -48,9 +54,15 @@ def test_setup_convert2rhel_file_exist_backup_called(
 @patch("scripts.conversion_script._create_or_restore_backup_file")
 @patch("__builtin__.open")
 @patch("os.chmod")
-def test_setup_convert2rhel_file_does_not_exists_backup_called(
-    mock_chmod, mock_open_fn, mock_backup, mock_makedirs, mock_exist, mock_urlopen
+def test_setup_file_does_not_exists_backup_called(
+    mock_chmod,
+    mock_open_fn,
+    mock_backup,
+    mock_makedirs,
+    mock_exist,
+    mock_urlopen,
 ):
+    # pylint: disable=too-many-arguments
     test_file = RequiredFile("/mock/path/file.txt", "exist_not_match")
     required_files = [test_file]
 

@@ -302,6 +302,7 @@ def _create_or_restore_backup_file(required_file):
             )
             os.rename(required_file.path, required_file.path + ".backup")
     except (IOError, OSError) as exception:
+        # pylint: disable=raise-missing-from
         # This is expected and we want to control the flow with ProcessError
         # instead of re-raising the exception.
         raise ProcessError(
