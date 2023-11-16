@@ -1,14 +1,14 @@
 import pytest
 from mock import patch
 
-from scripts.conversion_script import (
+from scripts.preconversion_assessment_script import (
     RequiredFile,
     ProcessError,
     _create_or_restore_backup_file,
 )
 
 
-@patch("scripts.conversion_script.os")
+@patch("scripts.preconversion_assessment_script.os")
 def test_backup_existing_file(mock_os):
     filepath = "/path/to/file"
     required_file = RequiredFile(path=filepath)
@@ -20,7 +20,7 @@ def test_backup_existing_file(mock_os):
     mock_os.rename.assert_called_once_with(filepath, filepath + ".backup")
 
 
-@patch("scripts.conversion_script.os")
+@patch("scripts.preconversion_assessment_script.os")
 def test_restore_existing_file(mock_os):
     filepath = "/path/to/file"
     required_file = RequiredFile(path=filepath)
@@ -32,7 +32,7 @@ def test_restore_existing_file(mock_os):
     mock_os.rename.assert_called_once_with(filepath + ".backup", filepath)
 
 
-@patch("scripts.conversion_script.os")
+@patch("scripts.preconversion_assessment_script.os")
 def test_ioerror_restore_or_backup(mock_os):
     filepath = "/path/to/file"
     required_file = RequiredFile(path=filepath)

@@ -1,9 +1,6 @@
-import hashlib
-import pytest
-from mock import Mock, mock_open, patch
+from mock import Mock, patch
 
 from scripts.preconversion_assessment_script import (
-    ProcessError,
     RequiredFile,
     setup_convert2rhel,
 )
@@ -23,62 +20,44 @@ class MockResponse(object):
 )
 @patch("os.path.exists", return_value=True)
 @patch("os.makedirs", side_effect=Mock())
-@patch("__builtin__.open", side_effect=mock_open)
-def test_setup_convert2rhel_file_exist_not_match(
-    mock_open_fn, mock_makedirs, mock_exist, mock_urlopen
+@patch("scripts.preconversion_assessment_script._create_or_restore_backup_file")
+@patch("__builtin__.open")
+@patch("os.chmod")
+def test_setup_convert2rhel_file_exist_backup_called(
+    mock_chmod, mock_open_fn, mock_backup, mock_makedirs, mock_exist, mock_urlopen
 ):
     test_file = RequiredFile("/mock/path/file.txt", "exist_not_match")
-    test_file.sha512_on_system = hashlib.sha512(b"foo")
-    required_files = [test_file]
-
-    with pytest.raises(ProcessError):
-        setup_convert2rhel(required_files)
-
-    assert mock_exist.call_count == 1
-    assert mock_urlopen.call_count == 1
-    assert mock_makedirs.call_count == 0
-    assert mock_open_fn.call_count == 0
-
-
-@patch(
-    "scripts.preconversion_assessment_script.urlopen",
-    return_value=MockResponse("exist_match"),
-)
-@patch("os.path.exists", return_value=True)
-@patch("os.makedirs", side_effect=Mock())
-@patch("__builtin__.open", side_effect=mock_open)
-def test_setup_convert2rhel_file_exist_match(
-    mock_open_fn, mock_makedirs, mock_exist, mock_urlopen
-):
-    test_file = RequiredFile("/mock/path/file.txt", "exist_match")
-    test_file.sha512_on_system = hashlib.sha512(b"exist_match")
     required_files = [test_file]
 
     setup_convert2rhel(required_files)
 
+    assert mock_backup.call_count == 1
     assert mock_exist.call_count == 1
     assert mock_urlopen.call_count == 1
     assert mock_makedirs.call_count == 0
-    assert mock_open_fn.call_count == 0
+    assert mock_open_fn.call_count == 1
+    assert mock_chmod.call_count == 1
 
 
 @patch(
     "scripts.preconversion_assessment_script.urlopen",
-    return_value=MockResponse("not_exist"),
+    return_value=MockResponse("exist_not_match"),
 )
 @patch("os.path.exists", return_value=False)
 @patch("os.makedirs", side_effect=Mock())
-@patch("__builtin__.open", new_callable=mock_open)
-@patch("os.chmod", side_effect=Mock())
-def test_setup_convert2rhel_file_not_exist(
-    mock_chmod, mock_open_fn, mock_makedirs, mock_exist, mock_urlopen
+@patch("scripts.preconversion_assessment_script._create_or_restore_backup_file")
+@patch("__builtin__.open")
+@patch("os.chmod")
+def test_setup_convert2rhel_file_does_not_exists_backup_called(
+    mock_chmod, mock_open_fn, mock_backup, mock_makedirs, mock_exist, mock_urlopen
 ):
-    test_file = RequiredFile("/mock/path/file.txt", "not_exist")
+    test_file = RequiredFile("/mock/path/file.txt", "exist_not_match")
     required_files = [test_file]
 
     setup_convert2rhel(required_files)
 
-    assert mock_exist.call_count == 2
+    assert mock_backup.call_count == 1
+    assert mock_exist.call_count == 1
     assert mock_urlopen.call_count == 1
     assert mock_makedirs.call_count == 1
     assert mock_open_fn.call_count == 1

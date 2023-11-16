@@ -7,7 +7,6 @@ from scripts.preconversion_assessment_script import main, ProcessError
 
 # fmt: off
 @patch("scripts.preconversion_assessment_script.gather_json_report", side_effect=[{"actions": []}])
-@patch("scripts.preconversion_assessment_script.verify_required_files_are_present", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
@@ -26,12 +25,10 @@ def test_main_success(
     mock_run_convert2rhel,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_verify_required_files_are_present,
     mock_gather_json_report,
 ):
     main()
 
-    assert mock_verify_required_files_are_present.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
@@ -46,7 +43,6 @@ def test_main_success(
 # fmt: off
 @patch("__builtin__.open", new_callable=mock_open())
 @patch("scripts.preconversion_assessment_script.gather_json_report", side_effect=[{"actions": []}])
-@patch("scripts.preconversion_assessment_script.verify_required_files_are_present", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
@@ -63,13 +59,11 @@ def test_main_process_error(
     mock_run_convert2rhel,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_verify_required_files_are_present,
     mock_gather_json_report,
     mock_open_func,
 ):
     main()
 
-    assert mock_verify_required_files_are_present.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
@@ -83,7 +77,6 @@ def test_main_process_error(
 
 # fmt: off
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
-@patch("scripts.preconversion_assessment_script.verify_required_files_are_present", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
@@ -100,11 +93,9 @@ def test_main_general_exception(
     mock_run_convert2rhel,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_verify_required_files_are_present,
 ):
     main()
 
-    assert mock_verify_required_files_are_present.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1

@@ -291,7 +291,7 @@ def _create_or_restore_backup_file(required_file):
     """
     Either creates or restores backup files (rename in both cases).
     """
-    suffix = '.backup'
+    suffix = ".backup"
     try:
         if os.path.exists(required_file.path + suffix):
             print("Restoring backed up file %s." % (required_file.path))
@@ -302,13 +302,14 @@ def _create_or_restore_backup_file(required_file):
                 "File %s already present on system, backing up to %s."
                 % (required_file.path, required_file.path + suffix)
             )
-            os.rename(required_file.path, required_file.path + '.backup')
+            os.rename(required_file.path, required_file.path + ".backup")
     except (IOError, OSError) as exception:
         # This is expected and we want to control the flow with ProcessError
         # instead of re-raising the exception.
         raise ProcessError(
             message="An unexpected error occured during restore or backup of required file.",
-            report=str(exception))
+            report=str(exception),
+        )
 
 
 def _generate_message_key(message, action_id):
