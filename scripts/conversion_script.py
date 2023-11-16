@@ -212,7 +212,7 @@ def run_subprocess(cmd, print_cmd=True, env=None):
     password in plain text.
 
     The cmd is specified as a list starting with the command and followed by a
-    list of arguments. Example: ["yum", "install", "<package>"]
+    list of arguments. Example: ["/usr/bin/yum", "install", "<package>"]
     """
     # This check is here because we passed in strings in the past and changed
     # to a list for security hardening.  Remove this once everyone is
@@ -242,7 +242,7 @@ def install_convert2rhel():
     """Install the convert2rhel tool to the system."""
     print("Installing & updating Convert2RHEL package.")
     output, returncode = run_subprocess(
-        ["yum", "install", "convert2rhel", "-y"],
+        ["/usr/bin/yum", "install", "convert2rhel", "-y"],
     )
     if returncode:
         raise ProcessError(
@@ -251,7 +251,7 @@ def install_convert2rhel():
             % (returncode, output.rstrip("\n")),
         )
 
-    output, returncode = run_subprocess(["yum", "update", "convert2rhel", "-y"])
+    output, returncode = run_subprocess(["/usr/bin/yum", "update", "convert2rhel", "-y"])
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
