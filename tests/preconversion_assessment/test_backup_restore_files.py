@@ -3,7 +3,6 @@ from mock import patch
 
 from scripts.preconversion_assessment_script import (
     RequiredFile,
-    ProcessError,
     _create_or_restore_backup_file,
 )
 
@@ -38,5 +37,5 @@ def test_ioerror_restore_or_backup(mock_os):
     required_file = RequiredFile(path=filepath)
     mock_os.path.exists.side_effect = IOError
 
-    with pytest.raises(ProcessError):
+    with pytest.raises(IOError):
         _create_or_restore_backup_file(required_file)
