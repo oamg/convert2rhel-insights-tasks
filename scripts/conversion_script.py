@@ -251,7 +251,9 @@ def install_convert2rhel():
             % (returncode, output.rstrip("\n")),
         )
 
-    output, returncode = run_subprocess(["/usr/bin/yum", "update", "convert2rhel", "-y"])
+    output, returncode = run_subprocess(
+        ["/usr/bin/yum", "update", "convert2rhel", "-y"]
+    )
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
