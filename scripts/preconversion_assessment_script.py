@@ -74,7 +74,7 @@ class OutputCollector(object):
         self.error = error  # true if the script wasn't able to finish, otherwise false
         self.message = message
         self.report = report
-        self.tasks_format_version = "1.0"
+        self.tasks_format_version = "1.1"
         self.tasks_format_id = "oamg-format"
         self.entries = entries
         self.report_json = None
@@ -236,26 +236,6 @@ def archive_analysis_report(file):
         suffix,
     )
     shutil.move(file, archive_log_file)
-
-
-def find_highest_report_level(actions):
-    """
-    Gather status codes from messages and result. We are not seeking for
-    differences between them as we want all the results, no matter from where
-    they come.
-    """
-    print("Collecting and combining report status.")
-    action_level_combined = []
-    for value in actions.values():
-        action_level_combined.append(value["result"]["level"])
-        for message in value["messages"]:
-            action_level_combined.append(message["level"])
-
-    valid_action_levels = [
-        level for level in action_level_combined if level in STATUS_CODE
-    ]
-    valid_action_levels.sort(key=lambda status: STATUS_CODE[status], reverse=True)
-    return valid_action_levels[0]
 
 
 def gather_json_report():
@@ -681,16 +661,12 @@ def main():
         data = gather_json_report()
 
         if data:
-            highest_level = find_highest_report_level(actions=data["actions"])
-            # Set the first position of the list as being the final status,
-            # that's needed because `find_highest_report_level` will sort out
-            # the list with the highest priority first.
-            output.status = highest_level
+            output.status = data.get("status", None)
 
             if not output.message:
                 # Generate report message and transform the raw data into entries
                 # for Insights.
-                output.message, output.alert = generate_report_message(highest_level)
+                output.message, output.alert = generate_report_message(output.status)
 
             if not output.report:
                 # Try to attach the textual report in the report if we have json

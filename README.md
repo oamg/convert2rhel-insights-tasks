@@ -12,7 +12,7 @@ Structure of repository is following:
 ├── requirements.txt  # DEV requirements - tests & lint
 ├── schemas # All expected json outputs in the scripts stdouts
 |   |   ...
-│   └── preconversion_assessment_schema_1.0.json
+│   └── preconversion_assessment_schema_1.1.json
 ├── scripts # All available scripts
 |   |   ...
 │   └── preconversion_assessment_script.py
