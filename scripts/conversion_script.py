@@ -417,8 +417,8 @@ def main():
     """Main entrypoint for the script."""
     output = OutputCollector()
     gpg_key_file = RequiredFile(
-            path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
-            host="https://www.redhat.com/security/data/fd431d51.txt",
+        path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
+        host="https://www.redhat.com/security/data/fd431d51.txt",
     )
 
     required_files = [
@@ -447,7 +447,9 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        output.message, output.alert = generate_report_message(highest_level, gpg_key_file)
+        output.message, output.alert = generate_report_message(
+            highest_level, gpg_key_file
+        )
         output.entries = transform_raw_data(data)
         update_insights_inventory()
         print("Conversion script finish successfully!")

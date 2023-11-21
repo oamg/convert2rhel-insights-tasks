@@ -26,8 +26,7 @@ def test_cleanup_with_file_to_remove(mock_restore, mock_remove, mock_exists):
 def test_cleanup_with_file_to_keep(mock_restore, mock_remove, mock_exists):
     """Only downloaded files are removed."""
 
-    keep_downloaded_file = RequiredFile(
-        "/download/keep", keep=True)
+    keep_downloaded_file = RequiredFile("/download/keep", keep=True)
     required_files = [keep_downloaded_file]
 
     cleanup(required_files)
