@@ -145,6 +145,12 @@ def test_main_inhibited_c2r_installed(
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
+    assert mock_gather_json_report.call_count == 0
+    assert mock_find_highest_report_level.call_count == 0
+    assert mock_gather_textual_report.call_count == 0
+    assert mock_generate_report_message.call_count == 0
+    assert mock_transform_raw_data.call_count == 0
 
 
 # fmt: off

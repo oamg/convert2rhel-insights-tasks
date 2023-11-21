@@ -390,15 +390,7 @@ def run_convert2rhel():
     output, returncode = run_subprocess(
         ["/usr/bin/convert2rhel", "analyze", "-y"], env=env
     )
-    if returncode:
-        raise ProcessError(
-            message=(
-                "An error occurred during the pre-conversion analysis. "
-                "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-            ),
-            report="convert2rhel execution exited with code '%s' and output:\n%s"
-            % (returncode, output.rstrip("\n")),
-        )
+    return output, returncode
 
 
 def cleanup(required_files):
@@ -573,8 +565,20 @@ def main():
         installed, transaction_id = install_convert2rhel()
         if installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
-        run_convert2rhel()
 
+        stdout, returncode = run_convert2rhel()
+
+        if returncode != 0:
+            output.message = (
+                "An error occurred during the conversion execution. For details, refer to "
+                "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+            )
+            output.report = (
+                "convert2rhel execution exited with code %s and output: %s."
+                % (returncode, stdout.rstrip("\n"))
+            )
+            return
+        
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
         print(exception.report)

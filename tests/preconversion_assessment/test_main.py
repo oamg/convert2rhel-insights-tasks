@@ -67,15 +67,16 @@ def test_main_success(
     assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
-    assert mock_gather_json_report.call_count == 1
-    assert mock_find_highest_report_level.call_count == 1
-    assert mock_gather_textual_report.call_count == 1
-    assert mock_generate_report_message.call_count == 1
+    assert mock_gather_json_report.call_count == 0
+    assert mock_find_highest_report_level.call_count == 0
+    assert mock_gather_textual_report.call_count == 0
+    assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
+    assert mock_transform_raw_data.call_count == 0
 
 
 # fmt: off
