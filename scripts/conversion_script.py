@@ -25,9 +25,10 @@ C2R_REPORT_TXT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.txt"
 class RequiredFile(object):
     """Holds data about files needed to download convert2rhel"""
 
-    def __init__(self, path="", host=""):
+    def __init__(self, path="", host="", keep=False):
         self.path = path
         self.host = host
+        self.keep = keep
 
 
 class ProcessError(Exception):
@@ -148,13 +149,14 @@ def gather_textual_report():
     return data
 
 
-def generate_report_message(highest_status):
+def generate_report_message(highest_status, gpg_key_file):
     """Generate a report message based on the status severity."""
     message = ""
     alert = False
 
     if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
         message = "No problems found. The system was converted successfully."
+        gpg_key_file.keep = True
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
@@ -277,6 +279,8 @@ def cleanup(required_files):
     not something that was downloaded by the script.
     """
     for required_file in required_files:
+        if required_file.keep:
+            continue
         if os.path.exists(required_file.path):
             print(
                 "Removing the file '%s' as it was previously downloaded."
@@ -412,11 +416,13 @@ def update_insights_inventory():
 def main():
     """Main entrypoint for the script."""
     output = OutputCollector()
-    required_files = [
-        RequiredFile(
+    gpg_key_file = RequiredFile(
             path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
             host="https://www.redhat.com/security/data/fd431d51.txt",
-        ),
+    )
+
+    required_files = [
+        gpg_key_file,
         RequiredFile(
             path="/etc/yum.repos.d/convert2rhel.repo",
             host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
@@ -441,7 +447,7 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        output.message, output.alert = generate_report_message(highest_level)
+        output.message, output.alert = generate_report_message(highest_level, gpg_key_file)
         output.entries = transform_raw_data(data)
         update_insights_inventory()
         print("Conversion script finish successfully!")
