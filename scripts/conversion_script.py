@@ -222,6 +222,8 @@ def run_subprocess(cmd, print_cmd=True, env=None):
     return output, process.returncode
 
 
+# TODO: When c2r statistics on insights are not reliant on rpm being installed
+# Copy from preconversion script the logic in this commit (pkgs_to_cleanup param)
 def install_convert2rhel():
     """Install the convert2rhel tool to the system."""
     print("Installing & updating Convert2RHEL package.")
