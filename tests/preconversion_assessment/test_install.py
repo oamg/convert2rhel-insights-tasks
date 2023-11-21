@@ -16,8 +16,8 @@ def test_install_convert2rhel(subprocess_mock):
         install_convert2rhel()
 
     expected_calls = [
-        ["yum", "install", "convert2rhel", "-y"],
-        ["yum", "update", "convert2rhel", "-y"],
+        ["/usr/bin/yum", "install", "convert2rhel", "-y"],
+        ["/usr/bin/yum", "update", "convert2rhel", "-y"],
     ]
 
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
@@ -34,7 +34,7 @@ def test_install_convert2rhel_raise_exception():
         ):
             install_convert2rhel()
 
-    expected_calls = [["yum", "install", "convert2rhel", "-y"]]
+    expected_calls = [["/usr/bin/yum", "install", "convert2rhel", "-y"]]
 
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
 
@@ -51,8 +51,8 @@ def test_update_convert2rhel_raise_exception():
             install_convert2rhel()
 
     expected_calls = [
-        ["yum", "install", "convert2rhel", "-y"],
-        ["yum", "update", "convert2rhel", "-y"],
+        ["/usr/bin/yum", "install", "convert2rhel", "-y"],
+        ["/usr/bin/yum", "update", "convert2rhel", "-y"],
     ]
 
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
