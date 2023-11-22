@@ -2,7 +2,33 @@
 
 from mock import patch, mock_open, Mock
 
-from scripts.preconversion_assessment_script import main, ProcessError
+from scripts.preconversion_assessment_script import OutputCollector, main, ProcessError
+
+
+@patch(
+    "scripts.preconversion_assessment_script.get_rhel_version",
+    return_value=("centos", "7.9"),
+)
+@patch(
+    "scripts.preconversion_assessment_script.is_non_eligible_releases",
+    return_value=True,
+)
+@patch("scripts.preconversion_assessment_script.cleanup")
+@patch("scripts.preconversion_assessment_script.OutputCollector")
+def test_main_non_eligible_release(
+    mock_output_collector,
+    mock_cleanup,
+    mock_is_non_eligible_releases,
+    mock_get_rhel_version,
+):
+    mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
+
+    main()
+
+    mock_get_rhel_version.assert_called_once()
+    mock_is_non_eligible_releases.assert_called_once()
+    mock_output_collector.assert_called()
+    mock_cleanup.assert_called_once()
 
 
 # fmt: off
@@ -16,8 +42,12 @@ from scripts.preconversion_assessment_script import main, ProcessError
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_success(
+    mock_is_non_eligible_releases,
+    mock_get_rhel_version,
     mock_cleanup,
     mock_transform_raw_data,
     mock_generate_report_message,
@@ -41,6 +71,8 @@ def test_main_success(
     assert mock_generate_report_message.call_count == 1
     assert mock_cleanup.call_count == 1
     assert mock_transform_raw_data.call_count == 1
+    assert mock_get_rhel_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
@@ -54,8 +86,12 @@ def test_main_success(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_process_error(
+    mock_is_non_eligible_releases,
+    mock_get_rhel_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -79,6 +115,8 @@ def test_main_process_error(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_open_func.call_count == 0
+    assert mock_get_rhel_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
@@ -91,8 +129,12 @@ def test_main_process_error(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_general_exception(
+    mock_is_non_eligible_releases,
+    mock_get_rhel_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -181,3 +223,5 @@ def test_main_inhibited_custom_ini(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
+    assert mock_get_rhel_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1

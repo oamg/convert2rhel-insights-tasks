@@ -135,6 +135,30 @@ def check_convert2rhel_inhibitors_before_run():
         )
 
 
+def get_rhel_version():
+    """Currently we execute the task only for RHEL 7 or 8"""
+    print("Checking OS distribution and version ID ...")
+    try:
+        distribution_id = None
+        version_id = None
+        with open("/etc/os-release", "r") as os_release_file:
+            for line in os_release_file:
+                if line.startswith("ID="):
+                    distribution_id = line.split("=")[1].strip().strip('"')
+                elif line.startswith("VERSION_ID="):
+                    version_id = line.split("=")[1].strip().strip('"')
+    except IOError:
+        print("Couldn't read /etc/os-release")
+    return distribution_id, version_id
+
+
+def is_non_eligible_releases(release):
+    eligible_releases = ["7.9"]
+    major_version, minor = release.split(".") if release is not None else (None, None)
+    version_str = major_version + "." + minor
+    return release is None or version_str not in eligible_releases
+
+
 def find_highest_report_level(actions):
     """
     Gather status codes from messages and result. We are not seeking for
@@ -505,6 +529,15 @@ def main():
     ]
 
     try:
+        # Exit if not CentOS 7.9
+        dist, version = get_rhel_version()
+        if dist != "centos" or is_non_eligible_releases(version):
+            raise ProcessError(
+                message="Pre-conversion analysis is only supported on CentOS 7.9 distributions.",
+                report='Exiting because distribution="%s" and version="%s"'
+                % (dist, version),
+            )
+
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
         check_convert2rhel_inhibitors_before_run()
