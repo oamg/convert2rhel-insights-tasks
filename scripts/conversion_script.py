@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 import subprocess
@@ -26,11 +25,10 @@ C2R_REPORT_TXT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.txt"
 class RequiredFile(object):
     """Holds data about files needed to download convert2rhel"""
 
-    def __init__(self, path="", host=""):
+    def __init__(self, path="", host="", keep=False):
         self.path = path
         self.host = host
-        self.sha512_on_system = None
-        self.is_file_present = False
+        self.keep = keep
 
 
 class ProcessError(Exception):
@@ -151,13 +149,14 @@ def gather_textual_report():
     return data
 
 
-def generate_report_message(highest_status):
+def generate_report_message(highest_status, gpg_key_file):
     """Generate a report message based on the status severity."""
     message = ""
     alert = False
 
     if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
         message = "No problems found. The system was converted successfully."
+        gpg_key_file.keep = True
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
@@ -170,34 +169,19 @@ def setup_convert2rhel(required_files):
     """Setup convert2rhel tool by downloading the required files."""
     print("Downloading required files.")
     for required_file in required_files:
+        _create_or_restore_backup_file(required_file)
         response = urlopen(required_file.host)
         data = response.read()
-        downloaded_file_sha512 = hashlib.sha512(data)
 
-        if os.path.exists(required_file.path):
-            print(
-                "File '%s' is already present on the system. Downloading a copy in order to check if they are the same."
-                % required_file.path
-            )
-            if (
-                downloaded_file_sha512.hexdigest()
-                != required_file.sha512_on_system.hexdigest()
-            ):
-                raise ProcessError(
-                    message="Hash mismatch between the downloaded file and the one present on the system.",
-                    report="File '%s' present on the system does not match the one downloaded. Stopping the execution."
-                    % required_file.path,
-                )
-        else:
-            directory = os.path.dirname(required_file.path)
-            if not os.path.exists(directory):
-                print("Creating directory at '%s'" % directory)
-                os.makedirs(directory, mode=0o755)
+        directory = os.path.dirname(required_file.path)
+        if not os.path.exists(directory):
+            print("Creating directory at '%s'" % directory)
+            os.makedirs(directory, mode=0o755)
 
-            print("Writing file to destination: '%s'" % required_file.path)
-            with open(required_file.path, mode="w") as handler:
-                handler.write(data)
-                os.chmod(required_file.path, 0o644)
+        print("Writing file to destination: '%s'" % required_file.path)
+        with open(required_file.path, mode="w") as handler:
+            handler.write(data)
+            os.chmod(required_file.path, 0o644)
 
 
 # Code taken from
@@ -295,32 +279,32 @@ def cleanup(required_files):
     not something that was downloaded by the script.
     """
     for required_file in required_files:
-        if not required_file.is_file_present and os.path.exists(required_file.path):
+        if required_file.keep:
+            continue
+        if os.path.exists(required_file.path):
             print(
                 "Removing the file '%s' as it was previously downloaded."
                 % required_file.path
             )
             os.remove(required_file.path)
-            continue
+        _create_or_restore_backup_file(required_file)
 
+
+def _create_or_restore_backup_file(required_file):
+    """
+    Either creates or restores backup files (rename in both cases).
+    """
+    suffix = ".backup"
+    if os.path.exists(required_file.path + suffix):
+        print("Restoring backed up file %s." % (required_file.path))
+        os.rename(required_file.path + suffix, required_file.path)
+        return
+    if os.path.exists(required_file.path):
         print(
-            "File '%s' was present on the system before the execution. Skipping the removal."
-            % required_file.path
+            "File %s already present on system, backing up to %s."
+            % (required_file.path, required_file.path + suffix)
         )
-
-
-def verify_required_files_are_present(required_files):
-    """Verify if the required files are already present on the system."""
-    print("Checking if required files are present on the system.")
-    for required_file in required_files:
-        # Avoid race conditions
-        try:
-            print("Checking for file %s" % required_file.path)
-            with open(required_file.path, mode="r") as handler:
-                required_file.sha512_on_system = hashlib.sha512(handler.read())
-                required_file.is_file_present = True
-        except (IOError, OSError):
-            required_file.is_file_present = False
+        os.rename(required_file.path, required_file.path + ".backup")
 
 
 def _generate_message_key(message, action_id):
@@ -432,11 +416,13 @@ def update_insights_inventory():
 def main():
     """Main entrypoint for the script."""
     output = OutputCollector()
+    gpg_key_file = RequiredFile(
+        path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
+        host="https://www.redhat.com/security/data/fd431d51.txt",
+    )
+
     required_files = [
-        RequiredFile(
-            path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
-            host="https://www.redhat.com/security/data/fd431d51.txt",
-        ),
+        gpg_key_file,
         RequiredFile(
             path="/etc/yum.repos.d/convert2rhel.repo",
             host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
@@ -445,7 +431,6 @@ def main():
 
     try:
         # Setup Convert2RHEL to be executed.
-        verify_required_files_are_present(required_files)
         setup_convert2rhel(required_files)
         install_convert2rhel()
         run_convert2rhel()
@@ -462,7 +447,9 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        output.message, output.alert = generate_report_message(highest_level)
+        output.message, output.alert = generate_report_message(
+            highest_level, gpg_key_file
+        )
         output.entries = transform_raw_data(data)
         update_insights_inventory()
         print("Conversion script finish successfully!")
