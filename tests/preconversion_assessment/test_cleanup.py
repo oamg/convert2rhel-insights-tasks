@@ -7,7 +7,9 @@ from scripts.preconversion_assessment_script import cleanup, RequiredFile
 @patch("os.path.exists", side_effect=Mock())
 @patch("os.remove", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script._create_or_restore_backup_file")
-def test_cleanup_with_file_to_remove(mock_restore, mock_remove, mock_exists, mock_yum_undo):
+def test_cleanup_with_file_to_remove(
+    mock_restore, mock_remove, mock_exists, mock_yum_undo
+):
     """Only downloaded files are removed."""
 
     present_file = RequiredFile("/already/present")
@@ -39,4 +41,3 @@ def test_cleanup_with_undo_yum(mock_restore, mock_remove, mock_exists, mock_yum_
     assert mock_remove.call_count == 1
     assert mock_restore.call_count == 1
     assert mock_yum_undo.call_count == 1
-

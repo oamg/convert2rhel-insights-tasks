@@ -109,4 +109,3 @@ def test_main_general_exception(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     mock_cleanup.assert_called_once_with(ANY, undo_last_yum_transaction=True)
-

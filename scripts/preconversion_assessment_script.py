@@ -229,7 +229,7 @@ def install_convert2rhel():
     """
     print("Installing & updating Convert2RHEL package.")
 
-    c2r_pkg_name = 'convert2rhel'
+    c2r_pkg_name = "convert2rhel"
     c2r_installed = _check_if_package_installed(c2r_pkg_name)
 
     if not c2r_installed:
@@ -244,9 +244,7 @@ def install_convert2rhel():
             )
         return True
 
-    output, returncode = run_subprocess(
-        ["/usr/bin/yum", "update", c2r_pkg_name, "-y"]
-    )
+    output, returncode = run_subprocess(["/usr/bin/yum", "update", c2r_pkg_name, "-y"])
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
@@ -254,6 +252,7 @@ def install_convert2rhel():
             % (returncode, output.rstrip("\n")),
         )
     return False
+
 
 def run_convert2rhel():
     """
@@ -307,6 +306,7 @@ def cleanup(required_files, undo_last_yum_transaction=True):
                 "Undo of last yum transaction failed with exist status '%s' and output '%s'"
                 % (returncode, output)
             )
+
 
 def _create_or_restore_backup_file(required_file):
     """

@@ -10,11 +10,13 @@ from scripts.conversion_script import (
 @pytest.mark.parametrize(
     ("subprocess_mock", "pkg_installed_mock", "should_undo_transaction"),
     (
-        ((b"output", 0), False , True),
-        ((b"output", 0), True , False),
+        ((b"output", 0), False, True),
+        ((b"output", 0), True, False),
     ),
 )
-def test_install_convert2rhel(subprocess_mock, pkg_installed_mock, should_undo_transaction):
+def test_install_convert2rhel(
+    subprocess_mock, pkg_installed_mock, should_undo_transaction
+):
     with patch(
         "scripts.conversion_script.run_subprocess",
         return_value=subprocess_mock,
@@ -34,9 +36,7 @@ def test_install_convert2rhel(subprocess_mock, pkg_installed_mock, should_undo_t
             ["/usr/bin/yum", "update", "convert2rhel", "-y"],
         ]
     else:
-        expected_calls = [
-            ["/usr/bin/yum", "install", "convert2rhel", "-y"]
-        ]
+        expected_calls = [["/usr/bin/yum", "install", "convert2rhel", "-y"]]
 
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
 
