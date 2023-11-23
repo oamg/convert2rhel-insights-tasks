@@ -37,7 +37,7 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
