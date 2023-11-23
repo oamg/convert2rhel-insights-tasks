@@ -2,7 +2,7 @@ from scripts.conversion_script import is_non_eligible_releases
 
 
 def test_is_non_eligible_releases():
-    eligible_releases = ["7.9"]
+    eligible_releases = ["7"]
     non_eligible_releases = ["6.10", "8.0", "9.0", "10.0"]
 
     for release in eligible_releases:
