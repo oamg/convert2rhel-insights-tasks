@@ -281,7 +281,7 @@ def run_convert2rhel():
         )
 
 
-def cleanup(required_files, undo_last_yum_transaction=False):
+def cleanup(required_files, undo_last_yum_transaction=True):
     """
     Cleanup the downloaded files downloaded in previous steps in this script.
 
@@ -418,7 +418,7 @@ def transform_raw_data(raw_data):
 
 def main():
     """Main entrypoint for the script."""
-    c2r_installed_undo = False # set to True if c2r pkg is installed
+    c2r_installed_undo = True
     output = OutputCollector()
     required_files = [
         RequiredFile(

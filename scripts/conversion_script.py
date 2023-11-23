@@ -285,7 +285,7 @@ def run_convert2rhel():
         )
 
 
-def cleanup(required_files, undo_last_yum_transaction=False):
+def cleanup(required_files, undo_last_yum_transaction=True):
     """
     Cleanup the downloaded files downloaded in previous steps in this script.
 
@@ -440,7 +440,7 @@ def update_insights_inventory():
 
 def main():
     """Main entrypoint for the script."""
-    c2r_installed_undo = False # set to True if c2r pkg is installed
+    c2r_installed_undo = True
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
