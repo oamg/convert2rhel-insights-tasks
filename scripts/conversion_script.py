@@ -222,23 +222,35 @@ def run_subprocess(cmd, print_cmd=True, env=None):
     return output, process.returncode
 
 
-# TODO: When c2r statistics on insights are not reliant on rpm being installed
-# Copy from preconversion script the logic in this commit (pkgs_to_cleanup param)
+def _check_if_package_installed(pkg_name):
+    _, return_code = run_subprocess(["/usr/bin/rpm", "-q", pkg_name])
+    return return_code == 0
+
+
 def install_convert2rhel():
-    """Install the convert2rhel tool to the system."""
+    """
+    Install the convert2rhel tool to the system.
+    Returns True if the yum transaction should be undone during cleanup.
+    """
     print("Installing & updating Convert2RHEL package.")
-    output, returncode = run_subprocess(
-        ["/usr/bin/yum", "install", "convert2rhel", "-y"],
-    )
-    if returncode:
-        raise ProcessError(
-            message="Failed to install convert2rhel RPM.",
-            report="Installing convert2rhel with yum exited with code '%s' and output: %s."
-            % (returncode, output.rstrip("\n")),
+
+    c2r_pkg_name = 'convert2rhel'
+    c2r_installed = _check_if_package_installed(c2r_pkg_name)
+
+    if not c2r_installed:
+        output, returncode = run_subprocess(
+            ["/usr/bin/yum", "install", c2r_pkg_name, "-y"],
         )
+        if returncode:
+            raise ProcessError(
+                message="Failed to install convert2rhel RPM.",
+                report="Installing convert2rhel with yum exited with code '%s' and output: %s."
+                % (returncode, output.rstrip("\n")),
+            )
+        return True
 
     output, returncode = run_subprocess(
-        ["/usr/bin/yum", "update", "convert2rhel", "-y"]
+        ["/usr/bin/yum", "update", c2r_pkg_name, "-y"]
     )
     if returncode:
         raise ProcessError(
@@ -246,6 +258,7 @@ def install_convert2rhel():
             report="Updating convert2rhel with yum exited with code '%s' and output: %s."
             % (returncode, output.rstrip("\n")),
         )
+    return False
 
 
 def run_convert2rhel():
@@ -272,7 +285,7 @@ def run_convert2rhel():
         )
 
 
-def cleanup(required_files):
+def cleanup(required_files, undo_last_yum_transaction=False):
     """
     Cleanup the downloaded files downloaded in previous steps in this script.
 
@@ -290,6 +303,16 @@ def cleanup(required_files):
             )
             os.remove(required_file.path)
         _create_or_restore_backup_file(required_file)
+
+    if undo_last_yum_transaction:
+        output, returncode = run_subprocess(
+            ["/usr/bin/yum", "history", "undo", "last"],
+        )
+        if returncode:
+            print(
+                "Undo of last yum transaction failed with exist status '%s' and output '%s'"
+                % (returncode, output)
+            )
 
 
 def _create_or_restore_backup_file(required_file):
@@ -417,6 +440,7 @@ def update_insights_inventory():
 
 def main():
     """Main entrypoint for the script."""
+    c2r_installed_undo = False # set to True if c2r pkg is installed
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
@@ -434,7 +458,7 @@ def main():
     try:
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
-        install_convert2rhel()
+        c2r_installed_undo = install_convert2rhel()
         run_convert2rhel()
 
         # Gather JSON & Textual report
@@ -452,6 +476,12 @@ def main():
         output.message, output.alert = generate_report_message(
             highest_level, gpg_key_file
         )
+
+        if "successfully" in output.message:
+            # NOTE: When c2r statistics on insights are not reliant on rpm being installed
+            # remove this condition (=decide only based on install_convert2rhel() result)
+            c2r_installed_undo = False
+
         output.entries = transform_raw_data(data)
         update_insights_inventory()
         print("Conversion script finish successfully!")
@@ -475,7 +505,7 @@ def main():
         )
     finally:
         print("Cleaning up modifications to the system.")
-        cleanup(required_files)
+        cleanup(required_files, undo_last_yum_transaction=c2r_installed_undo)
 
         print("### JSON START ###")
         print(json.dumps(output.to_dict(), indent=4))
