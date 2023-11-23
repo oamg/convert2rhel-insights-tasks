@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import copy
+import re
 
 from urllib2 import urlopen
 
@@ -142,22 +143,25 @@ def get_rhel_version():
     try:
         distribution_id = None
         version_id = None
-        with open("/etc/os-release", "r") as os_release_file:
-            for line in os_release_file:
-                if line.startswith("ID="):
-                    distribution_id = line.split("=")[1].strip().strip('"')
-                elif line.startswith("VERSION_ID="):
-                    version_id = line.split("=")[1].strip().strip('"')
+        with open("/etc/system-release", "r") as os_release_file:
+            distribution_id = re.search(
+                r"(.+?)\s?(?:release\s?)?\d", os_release_file
+            ).group(1)
+            match = re.search(r".+?(\d+)\.(\d+)\D?", os_release_file)
+            if not match:
+                print(
+                    "Couldn't get system version from the content string: %s"
+                    % os_release_file
+                )
+            version_id = "%s.%s" % (match.group(1), match.group(2))
     except IOError:
-        print("Couldn't read /etc/os-release")
+        print("Couldn't read /etc/system-release")
     return distribution_id, version_id
 
 
 def is_non_eligible_releases(release):
-    eligible_releases = ["7"]
-    major_version, minor = release.split(".") if release is not None else (None, None)
-    version_str = major_version + "." + minor
-    return release is None or version_str not in eligible_releases
+    eligible_releases = "7.9"
+    return release == eligible_releases if release else False
 
 
 def find_highest_report_level(actions):
