@@ -7,7 +7,7 @@ from scripts.preconversion_assessment_script import OutputCollector, main, Proce
 
 @patch(
     "scripts.preconversion_assessment_script.get_rhel_version",
-    return_value=("centos", "7.9"),
+    return_value=("centos", "7"),
 )
 @patch(
     "scripts.preconversion_assessment_script.is_non_eligible_releases",
@@ -42,7 +42,7 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_success(
@@ -86,7 +86,7 @@ def test_main_success(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_process_error(
@@ -129,7 +129,7 @@ def test_main_process_error(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_general_exception(

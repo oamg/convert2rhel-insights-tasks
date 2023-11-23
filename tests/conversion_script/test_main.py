@@ -5,7 +5,7 @@ from mock import patch, mock_open, Mock
 from scripts.conversion_script import main, ProcessError, OutputCollector
 
 
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.cleanup")
 @patch("scripts.conversion_script.OutputCollector")
@@ -139,7 +139,7 @@ def test_main_inhibited_c2r_installed(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_process_error(
@@ -182,7 +182,7 @@ def test_main_process_error(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value="failed"))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_general_exception(

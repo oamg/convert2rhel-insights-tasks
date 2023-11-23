@@ -154,7 +154,7 @@ def get_rhel_version():
 
 
 def is_non_eligible_releases(release):
-    eligible_releases = ["7.9"]
+    eligible_releases = ["7"]
     major_version, minor = release.split(".") if release is not None else (None, None)
     version_str = major_version + "." + minor
     return release is None or version_str not in eligible_releases
