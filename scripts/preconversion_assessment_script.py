@@ -135,25 +135,27 @@ def check_convert2rhel_inhibitors_before_run():
         )
 
 
-def get_rhel_version():
+def get_system_distro_version():
     """Currently we execute the task only for RHEL 7 or 8"""
     print("Checking OS distribution and version ID ...")
     try:
         distribution_id = None
         version_id = None
-        with open("/etc/system-release", "r") as os_release_file:
-            distribution_id = re.search(
-                r"(.+?)\s?(?:release\s?)?\d", os_release_file
-            ).group(1)
-            match = re.search(r".+?(\d+)\.(\d+)\D?", os_release_file)
-            if not match:
-                print(
-                    "Couldn't get system version from the content string: %s"
-                    % os_release_file
-                )
-            version_id = "%s.%s" % (match.group(1), match.group(2))
+        with open("/etc/system-release", "r") as system_release_file:
+            data = system_release_file.readline()
+            match = re.search(r"(.+?)\s?(?:release\s?)?\d", data)
+            if match:
+                # Split and get the first position, which will contain the system
+                # name.
+                distribution_id = match.group(1).split()[0].lower()
+
+            match = re.search(r".+?(\d+)\.(\d+)\D?", data)
+            if match:
+                version_id = "%s.%s" % (match.group(1), match.group(2))
     except IOError:
         print("Couldn't read /etc/system-release")
+
+    print("Detected distribution='%s' in version='%s'" % (distribution_id, version_id))
     return distribution_id, version_id
 
 
@@ -533,7 +535,7 @@ def main():
 
     try:
         # Exit if not CentOS 7.9
-        dist, version = get_rhel_version()
+        dist, version = get_system_distro_version()
         if dist != "centos" or is_non_eligible_releases(version):
             raise ProcessError(
                 message="Pre-conversion analysis is only supported on CentOS 7.9 distributions.",

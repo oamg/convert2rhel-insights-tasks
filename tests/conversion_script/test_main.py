@@ -5,7 +5,9 @@ from mock import patch, mock_open, Mock
 from scripts.conversion_script import main, ProcessError, OutputCollector
 
 
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
+@patch(
+    "scripts.conversion_script.get_system_distro_version", return_value=("centos", "7")
+)
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.cleanup")
 @patch("scripts.conversion_script.OutputCollector")
@@ -13,13 +15,13 @@ def test_main_non_eligible_release(
     mock_output_collector,
     mock_cleanup,
     mock_is_non_eligible_releases,
-    mock_get_rhel_version,
+    mock_get_system_distro_version,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
 
     main()
 
-    mock_get_rhel_version.assert_called_once()
+    mock_get_system_distro_version.assert_called_once()
     mock_is_non_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
@@ -37,7 +39,7 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
@@ -45,6 +47,8 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 # fmt: on
 def test_main_success_c2r_installed(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
     mock_cleanup_file_exists_call,
@@ -124,7 +128,7 @@ def test_main_inhibited_c2r_installed(
     assert mock_cleanup_file_exists_call.call_count == 2
     assert mock_cleanup_file_restore_call.call_count == 2
     assert mock_transform_raw_data.call_count == 1
-    assert mock_get_rhel_version.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
 
 
@@ -139,12 +143,12 @@ def test_main_inhibited_c2r_installed(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_process_error(
     mock_is_non_eligible_releases,
-    mock_get_rhel_version,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -168,7 +172,7 @@ def test_main_process_error(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_open_func.call_count == 0
-    assert mock_get_rhel_version.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
 
 
@@ -182,12 +186,12 @@ def test_main_process_error(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value="failed"))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_rhel_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_general_exception(
     mock_is_non_eligible_releases,
-    mock_get_rhel_version,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -277,4 +281,5 @@ def test_main_inhibited_custom_ini(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_get_rhel_version.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
