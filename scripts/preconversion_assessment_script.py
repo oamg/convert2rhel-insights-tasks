@@ -222,9 +222,9 @@ def run_subprocess(cmd, print_cmd=True, env=None):
 def _get_last_yum_transaction_id(pkg_name):
     output, return_code = run_subprocess(["/usr/bin/yum", "history", "list", pkg_name])
     if return_code:
-        # NOTE: There is only print because list will exi with 1 when no such transaction exist
+        # NOTE: There is only print because list will exit with 1 when no such transaction exist
         print(
-            "Listing yum transaction history for '%s' failed with exist status '%s' and output '%s'"
+            "Listing yum transaction history for '%s' failed with exit status '%s' and output '%s'"
             % (pkg_name, return_code, output),
             "\nThis may cause clean up function to not remove '%s' after Task run."
             % pkg_name,
@@ -244,7 +244,7 @@ def _check_if_package_installed(pkg_name):
 def install_convert2rhel():
     """
     Install the convert2rhel tool to the system.
-    Returns True if the yum transaction should be undone during cleanup.
+    Returns True and transaction ID if the c2r pkg was installed, otherwise False, None.
     """
     print("Installing & updating Convert2RHEL package.")
 
@@ -324,7 +324,7 @@ def cleanup(required_files):
         )
         if returncode:
             print(
-                "Undo of yum transaction with ID %s failed with exist status '%s' and output '%s'"
+                "Undo of yum transaction with ID %s failed with exit status '%s' and output '%s'"
                 % (transaction_id, returncode, output)
             )
 
