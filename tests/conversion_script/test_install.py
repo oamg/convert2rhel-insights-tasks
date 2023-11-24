@@ -25,11 +25,16 @@ def test_install_convert2rhel(
             "scripts.conversion_script._check_if_package_installed",
             return_value=pkg_installed_mock,
         ) as mock_run_pkg_check:
-            return_status = install_convert2rhel()
+            with patch(
+                "scripts.conversion_script._get_last_yum_transaction_id",
+                return_value=1
+            ) as mock_transaction_get:
+                should_undo, _ = install_convert2rhel()
 
-    assert return_status is should_undo_transaction
+    assert should_undo is should_undo_transaction
     mock_run_pkg_check.assert_called_once()
     mock_run_subprocess.assert_called_once()
+    assert mock_transaction_get.call_count == (0 if pkg_installed_mock else 1)
 
     if pkg_installed_mock:
         expected_calls = [
