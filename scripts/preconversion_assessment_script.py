@@ -226,11 +226,12 @@ def _get_last_yum_transaction_id(pkg_name):
         print(
             "Listing yum transaction history for '%s' failed with exist status '%s' and output '%s'"
             % (pkg_name, return_code, output),
-            "\nThis may cause clean up function to not remove '%s' after Task run." % pkg_name
+            "\nThis may cause clean up function to not remove '%s' after Task run."
+            % pkg_name,
         )
         return None
 
-    pattern = re.compile(r'^(\s+)?(\d+)', re.MULTILINE)
+    pattern = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
     matches = pattern.findall(output)
     return matches[-1][1] if matches else None
 

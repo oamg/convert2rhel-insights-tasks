@@ -2,6 +2,7 @@ from mock import Mock, patch
 
 from scripts.conversion_script import cleanup, RequiredFile
 
+
 @patch("scripts.conversion_script.YUM_TRANSACTIONS_TO_UNDO", new=set())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 0))
 @patch("os.path.exists", side_effect=Mock())

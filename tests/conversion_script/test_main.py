@@ -96,7 +96,6 @@ def test_main_inhibited_c2r_installed(
     assert mock_transform_raw_data.call_count == 1
 
 
-
 # fmt: off
 @patch("__builtin__.open", new_callable=mock_open())
 @patch("scripts.conversion_script.gather_json_report", side_effect=[{"actions": []}])

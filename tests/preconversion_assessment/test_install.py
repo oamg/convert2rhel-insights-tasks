@@ -27,7 +27,7 @@ def test_install_convert2rhel(
         ) as mock_run_pkg_check:
             with patch(
                 "scripts.preconversion_assessment_script._get_last_yum_transaction_id",
-                return_value=1
+                return_value=1,
             ) as mock_transaction_get:
                 should_undo, _ = install_convert2rhel()
 
