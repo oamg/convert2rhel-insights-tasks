@@ -3,6 +3,7 @@
 	lint \
 	verify \
 	install \
+	sync \
 	.pre-commit \
 	.install-deps
 
@@ -30,3 +31,7 @@ install: install-deps pre-commit
 tests: install-deps
 	. $(PYTHON_VENV)/bin/activate; \
 	$(PYTEST_CALL)
+
+sync: install-deps
+	. $(PYTHON_VENV)/bin/activate; \
+	python misc/sync_scripts.py
