@@ -263,7 +263,7 @@ def install_convert2rhel():
         if returncode:
             raise ProcessError(
                 message="Failed to install convert2rhel RPM.",
-                report="Installing convert2rhel with yum exited with code '%s' and output: %s."
+                report="Installing convert2rhel with yum exited with code '%s' and output:\n%s"
                 % (returncode, output.rstrip("\n")),
             )
         transaction_id = _get_last_yum_transaction_id(c2r_pkg_name)
@@ -273,7 +273,7 @@ def install_convert2rhel():
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
-            report="Updating convert2rhel with yum exited with code '%s' and output: %s."
+            report="Updating convert2rhel with yum exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
     # NOTE: If we would like to undo update we could use _get_last_yum_transaction_id(c2r_pkg_name)
@@ -299,7 +299,7 @@ def run_convert2rhel():
                 "An error occurred during the conversion execution. For details, refer to "
                 "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
             ),
-            report="convert2rhel execution exited with code '%s'and output: %s."
+            report="convert2rhel execution exited with code '%s'and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -329,7 +329,7 @@ def cleanup(required_files):
         )
         if returncode:
             print(
-                "Undo of yum transaction with ID %s failed with exit status '%s' and output '%s'"
+                "Undo of yum transaction with ID %s failed with exit status '%s' and output:\n%s"
                 % (transaction_id, returncode, output)
             )
 
@@ -450,7 +450,7 @@ def update_insights_inventory():
     if returncode:
         raise ProcessError(
             message="Failed to update Insights Inventory by registering the system again.",
-            report="insights-client execution exited with code '%s' and output: %s."
+            report="insights-client execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -459,7 +459,6 @@ def update_insights_inventory():
 
 def main():
     """Main entrypoint for the script."""
-    c2r_installed_undo = True
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",

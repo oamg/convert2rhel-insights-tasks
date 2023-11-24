@@ -258,7 +258,7 @@ def install_convert2rhel():
         if returncode:
             raise ProcessError(
                 message="Failed to install convert2rhel RPM.",
-                report="Installing convert2rhel with yum exited with code '%s' and output: %s."
+                report="Installing convert2rhel with yum exited with code '%s' and output:\n%s"
                 % (returncode, output.rstrip("\n")),
             )
         transaction_id = _get_last_yum_transaction_id(c2r_pkg_name)
@@ -268,7 +268,7 @@ def install_convert2rhel():
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
-            report="Updating convert2rhel with yum exited with code '%s' and output: %s."
+            report="Updating convert2rhel with yum exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
     # NOTE: If we would like to undo update we could use _get_last_yum_transaction_id(c2r_pkg_name)
@@ -296,7 +296,7 @@ def run_convert2rhel():
                 "An error occurred during the pre-conversion analysis. "
                 "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
             ),
-            report="convert2rhel execution exited with code '%s' and output: %s."
+            report="convert2rhel execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -324,7 +324,7 @@ def cleanup(required_files):
         )
         if returncode:
             print(
-                "Undo of yum transaction with ID %s failed with exit status '%s' and output '%s'"
+                "Undo of yum transaction with ID %s failed with exit status '%s' and output:\n%s"
                 % (transaction_id, returncode, output)
             )
 
@@ -439,7 +439,6 @@ def transform_raw_data(raw_data):
 
 def main():
     """Main entrypoint for the script."""
-    c2r_installed_undo = True
     output = OutputCollector()
     required_files = [
         RequiredFile(

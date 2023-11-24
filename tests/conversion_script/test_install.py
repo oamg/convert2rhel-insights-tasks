@@ -50,7 +50,7 @@ def test_install_convert2rhel(
 def test_install_convert2rhel_raise_exception(mock_run_subprocess, mock_pkg_check):
     with pytest.raises(
         ProcessError,
-        match="Installing convert2rhel with yum exited with code '1' and output: failed.",
+        match="Installing convert2rhel with yum exited with code '1' and output:\nfailed",
     ):
         install_convert2rhel()
 
@@ -65,7 +65,7 @@ def test_install_convert2rhel_raise_exception(mock_run_subprocess, mock_pkg_chec
 def test_update_convert2rhel_raise_exception(mock_run_subprocess, mock_pkg_check):
     with pytest.raises(
         ProcessError,
-        match="Updating convert2rhel with yum exited with code '1' and output: failed.",
+        match="Updating convert2rhel with yum exited with code '1' and output:\nfailed",
     ):
         install_convert2rhel()
 
