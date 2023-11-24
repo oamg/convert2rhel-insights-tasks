@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 import copy
 
@@ -20,6 +21,7 @@ STATUS_CODE_NAME = {number: name for name, number in STATUS_CODE.items()}
 C2R_REPORT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.json"
 # Path to the convert2rhel report textual file.
 C2R_REPORT_TXT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.txt"
+YUM_TRANSACTIONS_TO_UNDO = set()
 
 
 class RequiredFile(object):
@@ -217,6 +219,22 @@ def run_subprocess(cmd, print_cmd=True, env=None):
     return output, process.returncode
 
 
+def _get_last_yum_transaction_id(pkg_name):
+    output, return_code = run_subprocess(["/usr/bin/yum", "history", "list", pkg_name])
+    if return_code:
+        # NOTE: There is only print because list will exi with 1 when no such transaction exist
+        print(
+            "Listing yum transaction history for '%s' failed with exist status '%s' and output '%s'"
+            % (pkg_name, return_code, output),
+            "\nThis may cause clean up function to not remove '%s' after Task run." % pkg_name
+        )
+        return None
+
+    pattern = re.compile(r'^(\s+)?(\d+)', re.MULTILINE)
+    matches = pattern.findall(output)
+    return matches[-1][1] if matches else None
+
+
 def _check_if_package_installed(pkg_name):
     _, return_code = run_subprocess(["/usr/bin/rpm", "-q", pkg_name])
     return return_code == 0
@@ -242,7 +260,8 @@ def install_convert2rhel():
                 report="Installing convert2rhel with yum exited with code '%s' and output: %s."
                 % (returncode, output.rstrip("\n")),
             )
-        return True
+        transaction_id = _get_last_yum_transaction_id(c2r_pkg_name)
+        return True, transaction_id
 
     output, returncode = run_subprocess(["/usr/bin/yum", "update", c2r_pkg_name, "-y"])
     if returncode:
@@ -251,7 +270,8 @@ def install_convert2rhel():
             report="Updating convert2rhel with yum exited with code '%s' and output: %s."
             % (returncode, output.rstrip("\n")),
         )
-    return False
+    # NOTE: If we would like to undo update we could use _get_last_yum_transaction_id(c2r_pkg_name)
+    return False, None
 
 
 def run_convert2rhel():
@@ -280,7 +300,7 @@ def run_convert2rhel():
         )
 
 
-def cleanup(required_files, undo_last_yum_transaction=True):
+def cleanup(required_files):
     """
     Cleanup the downloaded files downloaded in previous steps in this script.
 
@@ -297,14 +317,14 @@ def cleanup(required_files, undo_last_yum_transaction=True):
             os.remove(required_file.path)
         _create_or_restore_backup_file(required_file)
 
-    if undo_last_yum_transaction:
+    for transaction_id in YUM_TRANSACTIONS_TO_UNDO:
         output, returncode = run_subprocess(
-            ["/usr/bin/yum", "history", "undo", "last"],
+            ["/usr/bin/yum", "history", "undo", transaction_id],
         )
         if returncode:
             print(
-                "Undo of last yum transaction failed with exist status '%s' and output '%s'"
-                % (returncode, output)
+                "Undo of yum transaction with ID %s failed with exist status '%s' and output '%s'"
+                % (transaction_id, returncode, output)
             )
 
 
@@ -434,7 +454,9 @@ def main():
     try:
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
-        c2r_installed_undo = install_convert2rhel()
+        installed, transaction_id = install_convert2rhel()
+        if installed:
+            YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
         run_convert2rhel()
 
         # Gather JSON & Textual report
@@ -472,7 +494,7 @@ def main():
         )
     finally:
         print("Cleaning up modifications to the system.")
-        cleanup(required_files, undo_last_yum_transaction=c2r_installed_undo)
+        cleanup(required_files)
 
         print("### JSON START ###")
         print(json.dumps(output.to_dict(), indent=4))
