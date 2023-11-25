@@ -151,14 +151,13 @@ def gather_textual_report():
     return data
 
 
-def generate_report_message(highest_status, gpg_key_file):
+def generate_report_message(highest_status):
     """Generate a report message based on the status severity."""
     message = ""
     alert = False
 
     if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
         message = "No problems found. The system was converted successfully."
-        gpg_key_file.keep = True
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
@@ -464,13 +463,13 @@ def main():
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
         host="https://www.redhat.com/security/data/fd431d51.txt",
     )
-
-    required_files = [
-        gpg_key_file,
-        RequiredFile(
+    c2r_repo = RequiredFile(
             path="/etc/yum.repos.d/convert2rhel.repo",
             host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
-        ),
+    )
+    required_files = [
+        gpg_key_file,
+        c2r_repo,
     ]
 
     try:
@@ -498,9 +497,14 @@ def main():
         )
 
         if "successfully" in output.message:
+            gpg_key_file.keep = True
+
             # NOTE: When c2r statistics on insights are not reliant on rpm being installed
-            # remove this condition (=decide only based on install_convert2rhel() result)
+            # remove below line (=decide only based on install_convert2rhel() result)
             YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+            # NOTE: Keep always because added/updated pkg is also kept
+            # (if repo existed, the .backup file will remain on system)
+            c2r_repo.keep = True
 
         output.entries = transform_raw_data(data)
         update_insights_inventory()

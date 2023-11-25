@@ -46,8 +46,9 @@ def test_main_success_c2r_installed(
     assert mock_generate_report_message.call_count == 1
     # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
     assert mock_cleanup_pkg_call.call_count == 0
-    assert mock_cleanup_file_exists_call.call_count == 2
-    assert mock_cleanup_file_restore_call.call_count == 2
+    # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
+    assert mock_cleanup_file_exists_call.call_count == 0
+    assert mock_cleanup_file_restore_call.call_count == 0
     assert mock_transform_raw_data.call_count == 1
 
 
