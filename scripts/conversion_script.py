@@ -464,8 +464,8 @@ def main():
         host="https://www.redhat.com/security/data/fd431d51.txt",
     )
     c2r_repo = RequiredFile(
-            path="/etc/yum.repos.d/convert2rhel.repo",
-            host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
+        path="/etc/yum.repos.d/convert2rhel.repo",
+        host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
     )
     required_files = [
         gpg_key_file,

@@ -28,7 +28,9 @@ from scripts.conversion_script import RequiredFile, generate_report_message
     ],
 )
 def test_generate_report_message(
-    highest_status, expected_message, has_alert,
+    highest_status,
+    expected_message,
+    has_alert,
 ):
     assert generate_report_message(highest_status) == (
         expected_message,
