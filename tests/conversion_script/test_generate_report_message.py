@@ -9,8 +9,8 @@ from scripts.conversion_script import generate_report_message
             "SUCCESS",
             (
                 "No problems found. The system was converted successfully. Please,"
-                " reboot your system at your earlier convenience to make sure the "
-                "system is using the RHEL Kernel."
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
             ),
             False,
         ),
@@ -18,8 +18,8 @@ from scripts.conversion_script import generate_report_message
             "INFO",
             (
                 "No problems found. The system was converted successfully. Please,"
-                " reboot your system at your earlier convenience to make sure the "
-                "system is using the RHEL Kernel."
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
             ),
             False,
         ),
@@ -27,8 +27,8 @@ from scripts.conversion_script import generate_report_message
             "WARNING",
             (
                 "No problems found. The system was converted successfully. Please,"
-                " reboot your system at your earlier convenience to make sure the "
-                "system is using the RHEL Kernel."
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
             ),
             False,
         ),

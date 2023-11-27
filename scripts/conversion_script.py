@@ -212,8 +212,8 @@ def generate_report_message(highest_status):
     if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
         message = (
             "No problems found. The system was converted successfully. Please,"
-            " reboot your system at your earlier convenience to make sure the "
-            "system is using the RHEL Kernel."
+            " reboot your system at your earliest convenience to make sure that"
+            " the system is using the RHEL Kernel."
         )
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
