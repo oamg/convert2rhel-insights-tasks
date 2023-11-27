@@ -7,17 +7,29 @@ from scripts.conversion_script import generate_report_message
     [
         (
             "SUCCESS",
-            "No problems found. The system was converted successfully.",
+            (
+                "No problems found. The system was converted successfully. Please,"
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
+            ),
             False,
         ),
         (
             "INFO",
-            "No problems found. The system was converted successfully.",
+            (
+                "No problems found. The system was converted successfully. Please,"
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
+            ),
             False,
         ),
         (
             "WARNING",
-            "No problems found. The system was converted successfully.",
+            (
+                "No problems found. The system was converted successfully. Please,"
+                " reboot your system at your earliest convenience to make sure that"
+                " the system is using the RHEL Kernel."
+            ),
             False,
         ),
         (
