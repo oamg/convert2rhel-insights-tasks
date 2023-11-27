@@ -154,6 +154,8 @@ def test_main_general_exception(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
@@ -167,8 +169,12 @@ def test_main_general_exception(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_inhibited_ini_modified(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -190,6 +196,8 @@ def test_main_inhibited_ini_modified(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
@@ -202,8 +210,12 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_inhibited_custom_ini(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -223,6 +235,5 @@ def test_main_inhibited_custom_ini(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_get_rhel_version.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1

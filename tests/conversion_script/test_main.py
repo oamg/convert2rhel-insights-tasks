@@ -38,13 +38,12 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
-@patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
 @patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_success_c2r_installed(
     mock_is_non_eligible_releases,
@@ -80,6 +79,8 @@ def test_main_success_c2r_installed(
     assert mock_cleanup_file_exists_call.call_count == 0
     assert mock_cleanup_file_restore_call.call_count == 0
     assert mock_transform_raw_data.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
@@ -97,8 +98,12 @@ def test_main_success_c2r_installed(
 @patch("os.path.exists", return_value=False)
 @patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_inhibited_c2r_installed(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
     mock_cleanup_file_exists_call,
@@ -177,7 +182,7 @@ def test_main_process_error(
 
 
 # fmt: off
-@patch("__builtin__.open", mock_open(read_data="not json serializable"))
+@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
@@ -200,9 +205,11 @@ def test_main_general_exception(
     mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
+    mock_open_func,
 ):
     main()
 
+    assert mock_open_func.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -211,10 +218,12 @@ def test_main_general_exception(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
-@patch("__builtin__.open", mock_open(read_data="not json serializable"))
+@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
 @patch("os.path.exists", return_value=False)
@@ -224,8 +233,12 @@ def test_main_general_exception(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_inhibited_ini_modified(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -235,9 +248,11 @@ def test_main_inhibited_ini_modified(
     mock_ini_modified,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
+    mock_open_func,
 ):
     main()
 
+    assert mock_open_func.call_count == 0
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 0
     assert mock_custom_ini.call_count == 1
@@ -247,10 +262,12 @@ def test_main_inhibited_ini_modified(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
 
 
 # fmt: off
-@patch("__builtin__.open", mock_open(read_data="not json serializable"))
+@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
 @patch("os.path.exists", return_value=True)
@@ -259,8 +276,12 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
+@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 # fmt: on
 def test_main_inhibited_custom_ini(
+    mock_is_non_eligible_releases,
+    mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -269,9 +290,11 @@ def test_main_inhibited_custom_ini(
     mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
+    mock_open_func,
 ):
     main()
 
+    assert mock_open_func.call_count == 0
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_install_convert2rhel.call_count == 0
@@ -280,6 +303,5 @@ def test_main_inhibited_custom_ini(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_get_rhel_version.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1

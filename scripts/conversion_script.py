@@ -3,7 +3,6 @@ import os
 import re
 import subprocess
 import copy
-import re
 
 from urllib2 import urlopen
 
