@@ -8,11 +8,11 @@ from scripts.preconversion_assessment_script import main, ProcessError
 # fmt: off
 @patch("scripts.preconversion_assessment_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
@@ -44,11 +44,11 @@ def test_main_success(
 @patch("__builtin__.open", new_callable=mock_open())
 @patch("scripts.preconversion_assessment_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.install_convert2rhel", return_value=(True, 1))
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
@@ -78,11 +78,11 @@ def test_main_process_error(
 # fmt: off
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.install_convert2rhel", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.install_convert2rhel", return_value=(True, 1))
 @patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(

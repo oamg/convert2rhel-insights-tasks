@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 import copy
 
@@ -20,6 +21,7 @@ STATUS_CODE_NAME = {number: name for name, number in STATUS_CODE.items()}
 C2R_REPORT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.json"
 # Path to the convert2rhel report textual file.
 C2R_REPORT_TXT_FILE = "/var/log/convert2rhel/convert2rhel-pre-conversion.txt"
+YUM_TRANSACTIONS_TO_UNDO = set()
 
 
 class RequiredFile(object):
@@ -149,14 +151,13 @@ def gather_textual_report():
     return data
 
 
-def generate_report_message(highest_status, gpg_key_file):
+def generate_report_message(highest_status):
     """Generate a report message based on the status severity."""
     message = ""
     alert = False
 
     if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
         message = "No problems found. The system was converted successfully."
-        gpg_key_file.keep = True
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
@@ -222,28 +223,60 @@ def run_subprocess(cmd, print_cmd=True, env=None):
     return output, process.returncode
 
 
-def install_convert2rhel():
-    """Install the convert2rhel tool to the system."""
-    print("Installing & updating Convert2RHEL package.")
-    output, returncode = run_subprocess(
-        ["/usr/bin/yum", "install", "convert2rhel", "-y"],
-    )
-    if returncode:
-        raise ProcessError(
-            message="Failed to install convert2rhel RPM.",
-            report="Installing convert2rhel with yum exited with code '%s' and output: %s."
-            % (returncode, output.rstrip("\n")),
+def _get_last_yum_transaction_id(pkg_name):
+    output, return_code = run_subprocess(["/usr/bin/yum", "history", "list", pkg_name])
+    if return_code:
+        # NOTE: There is only print because list will exit with 1 when no such transaction exist
+        print(
+            "Listing yum transaction history for '%s' failed with exit status '%s' and output '%s'"
+            % (pkg_name, return_code, output),
+            "\nThis may cause clean up function to not remove '%s' after Task run."
+            % pkg_name,
         )
+        return None
 
-    output, returncode = run_subprocess(
-        ["/usr/bin/yum", "update", "convert2rhel", "-y"]
-    )
+    pattern = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
+    matches = pattern.findall(output)
+    return matches[-1][1] if matches else None
+
+
+def _check_if_package_installed(pkg_name):
+    _, return_code = run_subprocess(["/usr/bin/rpm", "-q", pkg_name])
+    return return_code == 0
+
+
+def install_convert2rhel():
+    """
+    Install the convert2rhel tool to the system.
+    Returns True and transaction ID if the c2r pkg was installed, otherwise False, None.
+    """
+    print("Installing & updating Convert2RHEL package.")
+
+    c2r_pkg_name = "convert2rhel"
+    c2r_installed = _check_if_package_installed(c2r_pkg_name)
+
+    if not c2r_installed:
+        output, returncode = run_subprocess(
+            ["/usr/bin/yum", "install", c2r_pkg_name, "-y"],
+        )
+        if returncode:
+            raise ProcessError(
+                message="Failed to install convert2rhel RPM.",
+                report="Installing convert2rhel with yum exited with code '%s' and output:\n%s"
+                % (returncode, output.rstrip("\n")),
+            )
+        transaction_id = _get_last_yum_transaction_id(c2r_pkg_name)
+        return True, transaction_id
+
+    output, returncode = run_subprocess(["/usr/bin/yum", "update", c2r_pkg_name, "-y"])
     if returncode:
         raise ProcessError(
             message="Failed to update convert2rhel RPM.",
-            report="Updating convert2rhel with yum exited with code '%s' and output: %s."
+            report="Updating convert2rhel with yum exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
+    # NOTE: If we would like to undo update we could use _get_last_yum_transaction_id(c2r_pkg_name)
+    return False, None
 
 
 def run_convert2rhel():
@@ -265,7 +298,7 @@ def run_convert2rhel():
                 "An error occurred during the conversion execution. For details, refer to "
                 "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
             ),
-            report="convert2rhel execution exited with code '%s'and output: %s."
+            report="convert2rhel execution exited with code '%s'and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -288,6 +321,16 @@ def cleanup(required_files):
             )
             os.remove(required_file.path)
         _create_or_restore_backup_file(required_file)
+
+    for transaction_id in YUM_TRANSACTIONS_TO_UNDO:
+        output, returncode = run_subprocess(
+            ["/usr/bin/yum", "history", "undo", transaction_id],
+        )
+        if returncode:
+            print(
+                "Undo of yum transaction with ID %s failed with exit status '%s' and output:\n%s"
+                % (transaction_id, returncode, output)
+            )
 
 
 def _create_or_restore_backup_file(required_file):
@@ -406,7 +449,7 @@ def update_insights_inventory():
     if returncode:
         raise ProcessError(
             message="Failed to update Insights Inventory by registering the system again.",
-            report="insights-client execution exited with code '%s' and output: %s."
+            report="insights-client execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -420,19 +463,21 @@ def main():
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
         host="https://www.redhat.com/security/data/fd431d51.txt",
     )
-
+    c2r_repo = RequiredFile(
+        path="/etc/yum.repos.d/convert2rhel.repo",
+        host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
+    )
     required_files = [
         gpg_key_file,
-        RequiredFile(
-            path="/etc/yum.repos.d/convert2rhel.repo",
-            host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
-        ),
+        c2r_repo,
     ]
 
     try:
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
-        install_convert2rhel()
+        installed, transaction_id = install_convert2rhel()
+        if installed:
+            YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
         run_convert2rhel()
 
         # Gather JSON & Textual report
@@ -450,6 +495,17 @@ def main():
         output.message, output.alert = generate_report_message(
             highest_level, gpg_key_file
         )
+
+        if "successfully" in output.message:
+            gpg_key_file.keep = True
+
+            # NOTE: When c2r statistics on insights are not reliant on rpm being installed
+            # remove below line (=decide only based on install_convert2rhel() result)
+            YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+            # NOTE: Keep always because added/updated pkg is also kept
+            # (if repo existed, the .backup file will remain on system)
+            c2r_repo.keep = True
+
         output.entries = transform_raw_data(data)
         update_insights_inventory()
         print("Conversion script finish successfully!")
