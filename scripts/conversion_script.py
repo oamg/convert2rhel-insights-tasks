@@ -139,9 +139,9 @@ def check_convert2rhel_inhibitors_before_run():
 def get_system_distro_version():
     """Currently we execute the task only for RHEL 7 or 8"""
     print("Checking OS distribution and version ID ...")
+    distribution_id = None
+    version_id = None
     try:
-        distribution_id = None
-        version_id = None
         with open("/etc/system-release", "r") as system_release_file:
             data = system_release_file.readline()
             match = re.search(r"(.+?)\s?(?:release\s?)?\d", data)
