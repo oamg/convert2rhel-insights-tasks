@@ -82,6 +82,59 @@ class OutputCollector(object):
         }
 
 
+def _check_ini_file_modified():
+    rpm_va_output, ini_file_not_modified = run_subprocess(
+        ["/usr/bin/rpm", "-Va", "convert2rhel"]
+    )
+
+    # No modifications at all
+    if not ini_file_not_modified:
+        return False
+
+    lines = rpm_va_output.strip().split("\n")
+    for line in lines:
+        line = line.strip().split()
+        status = line[0].replace(".", "").replace("?", "")
+        path = line[-1]
+
+        default_ini_modified = path == "/etc/convert2rhel.ini"
+        md5_hash_mismatch = "5" in status
+
+        if default_ini_modified and md5_hash_mismatch:
+            return True
+    return False
+
+
+def check_convert2rhel_inhibitors_before_run():
+    """
+    Conditions that must be True in order to run convert2rhel command.
+    """
+    default_ini_path = "/etc/convert2rhel.ini"
+    custom_ini_path = os.path.expanduser("~/.convert2rhel.ini")
+
+    if os.path.exists(custom_ini_path):
+        raise ProcessError(
+            message="Custom %s was found." % custom_ini_path,
+            report=(
+                "Remove the %s file by running "
+                "'rm -f %s' before running the Task again."
+            )
+            % (custom_ini_path, custom_ini_path),
+        )
+
+    if _check_ini_file_modified():
+        raise ProcessError(
+            message="According to 'rpm -Va' command %s was modified."
+            % default_ini_path,
+            report=(
+                "Either remove the %s file by running "
+                "'rm -f %s' or uninstall convert2rhel by running "
+                "'yum remove convert2rhel' before running the Task again."
+            )
+            % (default_ini_path, default_ini_path),
+        )
+
+
 def find_highest_report_level(actions):
     """
     Gather status codes from messages and result. We are not seeking for
@@ -454,6 +507,7 @@ def main():
     try:
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
+        check_convert2rhel_inhibitors_before_run()
         installed, transaction_id = install_convert2rhel()
         if installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)

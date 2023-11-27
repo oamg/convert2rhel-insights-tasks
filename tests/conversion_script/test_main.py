@@ -10,6 +10,7 @@ from scripts.conversion_script import main, ProcessError
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -29,6 +30,7 @@ def test_main_success_c2r_installed(
     mock_gather_textual_report,
     mock_find_highest_report_level,
     mock_run_convert2rhel,
+    mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_update_insights_inventory,
@@ -38,6 +40,7 @@ def test_main_success_c2r_installed(
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
@@ -56,6 +59,7 @@ def test_main_success_c2r_installed(
 @patch("scripts.conversion_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
@@ -76,6 +80,7 @@ def test_main_inhibited_c2r_installed(
     mock_gather_textual_report,
     mock_find_highest_report_level,
     mock_run_convert2rhel,
+    mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_update_insights_inventory,
@@ -85,6 +90,7 @@ def test_main_inhibited_c2r_installed(
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
@@ -102,6 +108,7 @@ def test_main_inhibited_c2r_installed(
 @patch("scripts.conversion_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
+@patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -114,6 +121,7 @@ def test_main_process_error(
     mock_gather_textual_report,
     mock_find_highest_report_level,
     mock_run_convert2rhel,
+    mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_gather_json_report,
@@ -123,6 +131,7 @@ def test_main_process_error(
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
@@ -136,6 +145,7 @@ def test_main_process_error(
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
+@patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value="failed"))
@@ -148,6 +158,7 @@ def test_main_general_exception(
     mock_gather_textual_report,
     mock_find_highest_report_level,
     mock_run_convert2rhel,
+    mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
 ):
@@ -155,7 +166,77 @@ def test_main_general_exception(
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
+    assert mock_find_highest_report_level.call_count == 0
+    assert mock_gather_textual_report.call_count == 0
+    assert mock_generate_report_message.call_count == 0
+    assert mock_cleanup.call_count == 1
+
+
+# fmt: off
+@patch("__builtin__.open", mock_open(read_data="not json serializable"))
+@patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
+@patch("os.path.exists", return_value=False)
+@patch("scripts.conversion_script._check_ini_file_modified", return_value=True)
+@patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
+@patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("scripts.conversion_script.cleanup", side_effect=Mock())
+# fmt: on
+def test_main_inhibited_ini_modified(
+    mock_cleanup,
+    mock_generate_report_message,
+    mock_gather_textual_report,
+    mock_find_highest_report_level,
+    mock_run_convert2rhel,
+    mock_custom_ini,
+    mock_ini_modified,
+    mock_install_convert2rhel,
+    mock_setup_convert2rhel,
+):
+    main()
+
+    assert mock_setup_convert2rhel.call_count == 1
+    assert mock_install_convert2rhel.call_count == 0
+    assert mock_custom_ini.call_count == 1
+    assert mock_ini_modified.call_count == 1
+    assert mock_run_convert2rhel.call_count == 0
+    assert mock_find_highest_report_level.call_count == 0
+    assert mock_gather_textual_report.call_count == 0
+    assert mock_generate_report_message.call_count == 0
+    assert mock_cleanup.call_count == 1
+
+
+# fmt: off
+@patch("__builtin__.open", mock_open(read_data="not json serializable"))
+@patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
+@patch("os.path.exists", return_value=True)
+@patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
+@patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("scripts.conversion_script.cleanup", side_effect=Mock())
+# fmt: on
+def test_main_inhibited_custom_ini(
+    mock_cleanup,
+    mock_generate_report_message,
+    mock_gather_textual_report,
+    mock_find_highest_report_level,
+    mock_run_convert2rhel,
+    mock_inhibitor_check,
+    mock_install_convert2rhel,
+    mock_setup_convert2rhel,
+):
+    main()
+
+    assert mock_setup_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
+    assert mock_install_convert2rhel.call_count == 0
+    assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
