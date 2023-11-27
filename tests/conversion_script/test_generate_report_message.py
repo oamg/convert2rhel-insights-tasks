@@ -1,5 +1,5 @@
 import pytest
-from scripts.conversion_script import RequiredFile, generate_report_message
+from scripts.conversion_script import generate_report_message
 
 
 @pytest.mark.parametrize(
