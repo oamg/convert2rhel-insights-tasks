@@ -546,9 +546,7 @@ def main():
 
         # Generate report message and transform the raw data into entries for
         # Insights.
-        output.message, output.alert = generate_report_message(
-            highest_level, gpg_key_file
-        )
+        output.message, output.alert = generate_report_message(highest_level)
 
         if "successfully" in output.message:
             gpg_key_file.keep = True
