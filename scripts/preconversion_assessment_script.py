@@ -578,7 +578,7 @@ def main():
                 % (returncode, stdout.rstrip("\n"))
             )
             return
-        
+
         print("Pre-conversion assessment script finish successfully!")
     except ProcessError as exception:
         print(exception.report)
