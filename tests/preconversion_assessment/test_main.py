@@ -180,8 +180,10 @@ def test_main_general_exception(
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_ini_modified(
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -198,7 +200,7 @@ def test_main_inhibited_ini_modified(
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_custom_ini.call_count == 1
-    assert mock_ini_modified.call_count == 1
+    assert mock_ini_modified.call_count == 4
     assert mock_install_convert2rhel.call_count == 0
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
@@ -207,6 +209,7 @@ def test_main_inhibited_ini_modified(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0
 
 
 # fmt: off
@@ -221,8 +224,10 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_custom_ini(
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -237,7 +242,7 @@ def test_main_inhibited_custom_ini(
     main()
 
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_inhibitor_check.call_count == 1
+    assert mock_inhibitor_check.call_count == 4
     assert mock_install_convert2rhel.call_count == 0
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
@@ -246,3 +251,4 @@ def test_main_inhibited_custom_ini(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 2

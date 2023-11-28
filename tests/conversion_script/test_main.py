@@ -11,7 +11,11 @@ from scripts.conversion_script import main, ProcessError, OutputCollector
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.cleanup")
 @patch("scripts.conversion_script.OutputCollector")
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 def test_main_non_eligible_release(
+    mock_update_insights_inventory,
+    mock_archive_analysis_report,
     mock_output_collector,
     mock_cleanup,
     mock_is_non_eligible_releases,
@@ -25,6 +29,8 @@ def test_main_non_eligible_release(
     mock_is_non_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
+    assert mock_archive_analysis_report.call_count == 0
+    mock_update_insights_inventory.assert_called_once()
 
 
 # fmt: off
@@ -46,6 +52,7 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
     mock_archive_analysis_report,
     mock_is_non_eligible_releases,
@@ -78,12 +85,12 @@ def test_main_success_c2r_installed(
     # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
     assert mock_cleanup_pkg_call.call_count == 0
     # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
-    assert mock_cleanup_file_exists_call.call_count == 0
+    assert mock_cleanup_file_exists_call.call_count == 2
     assert mock_cleanup_file_restore_call.call_count == 0
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0
 
 
 # fmt: off
@@ -133,7 +140,7 @@ def test_main_inhibited_c2r_installed(
     assert mock_gather_textual_report.call_count == 1
     assert mock_generate_report_message.call_count == 1
     assert mock_cleanup_pkg_call.call_count == 1
-    assert mock_cleanup_file_exists_call.call_count == 2
+    assert mock_cleanup_file_exists_call.call_count == 4
     assert mock_cleanup_file_restore_call.call_count == 2
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
@@ -222,7 +229,7 @@ def test_main_general_exception(
 ):
     main()
 
-    assert mock_open_func.call_count == 1
+    assert mock_open_func.call_count == 0
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -250,8 +257,12 @@ def test_main_general_exception(
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_ini_modified(
+    mock_update_insights_inventory,
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -271,7 +282,7 @@ def test_main_inhibited_ini_modified(
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 0
     assert mock_custom_ini.call_count == 1
-    assert mock_ini_modified.call_count == 1
+    assert mock_ini_modified.call_count == 4
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
@@ -279,10 +290,12 @@ def test_main_inhibited_ini_modified(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_update_insights_inventory.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0
 
 
 # fmt: off
-@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
+@patch("scripts.conversion_script.gather_json_report", side_effect=Mock(return_value={}))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
 @patch("os.path.exists", return_value=True)
@@ -293,8 +306,12 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_custom_ini(
+    mock_update_insights_inventory,
+    mock_archive_analysis_report,
     mock_is_non_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -309,9 +326,9 @@ def test_main_inhibited_custom_ini(
 ):
     main()
 
-    assert mock_open_func.call_count == 0
+    assert mock_open_func.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_inhibitor_check.call_count == 1
+    assert mock_inhibitor_check.call_count == 3
     assert mock_install_convert2rhel.call_count == 0
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
@@ -320,3 +337,5 @@ def test_main_inhibited_custom_ini(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 2
+    assert mock_update_insights_inventory.call_count == 1

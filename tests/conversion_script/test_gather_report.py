@@ -1,5 +1,5 @@
 import json
-
+import pytest
 from mock import mock_open, patch
 
 from scripts.conversion_script import gather_textual_report, gather_json_report
@@ -30,12 +30,22 @@ def test_gather_json_report(tmpdir):
     assert report_data == {"test": "hi"}
 
 
-def test_gather_json_report_no_content(tmpdir):
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    (
+        (
+            r"{}",
+            {},
+        ),
+        ("not serializable", {}),
+    ),
+)
+def test_gather_json_report_bad_content(content, expected, tmpdir):
     file = tmpdir.join("report.json")
-    file.write(r"{}")
+    file.write(content)
     file = str(file)
     with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
-        assert gather_json_report() == {}
+        assert gather_json_report() == expected
 
 
 def test_gather_json_report_missing_file():

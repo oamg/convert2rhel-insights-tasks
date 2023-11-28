@@ -1,18 +1,7 @@
 import os
-import json
-import pytest
 from mock import patch
 
 from scripts.preconversion_assessment_script import archive_analysis_report
-
-
-@pytest.fixture
-def create_json_report_mock(tmpdir):
-    content = {"test": 1}
-    file = tmpdir.join("report.json")
-    file.write(json.dumps(content))
-
-    return str(file)
 
 
 def test_archive_old_report(create_json_report_mock, tmpdir):

@@ -219,11 +219,15 @@ def gather_json_report():
     if not os.path.exists(C2R_REPORT_FILE):
         return {}
 
-    with open(C2R_REPORT_FILE, "r") as handler:
-        data = json.load(handler)
+    try:
+        with open(C2R_REPORT_FILE, "r") as handler:
+            data = json.load(handler)
 
-        if not data:
-            return {}
+            if not data:
+                return {}
+    except ValueError:
+        # In case it is not a valid JSON content.
+        return {}
 
     return data
 
