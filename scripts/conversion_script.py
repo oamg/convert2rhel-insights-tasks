@@ -49,6 +49,59 @@ class RequiredFile(object):
         self.path = path
         self.host = host
         self.keep = keep
+        self.backup_suffix = ".backup"
+
+    def create(self, data=None):
+        if data is None:
+            # If no data to write supplied, download them from host
+            response = urlopen(self.host)
+            data = response.read()
+        try:
+            directory = os.path.dirname(self.path)
+            if not os.path.exists(directory):
+                print("Creating directory at '%s'" % directory)
+                os.makedirs(directory, mode=0o755)
+
+            print("Writing file to destination: '%s'" % self.path)
+            with open(self.path, mode="w") as handler:
+                handler.write(data)
+                os.chmod(self.path, 0o644)
+        except OSError as err:
+            print(err)
+            return False
+        return True
+
+    def delete(self):
+        try:
+            print("Removing the file '%s' as it was previously downloaded." % self.path)
+            os.remove(self.path)
+        except OSError as err:
+            print(err)
+            return False
+        return True
+
+    def restore(self):
+        """Restores file backup (rename). Returns True if restored, otherwise False."""
+        try:
+            print("Restoring backed up file %s." % (self.path))
+            os.rename(self.path + self.backup_suffix, self.path)
+        except OSError as err:
+            print(err)
+            return False
+        return True
+
+    def backup(self):
+        """Creates backup file (rename). Returns True if backed up, otherwise False."""
+        try:
+            print(
+                "File %s already present on system, backing up to %s."
+                % (self.path, self.path + self.backup_suffix)
+            )
+            os.rename(self.path, self.path + self.backup_suffix)
+        except OSError as err:
+            print(err)
+            return False
+        return True
 
 
 class ProcessError(Exception):
@@ -296,19 +349,8 @@ def setup_convert2rhel(required_files):
     """Setup convert2rhel tool by downloading the required files."""
     print("Downloading required files.")
     for required_file in required_files:
-        _create_or_restore_backup_file(required_file)
-        response = urlopen(required_file.host)
-        data = response.read()
-
-        directory = os.path.dirname(required_file.path)
-        if not os.path.exists(directory):
-            print("Creating directory at '%s'" % directory)
-            os.makedirs(directory, mode=0o755)
-
-        print("Writing file to destination: '%s'" % required_file.path)
-        with open(required_file.path, mode="w") as handler:
-            handler.write(data)
-            os.chmod(required_file.path, 0o644)
+        required_file.backup()
+        required_file.create()
 
 
 # Code taken from
@@ -430,13 +472,8 @@ def cleanup(required_files):
     for required_file in required_files:
         if required_file.keep:
             continue
-        if os.path.exists(required_file.path):
-            print(
-                "Removing the file '%s' as it was previously downloaded."
-                % required_file.path
-            )
-            os.remove(required_file.path)
-        _create_or_restore_backup_file(required_file)
+        required_file.delete()
+        required_file.restore()
 
     for transaction_id in YUM_TRANSACTIONS_TO_UNDO:
         output, returncode = run_subprocess(
@@ -447,23 +484,6 @@ def cleanup(required_files):
                 "Undo of yum transaction with ID %s failed with exit status '%s' and output:\n%s"
                 % (transaction_id, returncode, output)
             )
-
-
-def _create_or_restore_backup_file(required_file):
-    """
-    Either creates or restores backup files (rename in both cases).
-    """
-    suffix = ".backup"
-    if os.path.exists(required_file.path + suffix):
-        print("Restoring backed up file %s." % (required_file.path))
-        os.rename(required_file.path + suffix, required_file.path)
-        return
-    if os.path.exists(required_file.path):
-        print(
-            "File %s already present on system, backing up to %s."
-            % (required_file.path, required_file.path + suffix)
-        )
-        os.rename(required_file.path, required_file.path + ".backup")
 
 
 def _generate_message_key(message, action_id):
@@ -576,6 +596,9 @@ def update_insights_inventory():
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-locals
 def main():
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):
         archive_analysis_report(C2R_REPORT_FILE)

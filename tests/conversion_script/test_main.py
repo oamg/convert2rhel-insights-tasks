@@ -41,7 +41,6 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
-@patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.conversion_script.is_eligible_releases", return_value=True)
@@ -53,7 +52,6 @@ def test_main_success_c2r_installed(
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
-    mock_cleanup_file_restore_call,
     mock_os_exists,
     mock_transform_raw_data,
     mock_gather_textual_report,
@@ -86,8 +84,6 @@ def test_main_success_c2r_installed(
     assert mock_cleanup_pkg_call.call_count == 0
     # 2x for archive
     assert mock_os_exists.call_count == 2
-    # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
-    assert mock_cleanup_file_restore_call.call_count == 0
 
 
 # fmt: off
@@ -104,13 +100,11 @@ def test_main_success_c2r_installed(
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
-@patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_updated(
     mock_cleanup_pkg_call,
-    mock_cleanup_file_restore_call,
     mock_os_exists,
     mock_transform_raw_data,
     mock_gather_textual_report,
@@ -146,8 +140,6 @@ def test_main_success_c2r_updated(
     assert mock_cleanup_pkg_call.call_count == 0
     # 2x for archive
     assert mock_os_exists.call_count == 2
-    # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
-    assert mock_cleanup_file_restore_call.call_count == 0
 
 
 # fmt: off
@@ -161,7 +153,6 @@ def test_main_success_c2r_updated(
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
-@patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.conversion_script.is_eligible_releases", return_value=True)
@@ -173,7 +164,6 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
-    mock_cleanup_file_restore_call,
     mock_os_exists,
     mock_transform_raw_data,
     mock_gather_textual_report,
@@ -203,9 +193,8 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_transform_raw_data.call_count == 1
     assert mock_gather_textual_report.call_count == 0
     assert mock_cleanup_pkg_call.call_count == 1
-    # 2x in cleanup + 2x for archive
-    assert mock_os_exists.call_count == 4
-    assert mock_cleanup_file_restore_call.call_count == 2
+    # 2x for archive
+    assert mock_os_exists.call_count == 2
     assert mock_update_insights_inventory.call_count == 0
 
 
@@ -341,10 +330,10 @@ def test_main_inhibited_ini_modified(
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     assert mock_custom_ini.call_count == 1
     # 2x for archive check + 1 inside in inhibitor check + 1 gather json
     assert mock_os_exists.call_count == 4
+    assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0
@@ -415,7 +404,6 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.conversion_script.transform_raw_data", side_effect=Mock(return_value=""))
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
-@patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
 @patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.conversion_script.is_eligible_releases", return_value=True)
@@ -427,7 +415,6 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
-    mock_cleanup_file_restore_call,
     mock_os_exists,
     mock_transform_raw_data,
     mock_generate_report_message,
@@ -458,7 +445,6 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup_pkg_call.call_count == 1
-    # 2x in cleanup + 2x for archive
-    assert mock_os_exists.call_count == 4
-    assert mock_cleanup_file_restore_call.call_count == 2
+    # 2x for archive
+    assert mock_os_exists.call_count == 2
     assert mock_update_insights_inventory.call_count == 0
