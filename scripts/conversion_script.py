@@ -632,6 +632,7 @@ def main():
             # that's needed because `find_highest_report_level` will sort out
             # the list with the highest priority first.
             output.status = highest_level
+            print(output)
 
             if not output.message:
                 # Generate report message and transform the raw data into

@@ -39,7 +39,7 @@ def test_main_non_eligible_release(
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
 @patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.run_convert2rhel", return_value=("", 0))
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
@@ -59,7 +59,7 @@ def test_main_success_c2r_installed(
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
-    mock_cleanup_file_exists_call,
+    mock_os_exists,
     mock_transform_raw_data,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -73,24 +73,25 @@ def test_main_success_c2r_installed(
 ):
     main()
 
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
+    assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
-    # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
-    assert mock_cleanup_pkg_call.call_count == 1
-    # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
-    assert mock_cleanup_file_exists_call.call_count == 4
-    assert mock_cleanup_file_restore_call.call_count == 2
+    assert mock_gather_textual_report.call_count == 1
     assert mock_transform_raw_data.call_count == 1
-    assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_generate_report_message.call_count == 1
+    # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
+    assert mock_cleanup_pkg_call.call_count == 0
+    # 2x for archive
+    assert mock_os_exists.call_count == 2
+    # NOTE: successful conversion keeps gpg and repo on system (the backup is also kept)
+    assert mock_cleanup_file_restore_call.call_count == 0
 
 
 # fmt: off
@@ -99,7 +100,7 @@ def test_main_success_c2r_installed(
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
-@patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.run_convert2rhel", return_value=("", 0))
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("inhibited", False)))
@@ -116,7 +117,7 @@ def test_main_inhibited_c2r_installed(
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
-    mock_cleanup_file_exists_call,
+    mock_os_exists,
     mock_transform_raw_data,
     mock_generate_report_message,
     mock_gather_textual_report,
@@ -130,31 +131,25 @@ def test_main_inhibited_c2r_installed(
 ):
     main()
 
-    assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
-    assert mock_inhibitor_check.call_count == 1
-    assert mock_run_convert2rhel.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
-    assert mock_gather_json_report.call_count == 1
-    assert mock_find_highest_report_level.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
-    assert mock_cleanup_pkg_call.call_count == 1
-    assert mock_cleanup_file_exists_call.call_count == 4
-    assert mock_cleanup_file_restore_call.call_count == 2
-    assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
+    assert mock_setup_convert2rhel.call_count == 1
+    assert mock_install_convert2rhel.call_count == 1
+    assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
     assert mock_transform_raw_data.call_count == 1
+    assert mock_gather_textual_report.call_count == 1
+    assert mock_generate_report_message.call_count == 1
+    assert mock_cleanup_pkg_call.call_count == 1
+    # 2x in cleanup + 2x for archive
+    assert mock_os_exists.call_count == 4
+    assert mock_cleanup_file_restore_call.call_count == 2
+    assert mock_update_insights_inventory.call_count == 1
 
 
 # fmt: off
-@patch("__builtin__.open", new_callable=mock_open())
 @patch("scripts.conversion_script.gather_json_report", side_effect=None)
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
@@ -183,28 +178,26 @@ def test_main_process_error(
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_gather_json_report,
-    mock_open_func,
 ):
     main()
 
+    # Zero because os.path.exists is not mocked and reports do not exist
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
+    assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_open_func.call_count == 0
-    assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
     assert mock_update_insights_inventory.call_count == 1
 
 
 # fmt: off
-@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.conversion_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
@@ -231,27 +224,25 @@ def test_main_general_exception(
     mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_open_func,
 ):
     main()
 
-    assert mock_open_func.call_count == 0
+    # Zero because os.path.exists is not mocked and reports do not exist
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
+    assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
     assert mock_update_insights_inventory.call_count == 1
 
 
 # fmt: off
-@patch("__builtin__.open", new_callable=mock_open(read_data="not json serializable"))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
 @patch("os.path.exists", return_value=False)
@@ -277,27 +268,26 @@ def test_main_inhibited_ini_modified(
     mock_find_highest_report_level,
     mock_run_convert2rhel,
     mock_custom_ini,
-    mock_ini_modified,
+    mock_os_exists,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_open_func,
 ):
     main()
 
-    assert mock_open_func.call_count == 0
+    assert mock_archive_analysis_report.call_count == 0
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 0
     assert mock_custom_ini.call_count == 1
-    assert mock_ini_modified.call_count == 4
+    # 2x for archive check + 1 inside in inhibitor check + 1 gather json
+    assert mock_os_exists.call_count == 4
+    assert mock_install_convert2rhel.call_count == 0
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
 
 
 # fmt: off
@@ -325,23 +315,24 @@ def test_main_inhibited_custom_ini(
     mock_gather_textual_report,
     mock_find_highest_report_level,
     mock_run_convert2rhel,
-    mock_inhibitor_check,
+    mock_os_exists,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
-    mock_open_func,
+    mock_gather_json_report,
 ):
     main()
 
-    assert mock_open_func.call_count == 1
+    assert mock_archive_analysis_report.call_count == 2
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_non_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
-    assert mock_inhibitor_check.call_count == 3
+    # Twice for archiving reports + 1 inside inhibitor check
+    assert mock_os_exists.call_count == 3
     assert mock_install_convert2rhel.call_count == 0
     assert mock_run_convert2rhel.call_count == 0
+    assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 2
     assert mock_update_insights_inventory.call_count == 1
