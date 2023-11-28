@@ -1,11 +1,10 @@
+import json
 import pytest
-
 from mock import mock_open, patch
 
 from scripts.preconversion_assessment_script import (
     gather_textual_report,
     gather_json_report,
-    ProcessError,
 )
 
 
@@ -24,37 +23,36 @@ def test_gather_textual_report_file_does_not_exists():
     assert report_data == ""
 
 
-def test_gather_json_report():
-    test_content = '{"test": "hi"}'
-    with patch("__builtin__.open", mock_open(read_data=test_content)):
+def test_gather_json_report(tmpdir):
+    file = tmpdir.join("report.jsn")
+    file.write(json.dumps({"test": "hi"}))
+    file = str(file)
+    with patch("scripts.preconversion_assessment_script.C2R_REPORT_FILE", file):
         report_data = gather_json_report()
 
     assert report_data == {"test": "hi"}
 
 
-def test_gather_json_report_no_content(tmpdir):
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    (
+        (
+            r"{}",
+            {},
+        ),
+        ("not serializable", {}),
+    ),
+)
+def test_gather_json_report_bad_content(content, expected, tmpdir):
     file = tmpdir.join("report.json")
-    file.write(r"{}")
+    file.write(content)
     file = str(file)
-    with patch("scripts.preconversion_assessment_script.C2R_REPORT_FILE", file):
-        with pytest.raises(
-            ProcessError,
-            match="The convert2rhel analysis report file '%s' does not contain any JSON data in it."
-            % file,
-        ):
-            gather_json_report()
+    with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
+        assert gather_json_report() == expected
 
 
-def test_gather_json_report_missing_file(tmpdir):
-    file = tmpdir.join("report.json")
-    file = str(file)
-    with patch("scripts.preconversion_assessment_script.C2R_REPORT_FILE", file):
-        with pytest.raises(
-            ProcessError,
-            match=(
-                "The convert2rhel analysis report file '%s' was not found in the system. "
-                "For details, refer to the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-            )
-            % file,
-        ):
-            gather_json_report()
+def test_gather_json_report_missing_file():
+    with patch(
+        "scripts.preconversion_assessment_script.C2R_REPORT_FILE", "/missing/file"
+    ):
+        assert gather_json_report() == {}
