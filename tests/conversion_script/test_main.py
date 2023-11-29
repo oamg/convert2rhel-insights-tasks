@@ -8,7 +8,6 @@ from scripts.conversion_script import main, ProcessError, OutputCollector
 @patch(
     "scripts.conversion_script.get_system_distro_version", return_value=("centos", "7")
 )
-@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.cleanup")
 @patch("scripts.conversion_script.OutputCollector")
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
@@ -18,7 +17,6 @@ def test_main_non_eligible_release(
     mock_archive_analysis_report,
     mock_output_collector,
     mock_cleanup,
-    mock_is_eligible_releases,
     mock_get_system_distro_version,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
@@ -26,7 +24,6 @@ def test_main_non_eligible_release(
     main()
 
     mock_get_system_distro_version.assert_called_once()
-    mock_is_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
     assert mock_archive_analysis_report.call_count == 0

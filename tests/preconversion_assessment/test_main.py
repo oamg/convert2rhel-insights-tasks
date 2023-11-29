@@ -7,18 +7,13 @@ from scripts.preconversion_assessment_script import OutputCollector, main, Proce
 
 @patch(
     "scripts.preconversion_assessment_script.get_system_distro_version",
-    return_value=("centos", "7.9"),
-)
-@patch(
-    "scripts.preconversion_assessment_script.is_eligible_releases",
-    return_value=True,
+    return_value=("centos", "7"),
 )
 @patch("scripts.preconversion_assessment_script.cleanup")
 @patch("scripts.preconversion_assessment_script.OutputCollector")
 def test_main_non_eligible_release(
     mock_output_collector,
     mock_cleanup,
-    mock_is_eligible_releases,
     mock_get_system_distro_version,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
@@ -26,7 +21,6 @@ def test_main_non_eligible_release(
     main()
 
     mock_get_system_distro_version.assert_called_once()
-    mock_is_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
 
