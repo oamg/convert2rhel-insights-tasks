@@ -7,10 +7,10 @@ from scripts.preconversion_assessment_script import OutputCollector, main, Proce
 
 @patch(
     "scripts.preconversion_assessment_script.get_system_distro_version",
-    return_value=("centos", "7"),
+    return_value=("centos", "7.9"),
 )
 @patch(
-    "scripts.preconversion_assessment_script.is_non_eligible_releases",
+    "scripts.preconversion_assessment_script.is_eligible_releases",
     return_value=True,
 )
 @patch("scripts.preconversion_assessment_script.cleanup")
@@ -18,7 +18,7 @@ from scripts.preconversion_assessment_script import OutputCollector, main, Proce
 def test_main_non_eligible_release(
     mock_output_collector,
     mock_cleanup,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
@@ -26,7 +26,7 @@ def test_main_non_eligible_release(
     main()
 
     mock_get_system_distro_version.assert_called_once()
-    mock_is_non_eligible_releases.assert_called_once()
+    mock_is_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
 
@@ -42,13 +42,13 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
 @patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_success(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_transform_raw_data,
@@ -74,7 +74,7 @@ def test_main_success(
     assert mock_cleanup.call_count == 1
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
     assert mock_transform_raw_data.call_count == 1
 
@@ -90,13 +90,13 @@ def test_main_success(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -122,7 +122,7 @@ def test_main_process_error(
     assert mock_cleanup.call_count == 1
     assert mock_open_func.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
 
 
@@ -136,13 +136,13 @@ def test_main_process_error(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -164,7 +164,7 @@ def test_main_general_exception(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
 
 
@@ -179,13 +179,13 @@ def test_main_general_exception(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_ini_modified(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -209,7 +209,7 @@ def test_main_inhibited_ini_modified(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
 
 
@@ -223,13 +223,13 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
-@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.preconversion_assessment_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_custom_ini(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -251,5 +251,5 @@ def test_main_inhibited_custom_ini(
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 2
