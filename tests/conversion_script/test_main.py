@@ -1,6 +1,6 @@
 # pylint: disable=too-many-arguments
 
-from mock import patch, mock_open, Mock
+from mock import patch, Mock
 
 from scripts.conversion_script import main, ProcessError, OutputCollector
 
@@ -8,7 +8,6 @@ from scripts.conversion_script import main, ProcessError, OutputCollector
 @patch(
     "scripts.conversion_script.get_system_distro_version", return_value=("centos", "7")
 )
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.cleanup")
 @patch("scripts.conversion_script.OutputCollector")
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
@@ -18,7 +17,6 @@ def test_main_non_eligible_release(
     mock_archive_analysis_report,
     mock_output_collector,
     mock_cleanup,
-    mock_is_non_eligible_releases,
     mock_get_system_distro_version,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
@@ -26,7 +24,6 @@ def test_main_non_eligible_release(
     main()
 
     mock_get_system_distro_version.assert_called_once()
-    mock_is_non_eligible_releases.assert_called_once()
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
     assert mock_archive_analysis_report.call_count == 0
@@ -48,14 +45,14 @@ def test_main_non_eligible_release(
 @patch("os.path.exists", return_value=False)
 @patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
@@ -75,7 +72,7 @@ def test_main_success_c2r_installed(
 
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -109,11 +106,11 @@ def test_main_success_c2r_installed(
 @patch("os.path.exists", return_value=False)
 @patch("scripts.conversion_script._create_or_restore_backup_file", side_effect=Mock())
 @patch("scripts.conversion_script.run_subprocess", return_value=("", 1))
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 # fmt: on
 def test_main_inhibited_c2r_installed(
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
     mock_cleanup_file_restore_call,
@@ -132,7 +129,7 @@ def test_main_inhibited_c2r_installed(
     main()
 
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -159,15 +156,15 @@ def test_main_inhibited_c2r_installed(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_process_error(
     mock_update_insights_inventory,
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -184,7 +181,7 @@ def test_main_process_error(
     # Zero because os.path.exists is not mocked and reports do not exist
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -206,15 +203,15 @@ def test_main_process_error(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value="failed"))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
     mock_update_insights_inventory,
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -230,7 +227,7 @@ def test_main_general_exception(
     # Zero because os.path.exists is not mocked and reports do not exist
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -252,15 +249,15 @@ def test_main_general_exception(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_ini_modified(
     mock_update_insights_inventory,
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -276,7 +273,7 @@ def test_main_inhibited_ini_modified(
 
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_custom_ini.call_count == 1
     # 2x for archive check + 1 inside in inhibitor check + 1 gather json
@@ -300,15 +297,15 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.conversion_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.conversion_script.generate_report_message", side_effect=Mock(return_value=("", False)))
 @patch("scripts.conversion_script.cleanup", side_effect=Mock())
-@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7"))
-@patch("scripts.conversion_script.is_non_eligible_releases", return_value=False)
+@patch("scripts.conversion_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_custom_ini(
     mock_update_insights_inventory,
     mock_archive_analysis_report,
-    mock_is_non_eligible_releases,
+    mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
@@ -324,7 +321,7 @@ def test_main_inhibited_custom_ini(
 
     assert mock_archive_analysis_report.call_count == 2
     assert mock_get_system_distro_version.call_count == 1
-    assert mock_is_non_eligible_releases.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
     assert mock_setup_convert2rhel.call_count == 1
     # Twice for archiving reports + 1 inside inhibitor check
     assert mock_os_exists.call_count == 3

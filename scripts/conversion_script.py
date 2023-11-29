@@ -165,7 +165,7 @@ def get_system_distro_version():
     return distribution_id, version_id
 
 
-def is_non_eligible_releases(release):
+def is_eligible_releases(release):
     eligible_releases = "7.9"
     return release == eligible_releases if release else False
 
@@ -576,7 +576,7 @@ def main():
     try:
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
-        if dist != "centos" or is_non_eligible_releases(version):
+        if dist != "centos" or not is_eligible_releases(version):
             raise ProcessError(
                 message="Conversion is only supported on CentOS 7.9 distributions.",
                 report='Exiting because distribution="%s" and version="%s"'
