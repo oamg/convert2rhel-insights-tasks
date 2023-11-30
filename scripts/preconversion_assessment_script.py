@@ -19,14 +19,26 @@ STATUS_CODE = {
 # Revert the `STATUS_CODE` dictionary to map number: name instead of name:
 # number as used originally.
 STATUS_CODE_NAME = {number: name for name, number in STATUS_CODE.items()}
+# Log folder path for convert2rhel
 C2R_LOG_FOLDER = "/var/log/convert2rhel"
+# Log file for convert2rhel
+C2R_LOG_FILE = "%s/convert2rhel.log" % C2R_LOG_FOLDER
 # Path to the convert2rhel report json file.
 C2R_REPORT_FILE = "%s/convert2rhel-pre-conversion.json" % C2R_LOG_FOLDER
 # Path to the convert2rhel report textual file.
 C2R_REPORT_TXT_FILE = "%s/convert2rhel-pre-conversion.txt" % C2R_LOG_FOLDER
 # Path to the archive folder for convert2rhel.
 C2R_ARCHIVE_DIR = "%s/archive" % C2R_LOG_FOLDER
+# Set of yum transactions that will be rolled back after the operation is done.
 YUM_TRANSACTIONS_TO_UNDO = set()
+
+# Define regex to look for specific errors in the rollback phase in
+# convert2rhel.
+DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
+    r".*(error|failed|fail|failure|denied|traceback)", flags=re.MULTILINE | re.I
+)
+# Detect the last transaction id in yum.
+LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
 
 
 class RequiredFile(object):
@@ -331,8 +343,7 @@ def _get_last_yum_transaction_id(pkg_name):
         )
         return None
 
-    pattern = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
-    matches = pattern.findall(output)
+    matches = LATEST_YUM_TRANSACTION_PATTERN.findall(output)
     return matches[-1][1] if matches else None
 
 
@@ -527,6 +538,29 @@ def transform_raw_data(raw_data):
 
     # Filter out None values before returning
     return [data for data in new_data if data]
+
+
+def check_for_inhibitors_in_rollback():
+    try:
+        with open(C2R_LOG_FILE, mode="r") as handler:
+            lines = handler.readlines()
+            # Find index of first string in the logs that we care about.
+            start_index = lines.index(
+                "WARNING - Abnormal exit! Performing rollback ..."
+            )
+            # Find index of last string in the logs that we care about.
+            end_index = [
+                i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
+            ][0]
+
+            actual_data = lines[start_index + 1 : end_index]
+            match = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
+            if match:
+                return True
+    except IOError:
+        return False
+
+    return False
 
 
 def main():
