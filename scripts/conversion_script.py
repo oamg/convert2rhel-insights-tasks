@@ -576,6 +576,8 @@ def main():
     ]
 
     convert2rhel_installed = False
+    # Convert2RHEL returncode execution
+    returncode = -1
 
     try:
         # Exit if not CentOS 7.9
@@ -636,7 +638,6 @@ def main():
             # that's needed because `find_highest_report_level` will sort out
             # the list with the highest priority first.
             output.status = highest_level
-            print(output)
 
             if not output.message:
                 # Generate report message and transform the raw data into
@@ -654,13 +655,15 @@ def main():
                     # (if repo existed, the .backup file will remain on system)
                     c2r_repo.keep = True
 
-            if not output.report:
+            if not output.report and returncode != 0:
                 # Try to attach the textual report in the report if we have
                 # json report, otherwise, we would overwrite the report raised
                 # by the exception.
                 output.report = gather_textual_report()
 
-            output.entries = transform_raw_data(data)
+            # Only add entries (report_json) if the returncode is not 0.
+            if returncode != 0:
+                output.entries = transform_raw_data(data)
 
         update_insights_inventory()
 
