@@ -573,6 +573,7 @@ def transform_raw_data(raw_data):
     return [data for data in new_data if data]
 
 
+# pylint: disable=too-many-branches
 def main():
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):

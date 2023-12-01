@@ -593,6 +593,7 @@ def update_insights_inventory():
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 def main():
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):

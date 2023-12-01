@@ -41,6 +41,7 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.check_for_inhibitors_in_rollback", return_value="")
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
     mock_rollback_inhibitor_check,
     mock_archive_analysis_report,
@@ -272,6 +273,7 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.check_for_inhibitors_in_rollback", return_value="rollback error")
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed(
     mock_rollback_inhibitor_check,
     mock_archive_analysis_report,

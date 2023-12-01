@@ -171,6 +171,7 @@ def test_main_success_c2r_updated(
 @patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.check_for_inhibitors_in_rollback", return_value="")
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed(
     mock_rollback_inhibitor_check,
     mock_is_eligible_releases,
@@ -422,6 +423,7 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.conversion_script.is_eligible_releases", return_value=True)
 @patch("scripts.conversion_script.check_for_inhibitors_in_rollback", return_value="rollback error")
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_rollback_errors(
     mock_rollback_inhibitor_check,
     mock_is_eligible_releases,
