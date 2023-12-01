@@ -556,7 +556,7 @@ def main():
             raise ProcessError(
                 message="Pre-conversion analysis is only supported on CentOS 7.9 distributions.",
                 report='Exiting because distribution="%s" and version="%s"'
-                % (dist, version),
+                % (dist.title(), version),
             )
 
         # Setup Convert2RHEL to be executed.
