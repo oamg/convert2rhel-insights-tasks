@@ -102,10 +102,7 @@ class OutputCollector(object):
 
 def check_for_inhibitors_in_rollback():
     """Returns lines with errors in rollback section of c2r log file, or empty string."""
-    print(
-        "Checking content of '%s' for possible rollback problems ..."
-        % C2R_LOG_FILE
-    )
+    print("Checking content of '%s' for possible rollback problems ..." % C2R_LOG_FILE)
     matches = ""
     start_of_rollback_section = "WARNING - Abnormal exit! Performing rollback ..."
     try:
@@ -123,7 +120,10 @@ def check_for_inhibitors_in_rollback():
             matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
             matches = "\n".join(matches)
     except ValueError:
-        print("Failed to find rollback section ('%s') in '%s' file." % (start_of_rollback_section, C2R_LOG_FILE))
+        print(
+            "Failed to find rollback section ('%s') in '%s' file."
+            % (start_of_rollback_section, C2R_LOG_FILE)
+        )
     except IOError:
         print("Failed to read '%s' file.")
     return matches
@@ -640,13 +640,22 @@ def main():
         conversion_successful = returncode == 0
 
         if not conversion_successful:
+            additional_rollback_info = ""
+            rollback_errors = check_for_inhibitors_in_rollback()
+            if rollback_errors:
+                additional_rollback_info = (
+                    "\nHighlighted lines from log file related to rollback errors:\n%s\n"
+                    % rollback_errors
+                )
             output.message = (
                 "An error occurred during the conversion execution. For details, refer to "
                 "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
             )
             output.report = (
-                "convert2rhel execution exited with code %s and output: %s."
-                % (returncode, stdout.rstrip("\n"))
+                "convert2rhel execution exited with code %s"
+                "%s"
+                "Output of failed command: %s"
+                % (returncode, additional_rollback_info, stdout.rstrip("\n"))
             )
             return
 
