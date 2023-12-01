@@ -99,6 +99,35 @@ class OutputCollector(object):
         }
 
 
+def check_for_inhibitors_in_rollback():
+    """Returns lines with errors in rollback section of c2r log file, or None."""
+    print(
+        "Checking content of '%s' for possible rollback problems ..."
+        % C2R_LOG_FILE
+    )
+    try:
+        with open(C2R_LOG_FILE, mode="r") as handler:
+            lines = handler.readlines()
+            # Find index of first string in the logs that we care about.
+            start_index = lines.index(
+                "WARNING - Abnormal exit! Performing rollback ..."
+            )
+            # Find index of last string in the logs that we care about.
+            end_index = [
+                i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
+            ][0]
+
+            actual_data = lines[start_index + 1 : end_index]
+            matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
+            if matches:
+                return "\n".join(matches)
+    except IOError:
+        print("Failed to read '%s' file.")
+        return
+
+    return
+
+
 def _check_ini_file_modified():
     rpm_va_output, ini_file_not_modified = run_subprocess(
         ["/usr/bin/rpm", "-Va", "convert2rhel"]
@@ -128,6 +157,10 @@ def check_convert2rhel_inhibitors_before_run():
     """
     default_ini_path = "/etc/convert2rhel.ini"
     custom_ini_path = os.path.expanduser("~/.convert2rhel.ini")
+    print(
+        "Checking that '%s' wasn't modified and '%s' doesn't exist ..."
+        % (default_ini_path, custom_ini_path)
+    )
 
     if os.path.exists(custom_ini_path):
         raise ProcessError(
@@ -538,29 +571,6 @@ def transform_raw_data(raw_data):
 
     # Filter out None values before returning
     return [data for data in new_data if data]
-
-
-def check_for_inhibitors_in_rollback():
-    try:
-        with open(C2R_LOG_FILE, mode="r") as handler:
-            lines = handler.readlines()
-            # Find index of first string in the logs that we care about.
-            start_index = lines.index(
-                "WARNING - Abnormal exit! Performing rollback ..."
-            )
-            # Find index of last string in the logs that we care about.
-            end_index = [
-                i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
-            ][0]
-
-            actual_data = lines[start_index + 1 : end_index]
-            match = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
-            if match:
-                return True
-    except IOError:
-        return False
-
-    return False
 
 
 def main():
