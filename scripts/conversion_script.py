@@ -551,6 +551,8 @@ def update_insights_inventory():
     print("System registered with insights-client successfully.")
 
 
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 def main():
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):
@@ -573,6 +575,8 @@ def main():
         c2r_repo,
     ]
 
+    convert2rhel_installed = False
+
     try:
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
@@ -586,8 +590,8 @@ def main():
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
         check_convert2rhel_inhibitors_before_run()
-        installed, transaction_id = install_convert2rhel()
-        if installed:
+        convert2rhel_installed, transaction_id = install_convert2rhel()
+        if convert2rhel_installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         stdout, returncode = run_convert2rhel()
@@ -644,7 +648,8 @@ def main():
 
                     # NOTE: When c2r statistics on insights are not reliant on rpm being installed
                     # remove below line (=decide only based on install_convert2rhel() result)
-                    YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+                    if convert2rhel_installed:
+                        YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
                     # NOTE: Keep always because added/updated pkg is also kept
                     # (if repo existed, the .backup file will remain on system)
                     c2r_repo.keep = True

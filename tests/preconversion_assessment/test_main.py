@@ -40,7 +40,7 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
 # fmt: on
-def test_main_success(
+def test_main_success_c2r_installed(
     mock_archive_analysis_report,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
