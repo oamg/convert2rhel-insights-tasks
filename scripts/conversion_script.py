@@ -576,8 +576,8 @@ def main():
     ]
 
     convert2rhel_installed = False
-    # Convert2RHEL returncode execution
-    returncode = -1
+    # Flag that indicate if the conversion was successful or not.
+    conversion_successful = False
 
     try:
         # Exit if not CentOS 7.9
@@ -597,8 +597,9 @@ def main():
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         stdout, returncode = run_convert2rhel()
+        conversion_successful = returncode == 0
 
-        if returncode != 0:
+        if not conversion_successful:
             output.message = (
                 "An error occurred during the conversion execution. For details, refer to "
                 "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
@@ -655,14 +656,14 @@ def main():
                     # (if repo existed, the .backup file will remain on system)
                     c2r_repo.keep = True
 
-            if not output.report and returncode != 0:
+            if not output.report and not conversion_successful:
                 # Try to attach the textual report in the report if we have
                 # json report, otherwise, we would overwrite the report raised
                 # by the exception.
                 output.report = gather_textual_report()
 
             # Only add entries (report_json) if the returncode is not 0.
-            if returncode != 0:
+            if not conversion_successful:
                 output.entries = transform_raw_data(data)
 
         update_insights_inventory()
