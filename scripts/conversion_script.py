@@ -419,7 +419,7 @@ def cleanup(required_files):
 
     for transaction_id in YUM_TRANSACTIONS_TO_UNDO:
         output, returncode = run_subprocess(
-            ["/usr/bin/yum", "history", "undo", transaction_id],
+            ["/usr/bin/yum", "history", "undo", "-y", transaction_id],
         )
         if returncode:
             print(
