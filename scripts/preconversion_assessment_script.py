@@ -152,7 +152,7 @@ def get_system_distro_version():
             if match:
                 # Split and get the first position, which will contain the system
                 # name.
-                distribution_id = match.group(1).split()[0].lower()
+                distribution_id = match.group(1).lower()
 
             match = re.search(r".+?(\d+)\.(\d+)\D?", data)
             if match:
@@ -552,11 +552,11 @@ def main():
     try:
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
-        if dist != "centos" or not is_eligible_releases(version):
+        if not dist.startswith("centos") or not is_eligible_releases(version):
             raise ProcessError(
                 message="Pre-conversion analysis is only supported on CentOS 7.9 distributions.",
                 report='Exiting because distribution="%s" and version="%s"'
-                % (dist, version),
+                % (dist.title(), version),
             )
 
         # Setup Convert2RHEL to be executed.
