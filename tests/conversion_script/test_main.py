@@ -152,7 +152,6 @@ def test_main_success_c2r_updated(
     assert mock_cleanup_file_restore_call.call_count == 0
 
 
-
 # fmt: off
 @patch("scripts.conversion_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.conversion_script.update_insights_inventory", side_effect=Mock())

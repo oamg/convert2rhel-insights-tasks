@@ -551,6 +551,8 @@ def update_insights_inventory():
     print("System registered with insights-client successfully.")
 
 
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 def main():
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):
