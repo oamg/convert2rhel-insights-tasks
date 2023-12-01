@@ -47,7 +47,7 @@ def test_gather_json_report_bad_content(content, expected, tmpdir):
     file = tmpdir.join("report.json")
     file.write(content)
     file = str(file)
-    with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
+    with patch("scripts.preconversion_assessment_script.C2R_REPORT_FILE", file):
         assert gather_json_report() == expected
 
 

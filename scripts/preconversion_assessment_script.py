@@ -100,18 +100,19 @@ class OutputCollector(object):
 
 
 def check_for_inhibitors_in_rollback():
-    """Returns lines with errors in rollback section of c2r log file, or None."""
+    """Returns lines with errors in rollback section of c2r log file, or empty string."""
     print(
         "Checking content of '%s' for possible rollback problems ..."
         % C2R_LOG_FILE
     )
+    matches = ""
+    start_of_rollback_section = "WARNING - Abnormal exit! Performing rollback ..."
     try:
         with open(C2R_LOG_FILE, mode="r") as handler:
-            lines = handler.readlines()
+            lines = [line.strip() for line in handler.readlines()]
             # Find index of first string in the logs that we care about.
-            start_index = lines.index(
-                "WARNING - Abnormal exit! Performing rollback ..."
-            )
+            print(lines)
+            start_index = lines.index(start_of_rollback_section)
             # Find index of last string in the logs that we care about.
             end_index = [
                 i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
@@ -119,13 +120,12 @@ def check_for_inhibitors_in_rollback():
 
             actual_data = lines[start_index + 1 : end_index]
             matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
-            if matches:
-                return "\n".join(matches)
+            matches = "\n".join(matches)
+    except ValueError:
+        print("Failed to find rollback section ('%s') in '%s' file." % (start_of_rollback_section, C2R_LOG_FILE))
     except IOError:
         print("Failed to read '%s' file.")
-        return
-
-    return
+    return matches
 
 
 def _check_ini_file_modified():
