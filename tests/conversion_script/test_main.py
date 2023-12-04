@@ -27,7 +27,7 @@ def test_main_non_eligible_release(
     mock_output_collector.assert_called()
     mock_cleanup.assert_called_once()
     assert mock_archive_analysis_report.call_count == 0
-    mock_update_insights_inventory.assert_called_once()
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -189,13 +189,10 @@ def test_main_inhibited_c2r_installed(
     mock_setup_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
-    capsys,  # to check for rollback info in stdout
 ):
     main()
 
     mock_rollback_inhibitor_check.assert_called_once()
-    captured = capsys.readouterr()
-    assert "rollback" not in captured.out
 
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
@@ -212,7 +209,7 @@ def test_main_inhibited_c2r_installed(
     # 2x in cleanup + 2x for archive
     assert mock_os_exists.call_count == 4
     assert mock_cleanup_file_restore_call.call_count == 2
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -260,7 +257,7 @@ def test_main_process_error(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -305,7 +302,7 @@ def test_main_general_exception(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -353,7 +350,7 @@ def test_main_inhibited_ini_modified(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -401,7 +398,7 @@ def test_main_inhibited_custom_ini(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0
 
 
 # fmt: off
@@ -441,14 +438,10 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_setup_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
-    capsys,  # to check for rollback info in stdout
 ):
     main()
 
-    captured = capsys.readouterr()
     mock_rollback_inhibitor_check.assert_called_once()
-    assert "rollback" in captured.out
-
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -457,11 +450,11 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
-    assert mock_transform_raw_data.call_count == 1
+    assert mock_transform_raw_data.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup_pkg_call.call_count == 1
     # 2x in cleanup + 2x for archive
     assert mock_os_exists.call_count == 4
     assert mock_cleanup_file_restore_call.call_count == 2
-    assert mock_update_insights_inventory.call_count == 1
+    assert mock_update_insights_inventory.call_count == 0

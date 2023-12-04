@@ -35,7 +35,8 @@ YUM_TRANSACTIONS_TO_UNDO = set()
 # Define regex to look for specific errors in the rollback phase in
 # convert2rhel.
 DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
-    r".*(error|failed|fail|failure|denied|traceback)", flags=re.MULTILINE | re.I
+    r".*(error|failed|fail|failure|denied|traceback|couldn't find a backup)",
+    flags=re.MULTILINE | re.I,
 )
 # Detect the last transaction id in yum.
 LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
@@ -594,6 +595,11 @@ def main():
         ),
     ]
 
+    # Flag that indicate if the conversion was successful or not.
+    conversion_successful = False
+    # String to hold any errors that happened during rollback.
+    rollback_errors = ""
+
     try:
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
@@ -612,6 +618,7 @@ def main():
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         stdout, returncode = run_convert2rhel()
+        conversion_successful = returncode == 0
         rollback_errors = check_for_inhibitors_in_rollback()
 
         # Returncode other than 0 can happen in two states in analysis mode:
@@ -621,7 +628,7 @@ def main():
         # In any case, we should treat this as separate and give it higher
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
-        if returncode != 0:
+        if not conversion_successful:
             raise ProcessError(
                 message=(
                     "An error occurred during the pre-conversion execution. For details, refer to "
@@ -639,11 +646,12 @@ def main():
         if rollback_errors:
             raise ProcessError(
                 message=(
-                    "During convert2rhel rollback, an error was identified. For details, refer to "
-                    "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+                    "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
+                    "Recover the system from a backup or contact Red Hat support."
                 ),
                 report=(
-                    "\nHighlighted lines from log file related to rollback errors:\n%s\n"
+                    "\nFor details, refer to the convert2rhel log file on the host at "
+                    "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
                 )
                 % rollback_errors,
             )
@@ -689,7 +697,8 @@ def main():
                 # exception.
                 output.report = gather_textual_report()
 
-            output.entries = transform_raw_data(data)
+            if not rollback_errors:
+                output.entries = transform_raw_data(data)
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)

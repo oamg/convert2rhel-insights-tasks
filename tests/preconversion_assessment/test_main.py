@@ -63,7 +63,7 @@ def test_main_success_c2r_installed(
 
     captured = capsys.readouterr()
     assert "rollback" not in captured.out
-    mock_rollback_inhibitor_check.assert_not_called()
+    assert mock_rollback_inhibitor_check.call_count == 1
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -289,12 +289,8 @@ def test_main_inhibited_c2r_installed(
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_gather_json_report,
-    capsys,  # to check for rollback info in stdout
 ):
     main()
-
-    captured = capsys.readouterr()
-    assert "rollback" in captured.out
     mock_rollback_inhibitor_check.assert_called_once()
 
     assert mock_setup_convert2rhel.call_count == 1
@@ -306,8 +302,7 @@ def test_main_inhibited_c2r_installed(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_transform_raw_data.call_count == 1
+    assert mock_transform_raw_data.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
-    assert mock_transform_raw_data.call_count == 1

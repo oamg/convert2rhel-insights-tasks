@@ -64,3 +64,26 @@ def test_io_error(mock_open_fn):
     result = check_for_inhibitors_in_rollback()
     mock_open_fn.assert_called_once()
     assert result == ""
+
+
+@patch(
+    "__builtin__.open",
+    new_callable=mock_open,
+    read_data="\n".join(
+        [
+            "Some lines before the warning",
+            "WARNING - Abnormal exit! Performing rollback ...",
+            "WARNING - Couldn't find a backup for centos-logos-70.0.6-3.el7.centos.noarch package.",
+            "WARNING - Couldn't find a backup for centos-release-7-9.2009.1.el7.centos.x86_64 package.",
+            "Pre-conversion analysis report",
+            "Some lines after the report",
+        ]
+    ),
+)
+def test_match_backup_warning(mock_open_fn):
+    result = check_for_inhibitors_in_rollback()
+    mock_open_fn.assert_called_once()
+    assert (
+        result
+        == "WARNING - Couldn't find a backup for centos-logos-70.0.6-3.el7.centos.noarch package.\nWARNING - Couldn't find a backup for centos-release-7-9.2009.1.el7.centos.x86_64 package."
+    )
