@@ -109,7 +109,6 @@ def check_for_inhibitors_in_rollback():
         with open(C2R_LOG_FILE, mode="r") as handler:
             lines = [line.strip() for line in handler.readlines()]
             # Find index of first string in the logs that we care about.
-            print(lines)
             start_index = lines.index(start_of_rollback_section)
             # Find index of last string in the logs that we care about.
             end_index = [
@@ -126,6 +125,7 @@ def check_for_inhibitors_in_rollback():
         )
     except IOError:
         print("Failed to read '%s' file.")
+
     return matches
 
 
@@ -639,26 +639,41 @@ def main():
 
         stdout, returncode = run_convert2rhel()
         conversion_successful = returncode == 0
+        rollback_errors = check_for_inhibitors_in_rollback()
 
+        # Returncode other than 0 can happen in two states in analysis mode:
+        #  1. In case there is another instance of convert2rhel running
+        #  2. In case of KeyboardInterrupt, SystemExit (misplaced by mistaked),
+        #     Exception not catched before.
+        # In any case, we should treat this as separate and give it higher
+        # priority. In case the returncode was non zero, we don't care about
+        # the rest and we should jump to the exception handling immediatly
         if not conversion_successful:
-            additional_rollback_info = ""
-            rollback_errors = check_for_inhibitors_in_rollback()
-            if rollback_errors:
-                additional_rollback_info = (
+            raise ProcessError(
+                message=(
+                    "An error occurred during the pre-conversion execution. For details, refer to "
+                    "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+                ),
+                report=(
+                    "convert2rhel execution exited with code %s"
+                    "Output of failed command: %s" % (returncode, stdout.rstrip("\n"))
+                ),
+            )
+
+        # Check if there are any inhibitors in the rollback logging. This is
+        # necessary in the case where the analysis was done successfully, but
+        # there was an error in the rollback log.
+        if rollback_errors:
+            raise ProcessError(
+                message=(
+                    "During convert2rhel rollback, an error was identified. For details, refer to "
+                    "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+                ),
+                report=(
                     "\nHighlighted lines from log file related to rollback errors:\n%s\n"
-                    % rollback_errors
                 )
-            output.message = (
-                "An error occurred during the conversion execution. For details, refer to "
-                "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+                % rollback_errors,
             )
-            output.report = (
-                "convert2rhel execution exited with code %s"
-                "%s"
-                "Output of failed command: %s"
-                % (returncode, additional_rollback_info, stdout.rstrip("\n"))
-            )
-            return
 
         print("Conversion script finish successfully!")
     except ProcessError as exception:
@@ -716,7 +731,8 @@ def main():
             if not conversion_successful:
                 output.entries = transform_raw_data(data)
 
-        update_insights_inventory()
+            if conversion_successful:
+                update_insights_inventory()
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)

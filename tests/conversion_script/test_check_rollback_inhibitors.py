@@ -27,6 +27,25 @@ def test_rollback_with_errors(mock_open_fn):
 @patch(
     "__builtin__.open",
     new_callable=mock_open,
+    read_data="\n".join(
+        [
+            "Some lines before the warning",
+            "WARNING - Abnormal exit! Performing rollback ...",
+            "test-blabla",
+            "Pre-conversion analysis report",
+            "Some lines after the report",
+        ]
+    ),
+)
+def test_rollback_with_no_matches(mock_open_fn):
+    result = check_for_inhibitors_in_rollback()
+    mock_open_fn.assert_called_once()
+    assert result == ""
+
+
+@patch(
+    "__builtin__.open",
+    new_callable=mock_open,
     read_data="".join(
         [
             "No warning or report",
