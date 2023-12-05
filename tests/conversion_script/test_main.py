@@ -204,7 +204,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_find_highest_report_level.call_count == 1
     assert mock_transform_raw_data.call_count == 1
     assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
+    assert mock_generate_report_message.call_count == 1
     assert mock_cleanup_pkg_call.call_count == 1
     # 2x in cleanup + 2x for archive
     assert mock_os_exists.call_count == 4
@@ -255,7 +255,7 @@ def test_main_process_error(
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
     assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
+    assert mock_generate_report_message.call_count == 1
     assert mock_cleanup.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
 
@@ -449,7 +449,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
-    assert mock_find_highest_report_level.call_count == 1
+    assert mock_find_highest_report_level.call_count == 0
     assert mock_transform_raw_data.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
