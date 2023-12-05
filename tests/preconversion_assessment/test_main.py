@@ -30,7 +30,7 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.preconversion_assessment_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.preconversion_assessment_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.preconversion_assessment_script.run_convert2rhel", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.run_convert2rhel", return_value=("", 0))
 @patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
 @patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
@@ -39,8 +39,11 @@ def test_main_non_eligible_release(
 @patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
 @patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.check_for_inhibitors_in_rollback", return_value="")
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
+    mock_rollback_inhibitor_check,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
@@ -54,8 +57,13 @@ def test_main_success_c2r_installed(
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_gather_json_report,
+    capsys,  # to check for rollback info in stdout
 ):
     main()
+
+    captured = capsys.readouterr()
+    assert "rollback" not in captured.out
+    assert mock_rollback_inhibitor_check.call_count == 1
 
     assert mock_setup_convert2rhel.call_count == 1
     assert mock_install_convert2rhel.call_count == 1
@@ -63,8 +71,8 @@ def test_main_success_c2r_installed(
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_generate_report_message.call_count == 0
+    assert mock_gather_textual_report.call_count == 1
+    assert mock_generate_report_message.call_count == 1
     assert mock_cleanup.call_count == 1
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
@@ -247,3 +255,54 @@ def test_main_inhibited_custom_ini(
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_archive_analysis_report.call_count == 2
+
+
+# fmt: off
+@patch("scripts.preconversion_assessment_script.gather_json_report", side_effect=[{"actions": []}])
+@patch("scripts.preconversion_assessment_script.setup_convert2rhel", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.install_convert2rhel", return_value=(False, 1))
+@patch("scripts.preconversion_assessment_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("scripts.preconversion_assessment_script.run_convert2rhel", return_value=("", 1))
+@patch("scripts.preconversion_assessment_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
+@patch("scripts.preconversion_assessment_script.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("scripts.preconversion_assessment_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
+@patch("scripts.preconversion_assessment_script.transform_raw_data", side_effect=Mock(return_value=""))
+@patch("scripts.preconversion_assessment_script.cleanup", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("scripts.preconversion_assessment_script.is_eligible_releases", return_value=True)
+@patch("scripts.preconversion_assessment_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.preconversion_assessment_script.check_for_inhibitors_in_rollback", return_value="rollback error")
+# fmt: on
+# pylint: disable=too-many-locals
+def test_main_inhibited_c2r_installed_rollback_errors(
+    mock_rollback_inhibitor_check,
+    mock_archive_analysis_report,
+    mock_is_eligible_releases,
+    mock_get_system_distro_version,
+    mock_cleanup,
+    mock_transform_raw_data,
+    mock_generate_report_message,
+    mock_gather_textual_report,
+    mock_find_highest_report_level,
+    mock_run_convert2rhel,
+    mock_inhibitor_check,
+    mock_install_convert2rhel,
+    mock_setup_convert2rhel,
+    mock_gather_json_report,
+):
+    main()
+    mock_rollback_inhibitor_check.assert_called_once()
+
+    assert mock_setup_convert2rhel.call_count == 1
+    assert mock_install_convert2rhel.call_count == 1
+    assert mock_inhibitor_check.call_count == 1
+    assert mock_run_convert2rhel.call_count == 1
+    assert mock_gather_json_report.call_count == 1
+    assert mock_find_highest_report_level.call_count == 1
+    assert mock_gather_textual_report.call_count == 0
+    assert mock_generate_report_message.call_count == 0
+    assert mock_cleanup.call_count == 1
+    assert mock_transform_raw_data.call_count == 0
+    assert mock_get_system_distro_version.call_count == 1
+    assert mock_is_eligible_releases.call_count == 1
+    assert mock_archive_analysis_report.call_count == 0

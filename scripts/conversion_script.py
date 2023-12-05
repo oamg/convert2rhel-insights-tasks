@@ -19,14 +19,27 @@ STATUS_CODE = {
 # Revert the `STATUS_CODE` dictionary to map number: name instead of name:
 # number as used originally.
 STATUS_CODE_NAME = {number: name for name, number in STATUS_CODE.items()}
-_C2R_LOG_FOLDER = "/var/log/convert2rhel"
+# Log folder path for convert2rhel
+C2R_LOG_FOLDER = "/var/log/convert2rhel"
+# Log file for convert2rhel
+C2R_LOG_FILE = "%s/convert2rhel.log" % C2R_LOG_FOLDER
 # Path to the convert2rhel report json file.
-C2R_REPORT_FILE = "%s/convert2rhel-pre-conversion.json" % _C2R_LOG_FOLDER
+C2R_REPORT_FILE = "%s/convert2rhel-pre-conversion.json" % C2R_LOG_FOLDER
 # Path to the convert2rhel report textual file.
-C2R_REPORT_TXT_FILE = "%s/convert2rhel-pre-conversion.txt" % _C2R_LOG_FOLDER
+C2R_REPORT_TXT_FILE = "%s/convert2rhel-pre-conversion.txt" % C2R_LOG_FOLDER
 # Path to the archive folder for convert2rhel.
-C2R_ARCHIVE_DIR = "%s/archive" % _C2R_LOG_FOLDER
+C2R_ARCHIVE_DIR = "%s/archive" % C2R_LOG_FOLDER
+# Set of yum transactions that will be rolled back after the operation is done.
 YUM_TRANSACTIONS_TO_UNDO = set()
+
+# Define regex to look for specific errors in the rollback phase in
+# convert2rhel.
+DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
+    r".*(error|fail|denied|traceback|couldn't find a backup)",
+    flags=re.MULTILINE | re.I,
+)
+# Detect the last transaction id in yum.
+LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
 
 
 class RequiredFile(object):
@@ -86,6 +99,35 @@ class OutputCollector(object):
             "report": self.report,
             "report_json": self.report_json,
         }
+
+
+def check_for_inhibitors_in_rollback():
+    """Returns lines with errors in rollback section of c2r log file, or empty string."""
+    print("Checking content of '%s' for possible rollback problems ..." % C2R_LOG_FILE)
+    matches = ""
+    start_of_rollback_section = "WARNING - Abnormal exit! Performing rollback ..."
+    try:
+        with open(C2R_LOG_FILE, mode="r") as handler:
+            lines = [line.strip() for line in handler.readlines()]
+            # Find index of first string in the logs that we care about.
+            start_index = lines.index(start_of_rollback_section)
+            # Find index of last string in the logs that we care about.
+            end_index = [
+                i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
+            ][0]
+
+            actual_data = lines[start_index + 1 : end_index]
+            matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
+            matches = "\n".join(matches)
+    except ValueError:
+        print(
+            "Failed to find rollback section ('%s') in '%s' file."
+            % (start_of_rollback_section, C2R_LOG_FILE)
+        )
+    except IOError:
+        print("Failed to read '%s' file.")
+
+    return matches
 
 
 def _check_ini_file_modified():
@@ -339,8 +381,7 @@ def _get_last_yum_transaction_id(pkg_name):
         )
         return None
 
-    pattern = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
-    matches = pattern.findall(output)
+    matches = LATEST_YUM_TRANSACTION_PATTERN.findall(output)
     return matches[-1][1] if matches else None
 
 
@@ -553,6 +594,7 @@ def update_insights_inventory():
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 def main():
     """Main entrypoint for the script."""
     if os.path.exists(C2R_REPORT_FILE):
@@ -578,6 +620,8 @@ def main():
     convert2rhel_installed = False
     # Flag that indicate if the conversion was successful or not.
     conversion_successful = False
+    # String to hold any errors that happened during rollback.
+    rollback_errors = ""
 
     try:
         # Exit if not CentOS 7.9
@@ -598,19 +642,45 @@ def main():
 
         stdout, returncode = run_convert2rhel()
         conversion_successful = returncode == 0
+        rollback_errors = check_for_inhibitors_in_rollback()
 
+        # Returncode other than 0 can happen in two states in analysis mode:
+        #  1. In case there is another instance of convert2rhel running
+        #  2. In case of KeyboardInterrupt, SystemExit (misplaced by mistaked),
+        #     Exception not catched before.
+        # In any case, we should treat this as separate and give it higher
+        # priority. In case the returncode was non zero, we don't care about
+        # the rest and we should jump to the exception handling immediatly
         if not conversion_successful:
-            output.message = (
-                "An error occurred during the conversion execution. For details, refer to "
-                "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-            )
-            output.report = (
-                "convert2rhel execution exited with code %s and output: %s."
-                % (returncode, stdout.rstrip("\n"))
-            )
-            return
+            # Check if there are any inhibitors in the rollback logging. This is
+            # necessary in the case where the analysis was done successfully, but
+            # there was an error in the rollback log.
+            if rollback_errors:
+                raise ProcessError(
+                    message=(
+                        "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
+                        "Recover the system from a backup or contact Red Hat support."
+                    ),
+                    report=(
+                        "\nFor details, refer to the convert2rhel log file on the host at "
+                        "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
+                    )
+                    % rollback_errors,
+                )
 
-        print("Conversion script finish successfully!")
+            raise ProcessError(
+                message=(
+                    "An error occurred during the pre-conversion analysis. For details, refer to "
+                    "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
+                ),
+                report=(
+                    "convert2rhel exited with code %s"
+                    "Output of the failed command: %s"
+                    % (returncode, stdout.rstrip("\n"))
+                ),
+            )
+
+        print("Conversion script finished successfully!")
     except ProcessError as exception:
         print(exception.report)
         output = OutputCollector(
@@ -662,11 +732,14 @@ def main():
                 # by the exception.
                 output.report = gather_textual_report()
 
-            # Only add entries (report_json) if the returncode is not 0.
-            if not conversion_successful:
+            # Only add entries (report_json) if the returncode is not 0 and
+            # there are no rollback errors.
+            if not conversion_successful and not rollback_errors:
                 output.entries = transform_raw_data(data)
 
-        update_insights_inventory()
+            # Only call insights to update inventory on successful conversion.
+            if conversion_successful:
+                update_insights_inventory()
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)
