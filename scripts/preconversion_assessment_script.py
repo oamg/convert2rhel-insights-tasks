@@ -636,7 +636,8 @@ def main():
                 ),
                 report=(
                     "convert2rhel exited with code %s"
-                    "Output of the failed command: %s" % (returncode, stdout.rstrip("\n"))
+                    "Output of the failed command: %s"
+                    % (returncode, stdout.rstrip("\n"))
                 ),
             )
 
