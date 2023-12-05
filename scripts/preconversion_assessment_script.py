@@ -618,7 +618,7 @@ def main():
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         stdout, returncode = run_convert2rhel()
-        conversion_successful = returncode == 0
+        preconversion_successful = returncode == 0
         rollback_errors = check_for_inhibitors_in_rollback()
 
         # Returncode other than 0 can happen in two states in analysis mode:
@@ -628,7 +628,7 @@ def main():
         # In any case, we should treat this as separate and give it higher
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
-        if not conversion_successful:
+        if not preconversion_successful:
             raise ProcessError(
                 message=(
                     "An error occurred during the pre-conversion analysis. For details, refer to "

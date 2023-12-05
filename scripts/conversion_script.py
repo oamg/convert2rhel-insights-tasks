@@ -652,6 +652,22 @@ def main():
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
         if not conversion_successful:
+            # Check if there are any inhibitors in the rollback logging. This is
+            # necessary in the case where the analysis was done successfully, but
+            # there was an error in the rollback log.
+            if rollback_errors:
+                raise ProcessError(
+                    message=(
+                        "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
+                        "Recover the system from a backup or contact Red Hat support."
+                    ),
+                    report=(
+                        "\nFor details, refer to the convert2rhel log file on the host at "
+                        "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
+                    )
+                    % rollback_errors,
+                )
+
             raise ProcessError(
                 message=(
                     "An error occurred during the pre-conversion analysis. For details, refer to "
@@ -662,22 +678,6 @@ def main():
                     "Output of the failed command: %s"
                     % (returncode, stdout.rstrip("\n"))
                 ),
-            )
-
-        # Check if there are any inhibitors in the rollback logging. This is
-        # necessary in the case where the analysis was done successfully, but
-        # there was an error in the rollback log.
-        if rollback_errors:
-            raise ProcessError(
-                message=(
-                    "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
-                    "Recover the system from a backup or contact Red Hat support."
-                ),
-                report=(
-                    "\nFor details, refer to the convert2rhel log file on the host at "
-                    "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
-                )
-                % rollback_errors,
             )
 
         print("Conversion script finished successfully!")
