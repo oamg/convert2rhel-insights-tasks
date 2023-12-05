@@ -274,7 +274,7 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.preconversion_assessment_script.check_for_inhibitors_in_rollback", return_value="rollback error")
 # fmt: on
 # pylint: disable=too-many-locals
-def test_main_inhibited_c2r_installed(
+def test_main_inhibited_c2r_installed_rollback_errors(
     mock_rollback_inhibitor_check,
     mock_archive_analysis_report,
     mock_is_eligible_releases,

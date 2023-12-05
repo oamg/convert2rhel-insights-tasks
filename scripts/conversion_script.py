@@ -35,7 +35,7 @@ YUM_TRANSACTIONS_TO_UNDO = set()
 # Define regex to look for specific errors in the rollback phase in
 # convert2rhel.
 DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
-    r".*(error|failed|fail|failure|denied|traceback|couldn't find a backup)",
+    r".*(error|fail|denied|traceback|couldn't find a backup)",
     flags=re.MULTILINE | re.I,
 )
 # Detect the last transaction id in yum.
@@ -654,12 +654,12 @@ def main():
         if not conversion_successful:
             raise ProcessError(
                 message=(
-                    "An error occurred during the pre-conversion execution. For details, refer to "
+                    "An error occurred during the pre-conversion analysis. For details, refer to "
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
                 ),
                 report=(
-                    "convert2rhel execution exited with code %s"
-                    "Output of failed command: %s" % (returncode, stdout.rstrip("\n"))
+                    "convert2rhel exited with code %s"
+                    "Output of the failed command: %s" % (returncode, stdout.rstrip("\n"))
                 ),
             )
 
@@ -679,7 +679,7 @@ def main():
                 % rollback_errors,
             )
 
-        print("Conversion script finish successfully!")
+        print("Conversion script finished successfully!")
     except ProcessError as exception:
         print(exception.report)
         output = OutputCollector(

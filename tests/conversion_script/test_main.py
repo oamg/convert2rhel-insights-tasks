@@ -172,7 +172,7 @@ def test_main_success_c2r_updated(
 @patch("scripts.conversion_script.check_for_inhibitors_in_rollback", return_value="")
 # fmt: on
 # pylint: disable=too-many-locals
-def test_main_inhibited_c2r_installed(
+def test_main_inhibited_c2r_installed_no_rollback_err(
     mock_rollback_inhibitor_check,
     mock_is_eligible_releases,
     mock_get_system_distro_version,

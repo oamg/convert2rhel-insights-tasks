@@ -596,7 +596,7 @@ def main():
     ]
 
     # Flag that indicate if the conversion was successful or not.
-    conversion_successful = False
+    preconversion_successful = False
     # String to hold any errors that happened during rollback.
     rollback_errors = ""
 
@@ -631,12 +631,12 @@ def main():
         if not conversion_successful:
             raise ProcessError(
                 message=(
-                    "An error occurred during the pre-conversion execution. For details, refer to "
+                    "An error occurred during the pre-conversion analysis. For details, refer to "
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
                 ),
                 report=(
-                    "convert2rhel execution exited with code %s"
-                    "Output of failed command: %s" % (returncode, stdout.rstrip("\n"))
+                    "convert2rhel exited with code %s"
+                    "Output of the failed command: %s" % (returncode, stdout.rstrip("\n"))
                 ),
             )
 
