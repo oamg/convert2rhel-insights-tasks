@@ -35,7 +35,7 @@ YUM_TRANSACTIONS_TO_UNDO = set()
 # Define regex to look for specific errors in the rollback phase in
 # convert2rhel.
 DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
-    r".*(error|failed|fail|failure|denied|traceback|couldn't find a backup)",
+    r".*(error|fail|denied|traceback|couldn't find a backup)",
     flags=re.MULTILINE | re.I,
 )
 # Detect the last transaction id in yum.
