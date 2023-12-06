@@ -583,12 +583,9 @@ def update_insights_inventory():
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
-        # FIXME: We can't raise ProcessError here because we call it in finally
-        # Should we append the fail to the summary message? (output.message),
-        # but then what will we do with errors? (can we use output.report?)
-        print(
-            "Failed to update Insights Inventory by registering the system again.",
-            "insights-client execution exited with code '%s' and output:\n%s"
+        raise ProcessError(
+            message="Conversion succeeded but update of Insights Inventory by registering the system again failed.",
+            report="insights-client execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
 
@@ -677,11 +674,14 @@ def main():
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
                 ),
                 report=(
-                    "convert2rhel exited with code %s"
+                    "convert2rhel exited with code %s.\n"
                     "Output of the failed command: %s"
                     % (returncode, stdout.rstrip("\n"))
                 ),
             )
+
+        # Only call insights to update inventory on successful conversion.
+        update_insights_inventory()
 
         print("Conversion script finished successfully!")
     except ProcessError as exception:
@@ -716,7 +716,8 @@ def main():
             # we can rewrite possible previous message with more specific one and set alert
             output.message, output.alert = generate_report_message(highest_level)
 
-            if "successfully" in output.message:
+            # Alert not present for successfull conversion
+            if not output.alert:
                 gpg_key_file.keep = True
 
                 # NOTE: When c2r statistics on insights are not reliant on rpm being installed
@@ -737,10 +738,6 @@ def main():
             # if the returncode is not 0 and here are no rollback errors.
             if not conversion_successful and not rollback_errors:
                 output.entries = transform_raw_data(data)
-
-            # Only call insights to update inventory on successful conversion.
-            if conversion_successful:
-                update_insights_inventory()
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)
