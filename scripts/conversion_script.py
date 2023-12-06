@@ -584,7 +584,7 @@ def update_insights_inventory():
 
     if returncode:
         raise ProcessError(
-            message="Failed to update Insights Inventory by registering the system again.",
+            message="Conversion succeeded but update of Insights Inventory by registering the system again failed.",
             report="insights-client execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )
@@ -674,11 +674,14 @@ def main():
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
                 ),
                 report=(
-                    "convert2rhel exited with code %s"
+                    "convert2rhel exited with code %s.\n"
                     "Output of the failed command: %s"
                     % (returncode, stdout.rstrip("\n"))
                 ),
             )
+
+        # Only call insights to update inventory on successful conversion.
+        update_insights_inventory()
 
         print("Conversion script finished successfully!")
     except ProcessError as exception:
@@ -702,29 +705,28 @@ def main():
     finally:
         # Gather JSON & Textual report
         data = gather_json_report()
-
-        if data:
+        if data and not rollback_errors:
             highest_level = find_highest_report_level(actions=data["actions"])
             # Set the first position of the list as being the final status,
             # that's needed because `find_highest_report_level` will sort out
             # the list with the highest priority first.
             output.status = highest_level
 
-            if not output.message:
-                # Generate report message and transform the raw data into
-                # entries for Insights.
-                output.message, output.alert = generate_report_message(highest_level)
+            # At this point we know JSON report exists and no rollback errors occured
+            # we can rewrite possible previous message with more specific one and set alert
+            output.message, output.alert = generate_report_message(highest_level)
 
-                if "successfully" in output.message:
-                    gpg_key_file.keep = True
+            # Alert not present for successfull conversion
+            if not output.alert:
+                gpg_key_file.keep = True
 
-                    # NOTE: When c2r statistics on insights are not reliant on rpm being installed
-                    # remove below line (=decide only based on install_convert2rhel() result)
-                    if convert2rhel_installed:
-                        YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
-                    # NOTE: Keep always because added/updated pkg is also kept
-                    # (if repo existed, the .backup file will remain on system)
-                    c2r_repo.keep = True
+                # NOTE: When c2r statistics on insights are not reliant on rpm being installed
+                # remove below line (=decide only based on install_convert2rhel() result)
+                if convert2rhel_installed:
+                    YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+                # NOTE: Keep always because added/updated pkg is also kept
+                # (if repo existed, the .backup file will remain on system)
+                c2r_repo.keep = True
 
             if not output.report and not conversion_successful:
                 # Try to attach the textual report in the report if we have
@@ -732,14 +734,10 @@ def main():
                 # by the exception.
                 output.report = gather_textual_report()
 
-            # Only add entries (report_json) if the returncode is not 0 and
-            # there are no rollback errors.
+            # Only add entries (report_json = Insights colorful report)
+            # if the returncode is not 0 and here are no rollback errors.
             if not conversion_successful and not rollback_errors:
                 output.entries = transform_raw_data(data)
-
-            # Only call insights to update inventory on successful conversion.
-            if conversion_successful:
-                update_insights_inventory()
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)
