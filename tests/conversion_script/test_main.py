@@ -2,7 +2,7 @@
 
 from mock import patch, Mock
 
-from scripts.conversion_script import main, OutputCollector
+from scripts.conversion_script import main
 
 
 @patch(
@@ -16,14 +16,13 @@ def test_main_non_eligible_release(
     mock_archive_analysis_report,
     mock_cleanup,
     mock_get_system_distro_version,
-    capsys,  # to check for rollback info in stdout
+    capsys,
 ):
-
     main()
 
     output = capsys.readouterr().out
     assert "Conversion is only supported on" in output
-    assert "\"alert\": true" in output
+    assert '"alert": true' in output
 
     mock_get_system_distro_version.assert_called_once()
     mock_cleanup.assert_called_once()
