@@ -320,7 +320,7 @@ def test_main_general_exception(
 
 # fmt: off
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=False)
 @patch("scripts.conversion_script._check_ini_file_modified", return_value=True)
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
@@ -362,7 +362,7 @@ def test_main_inhibited_ini_modified(
     assert mock_custom_ini.call_count == 1
     # 2x for archive check + 1 inside in inhibitor check + 1 gather json
     assert mock_os_exists.call_count == 4
-    assert mock_install_convert2rhel.call_count == 0
+    assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_find_highest_report_level.call_count == 0
     assert mock_gather_textual_report.call_count == 0
@@ -374,7 +374,7 @@ def test_main_inhibited_ini_modified(
 # fmt: off
 @patch("scripts.conversion_script.gather_json_report", side_effect=Mock(return_value={}))
 @patch("scripts.conversion_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.conversion_script.install_convert2rhel", side_effect=Mock())
+@patch("scripts.conversion_script.install_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=True)
 @patch("scripts.conversion_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.conversion_script.find_highest_report_level", side_effect=Mock(return_value=["SUCCESS"]))
@@ -414,7 +414,7 @@ def test_main_inhibited_custom_ini(
     assert mock_setup_convert2rhel.call_count == 1
     # Twice for archiving reports + 1 inside inhibitor check
     assert mock_os_exists.call_count == 3
-    assert mock_install_convert2rhel.call_count == 0
+    assert mock_install_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_json_report.call_count == 1
     assert mock_find_highest_report_level.call_count == 0
