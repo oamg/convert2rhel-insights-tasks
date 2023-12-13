@@ -635,11 +635,11 @@ def main():
 
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
-        check_convert2rhel_inhibitors_before_run()
         convert2rhel_installed, transaction_id = install_convert2rhel()
         if convert2rhel_installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
+        check_convert2rhel_inhibitors_before_run()
         stdout, returncode = run_convert2rhel()
         conversion_successful = returncode == 0
         rollback_errors = check_for_inhibitors_in_rollback()
