@@ -9,13 +9,9 @@ def fixture_required_file_instance():
 
 
 def test_create(required_file_instance):
-    with patch(
-        "scripts.conversion_script.urlopen"
-    ) as mock_urlopen, patch(
+    with patch("scripts.conversion_script.urlopen") as mock_urlopen, patch(
         "scripts.conversion_script.os.makedirs"
-    ) as mock_makedirs, patch(
-        "scripts.conversion_script.open"
-    ) as mock_open, patch(
+    ) as mock_makedirs, patch("scripts.conversion_script.open") as mock_open, patch(
         "scripts.conversion_script.os.chmod"
     ) as mock_chmod:
         mock_response = Mock()
@@ -31,13 +27,10 @@ def test_create(required_file_instance):
 
 
 def test_create_exception(required_file_instance):
-    with patch(
-        "scripts.conversion_script.urlopen"
-    ) as mock_urlopen, patch(
+    with patch("scripts.conversion_script.urlopen") as mock_urlopen, patch(
         "scripts.conversion_script.os.makedirs"
     ) as mock_makedirs, patch(
-        "scripts.conversion_script.open",
-        side_effect=OSError("Can't create dir")
+        "scripts.conversion_script.open", side_effect=OSError("Can't create dir")
     ) as mock_open, patch(
         "scripts.conversion_script.os.chmod"
     ) as mock_chmod:
@@ -60,7 +53,7 @@ def test_delete(mock_remove, required_file_instance):
     assert result
 
 
-@patch("scripts.conversion_script.os.remove", side_effect=OSError('File not found'))
+@patch("scripts.conversion_script.os.remove", side_effect=OSError("File not found"))
 def test_delete_file_not_exists(mock_remove, required_file_instance):
     result = required_file_instance.delete()
     mock_remove.assert_called_once_with("/test/path")
@@ -70,14 +63,20 @@ def test_delete_file_not_exists(mock_remove, required_file_instance):
 @patch("scripts.conversion_script.os.rename")
 def test_restore(mock_rename, required_file_instance):
     result = required_file_instance.restore()
-    mock_rename.assert_called_once_with("/test/path.backup", "/test/path", )
+    mock_rename.assert_called_once_with(
+        "/test/path.backup",
+        "/test/path",
+    )
     assert result
 
 
-@patch("scripts.conversion_script.os.rename", side_effect=OSError('File not found'))
+@patch("scripts.conversion_script.os.rename", side_effect=OSError("File not found"))
 def test_restore_backup_not_exists(mock_rename, required_file_instance):
     result = required_file_instance.restore()
-    mock_rename.assert_called_once_with("/test/path.backup", "/test/path", )
+    mock_rename.assert_called_once_with(
+        "/test/path.backup",
+        "/test/path",
+    )
     assert not result
 
 
@@ -88,7 +87,7 @@ def test_backup(mock_rename, required_file_instance):
     assert result
 
 
-@patch("scripts.conversion_script.os.rename", side_effect=OSError('File not found'))
+@patch("scripts.conversion_script.os.rename", side_effect=OSError("File not found"))
 def test_backup_file_not_exists(mock_rename, required_file_instance):
     result = required_file_instance.backup()
     mock_rename.assert_called_once_with("/test/path", "/test/path.backup")
