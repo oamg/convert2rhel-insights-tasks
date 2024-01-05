@@ -29,6 +29,7 @@ def test_create_host(required_file_instance):
         mock_open.assert_called_once_with("/test/path", mode="w")
         mock_chmod.assert_called_once_with("/test/path", 0o644)
 
+
 def test_create_data(required_file_instance):
     with patch(
         "scripts.preconversion_assessment_script.urlopen"
@@ -39,7 +40,7 @@ def test_create_data(required_file_instance):
     ) as mock_open, patch(
         "scripts.preconversion_assessment_script.os.chmod"
     ) as mock_chmod:
-        required_file_instance.create_from_data(b'Mocked data')
+        required_file_instance.create_from_data(b"Mocked data")
 
         mock_urlopen.assert_not_called()
         mock_makedirs.assert_called_once_with("/test", mode=0o755)

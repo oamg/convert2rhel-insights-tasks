@@ -354,6 +354,7 @@ def setup_convert2rhel(required_files):
         required_file.backup()
         required_file.create_from_host_url_data()
 
+
 # Code taken from
 # https://github.com/oamg/convert2rhel/blob/v1.4.1/convert2rhel/utils.py#L345
 # and modified to adapt the needs of the tools that are being executed in this
