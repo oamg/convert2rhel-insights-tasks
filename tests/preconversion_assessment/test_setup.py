@@ -8,7 +8,7 @@ class MockRequiredFile(object):
         self.path = path
         self.host = host
 
-    def create(self):
+    def create_from_host_url_data(self):
         return
 
     def backup(self):
@@ -24,4 +24,4 @@ def test_setup_calls_backup_and_create_for_every_file():
     setup_convert2rhel(required_files)
 
     test_file.backup.assert_called_once()
-    test_file.create.assert_called_once()
+    test_file.create_from_host_url_data.assert_called_once()

@@ -50,11 +50,13 @@ class RequiredFile(object):
         self.host = host
         self.backup_suffix = ".backup"
 
-    def create(self, data=None):
-        if data is None:
-            # If no data to write supplied, download them from host
-            response = urlopen(self.host)
-            data = response.read()
+    def create_from_host_url_data(self):
+        return self._create(urlopen(self.host).read())
+
+    def create_from_data(self, data):
+        return self._create(data)
+
+    def _create(self, data):
         try:
             directory = os.path.dirname(self.path)
             if not os.path.exists(directory):
@@ -346,7 +348,7 @@ def setup_convert2rhel(required_files):
     print("Downloading required files.")
     for required_file in required_files:
         required_file.backup()
-        required_file.create()
+        required_file.create_from_host_url_data()
 
 
 # Code taken from
