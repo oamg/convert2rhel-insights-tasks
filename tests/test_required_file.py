@@ -1,6 +1,6 @@
 from mock import patch, Mock
 import pytest
-from scripts.conversion_script import RequiredFile
+from scripts.c2r_script import RequiredFile
 
 
 @pytest.fixture(name="required_file_instance")
@@ -9,10 +9,10 @@ def fixture_required_file_instance():
 
 
 def test_create_host(required_file_instance):
-    with patch("scripts.conversion_script.urlopen") as mock_urlopen, patch(
-        "scripts.conversion_script.os.makedirs"
-    ) as mock_makedirs, patch("scripts.conversion_script.open") as mock_open, patch(
-        "scripts.conversion_script.os.chmod"
+    with patch("scripts.c2r_script.urlopen") as mock_urlopen, patch(
+        "scripts.c2r_script.os.makedirs"
+    ) as mock_makedirs, patch("scripts.c2r_script.open") as mock_open, patch(
+        "scripts.c2r_script.os.chmod"
     ) as mock_chmod:
         mock_response = Mock()
         mock_response.read.return_value = b"Mocked data"
@@ -27,10 +27,14 @@ def test_create_host(required_file_instance):
 
 
 def test_create_data(required_file_instance):
-    with patch("scripts.conversion_script.urlopen") as mock_urlopen, patch(
-        "scripts.conversion_script.os.makedirs"
-    ) as mock_makedirs, patch("scripts.conversion_script.open") as mock_open, patch(
-        "scripts.conversion_script.os.chmod"
+    with patch(
+        "scripts.c2r_script.urlopen"
+    ) as mock_urlopen, patch(
+        "scripts.c2r_script.os.makedirs"
+    ) as mock_makedirs, patch(
+        "scripts.c2r_script.open"
+    ) as mock_open, patch(
+        "scripts.c2r_script.os.chmod"
     ) as mock_chmod:
         required_file_instance.create_from_data(b"Mocked data")
 
@@ -41,12 +45,12 @@ def test_create_data(required_file_instance):
 
 
 def test_create_exception(required_file_instance):
-    with patch("scripts.conversion_script.urlopen") as mock_urlopen, patch(
-        "scripts.conversion_script.os.makedirs"
+    with patch("scripts.c2r_script.urlopen") as mock_urlopen, patch(
+        "scripts.c2r_script.os.makedirs"
     ) as mock_makedirs, patch(
-        "scripts.conversion_script.open", side_effect=OSError("Can't create dir")
+        "scripts.c2r_script.open", side_effect=OSError("Can't create dir")
     ) as mock_open, patch(
-        "scripts.conversion_script.os.chmod"
+        "scripts.c2r_script.os.chmod"
     ) as mock_chmod:
         mock_response = Mock()
         mock_response.read.return_value = b"Mocked data"
@@ -60,21 +64,21 @@ def test_create_exception(required_file_instance):
         mock_chmod.assert_not_called()
 
 
-@patch("scripts.conversion_script.os.remove")
+@patch("scripts.c2r_script.os.remove")
 def test_delete(mock_remove, required_file_instance):
     result = required_file_instance.delete()
     mock_remove.assert_called_once_with("/test/path")
     assert result
 
 
-@patch("scripts.conversion_script.os.remove", side_effect=OSError("File not found"))
+@patch("scripts.c2r_script.os.remove", side_effect=OSError("File not found"))
 def test_delete_file_not_exists(mock_remove, required_file_instance):
     result = required_file_instance.delete()
     mock_remove.assert_called_once_with("/test/path")
     assert not result
 
 
-@patch("scripts.conversion_script.os.rename")
+@patch("scripts.c2r_script.os.rename")
 def test_restore(mock_rename, required_file_instance):
     result = required_file_instance.restore()
     mock_rename.assert_called_once_with(
@@ -84,7 +88,7 @@ def test_restore(mock_rename, required_file_instance):
     assert result
 
 
-@patch("scripts.conversion_script.os.rename", side_effect=OSError("File not found"))
+@patch("scripts.c2r_script.os.rename", side_effect=OSError("File not found"))
 def test_restore_backup_not_exists(mock_rename, required_file_instance):
     result = required_file_instance.restore()
     mock_rename.assert_called_once_with(
@@ -94,14 +98,14 @@ def test_restore_backup_not_exists(mock_rename, required_file_instance):
     assert not result
 
 
-@patch("scripts.conversion_script.os.rename")
+@patch("scripts.c2r_script.os.rename")
 def test_backup(mock_rename, required_file_instance):
     result = required_file_instance.backup()
     mock_rename.assert_called_once_with("/test/path", "/test/path.backup")
     assert result
 
 
-@patch("scripts.conversion_script.os.rename", side_effect=OSError("File not found"))
+@patch("scripts.c2r_script.os.rename", side_effect=OSError("File not found"))
 def test_backup_file_not_exists(mock_rename, required_file_instance):
     result = required_file_instance.backup()
     mock_rename.assert_called_once_with("/test/path", "/test/path.backup")

@@ -703,10 +703,9 @@ def main():
 
             raise ProcessError(
                 message=(
-                    "An error occurred during the %s. For details, refer to "
+                    "An error occurred during the pre-conversion analysis. For details, refer to "
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-                )
-                % SCRIPT_TYPE,
+                ),
                 report=(
                     "convert2rhel exited with code %s.\n"
                     "Output of the failed command: %s"
@@ -744,35 +743,35 @@ def main():
         if data:
             output.status = data.get("status", None)
 
-        # At this point we know JSON report exists and no rollback errors occured
-        # we can rewrite possible previous message with more specific one and set alert
-        output.message, output.alert = generate_report_message(output.status)
+            # At this point we know JSON report exists and no rollback errors occured
+            # we can rewrite possible previous message with more specific one and set alert
+            if not rollback_errors and (SCRIPT_TYPE == 'CONVERSION' or not output.message):
+                output.message, output.alert = generate_report_message(output.status)
 
-        # If successfull conversion
-        if SCRIPT_TYPE == "CONVERSION" and not output.alert:
-            gpg_key_file.keep = True
 
-            # NOTE: When c2r statistics on insights are not reliant on rpm being installed
-            # remove below line (=decide only based on install_convert2rhel() result)
-            if convert2rhel_installed:
-                YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+            # If successfull conversion
+            if SCRIPT_TYPE == "CONVERSION" and not output.alert:
+                gpg_key_file.keep = True
 
-            # NOTE: Keep always because added/updated pkg is also kept
-            # (if repo existed, the .backup file will remain on system)
-            c2r_repo.keep = True
+                # NOTE: When c2r statistics on insights are not reliant on rpm being installed
+                # remove below line (=decide only based on install_convert2rhel() result)
+                if convert2rhel_installed:
+                    YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
 
-        is_failed_conversion = SCRIPT_TYPE == "CONVERSION" and not execution_successful
-        should_attach_entries_and_report = (
-            SCRIPT_TYPE == "ANALYSIS" or is_failed_conversion
-        )
-        if not output.report and should_attach_entries_and_report:
-            # Try to attach the textual report in the report if we have json
-            # report, otherwise, we would overwrite the report raised by the
-            # exception.
-            output.report = gather_textual_report()
+                # NOTE: Keep always because added/updated pkg is also kept
+                # (if repo existed, the .backup file will remain on system)
+                c2r_repo.keep = True
 
-        if not rollback_errors and should_attach_entries_and_report:
-            output.entries = transform_raw_data(data)
+            is_failed_conversion = SCRIPT_TYPE == "CONVERSION" and not execution_successful
+            should_attach_entries_and_report = SCRIPT_TYPE == "ANALYSIS" or is_failed_conversion
+            if not output.report and should_attach_entries_and_report:
+                # Try to attach the textual report in the report if we have json
+                # report, otherwise, we would overwrite the report raised by the
+                # exception.
+                output.report = gather_textual_report()
+
+            if not rollback_errors and should_attach_entries_and_report:
+                    output.entries = transform_raw_data(data)
 
         print("Cleaning up modifications to the system.")
         cleanup(required_files)

@@ -1,5 +1,5 @@
 import pytest
-from scripts.conversion_script import is_eligible_releases
+from scripts.c2r_script import is_eligible_releases
 
 
 @pytest.mark.parametrize(

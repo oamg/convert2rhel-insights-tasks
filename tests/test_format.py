@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.preconversion_assessment_script import (
+from scripts.c2r_script import (
     _generate_message_key,
     _generate_detail_block,
     _rename_dictionary_key,

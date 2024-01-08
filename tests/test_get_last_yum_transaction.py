@@ -1,7 +1,7 @@
 import pytest
 from mock import patch
 
-from scripts.preconversion_assessment_script import _get_last_yum_transaction_id
+from scripts.c2r_script import _get_last_yum_transaction_id
 
 
 @pytest.mark.parametrize(
@@ -25,8 +25,7 @@ def test_get_last_yum_transaction_id(mock_return, expected_result):
     pkg_name = "convert2rhel"
 
     with patch(
-        "scripts.preconversion_assessment_script.run_subprocess",
-        return_value=mock_return,
+        "scripts.c2r_script.run_subprocess", return_value=mock_return
     ) as mock_run_subprocess:
         result = _get_last_yum_transaction_id(pkg_name)
 

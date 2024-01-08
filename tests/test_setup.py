@@ -1,6 +1,6 @@
 from mock import Mock
 
-from scripts.preconversion_assessment_script import setup_convert2rhel
+from scripts.c2r_script import setup_convert2rhel
 
 
 class MockRequiredFile(object):
