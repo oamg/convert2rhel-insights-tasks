@@ -2,10 +2,7 @@ import json
 import pytest
 from mock import mock_open, patch
 
-from scripts.c2r_script import (
-    gather_textual_report,
-    gather_json_report
-)
+from scripts.c2r_script import gather_textual_report, gather_json_report
 
 
 @patch("os.path.exists", return_value=True)

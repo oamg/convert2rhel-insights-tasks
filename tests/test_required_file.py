@@ -27,13 +27,9 @@ def test_create_host(required_file_instance):
 
 
 def test_create_data(required_file_instance):
-    with patch(
-        "scripts.c2r_script.urlopen"
-    ) as mock_urlopen, patch(
+    with patch("scripts.c2r_script.urlopen") as mock_urlopen, patch(
         "scripts.c2r_script.os.makedirs"
-    ) as mock_makedirs, patch(
-        "scripts.c2r_script.open"
-    ) as mock_open, patch(
+    ) as mock_makedirs, patch("scripts.c2r_script.open") as mock_open, patch(
         "scripts.c2r_script.os.chmod"
     ) as mock_chmod:
         required_file_instance.create_from_data(b"Mocked data")

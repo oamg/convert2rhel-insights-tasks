@@ -5,6 +5,7 @@ import pytest
 
 from scripts.c2r_script import archive_analysis_report
 
+
 @pytest.fixture
 def create_json_report_mock(tmpdir):
     content = {"test": 1}
@@ -12,6 +13,7 @@ def create_json_report_mock(tmpdir):
     file.write(json.dumps(content))
 
     return str(file)
+
 
 def test_archive_old_report(create_json_report_mock, tmpdir):
     tmp_archive_dir = str(tmpdir.join("archive"))
