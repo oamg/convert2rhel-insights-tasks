@@ -4,9 +4,10 @@ from mock import patch, Mock
 
 from scripts.c2r_script import main
 
-
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7"))
+@patch(
+    "scripts.c2r_script.get_system_distro_version", return_value=("centos", "7")
+)
 @patch("scripts.c2r_script.cleanup")
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())

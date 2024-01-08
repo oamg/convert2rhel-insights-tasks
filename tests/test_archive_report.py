@@ -1,7 +1,7 @@
 import json
-from mock import patch
 import os
 import pytest
+from mock import patch
 
 from scripts.c2r_script import archive_analysis_report
 
@@ -15,6 +15,7 @@ def create_json_report_mock(tmpdir):
     return str(file)
 
 
+# pylint: disable=redefined-outer-name
 def test_archive_old_report(create_json_report_mock, tmpdir):
     tmp_archive_dir = str(tmpdir.join("archive"))
     with patch("scripts.c2r_script.C2R_ARCHIVE_DIR", tmp_archive_dir):
