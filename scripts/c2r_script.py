@@ -10,9 +10,7 @@ from urllib2 import urlopen
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
 # is set in signed yaml envelope in content_vars
-SCRIPT_TYPE = os.getenv(
-    "C2R_SCRIPT_TYPE", "ANALYSIS"
-)  # TODO: Should we inhibit or run ANALYSIS in default?
+SCRIPT_TYPE = os.getenv("C2R_SCRIPT_TYPE", None)
 
 STATUS_CODE = {
     "SUCCESS": 0,
@@ -628,14 +626,11 @@ def update_insights_inventory():
     print("System registered with insights-client successfully.")
 
 
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 def main():
     """Main entrypoint for the script."""
-    if os.path.exists(C2R_REPORT_FILE):
-        archive_analysis_report(C2R_REPORT_FILE)
-
-    if os.path.exists(C2R_REPORT_TXT_FILE):
-        archive_analysis_report(C2R_REPORT_TXT_FILE)
-
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
@@ -656,7 +651,22 @@ def main():
     # String to hold any errors that happened during rollback.
     rollback_errors = ""
 
+    # Switched to True only after setup is called
+    do_cleanup = False
+
     try:
+        if SCRIPT_TYPE not in ["CONVERSION", "ANALYSIS"]:
+            raise ProcessError(
+                message="Allowed values for SCRIPT_TYPE are 'CONVERSION' and 'ANALYSIS'.",
+                report='Exiting because SCRIPT_TYPE="%s"' % SCRIPT_TYPE,
+            )
+
+        if os.path.exists(C2R_REPORT_FILE):
+            archive_analysis_report(C2R_REPORT_FILE)
+
+        if os.path.exists(C2R_REPORT_TXT_FILE):
+            archive_analysis_report(C2R_REPORT_TXT_FILE)
+
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
         if not dist.startswith("centos") or not is_eligible_releases(version):
@@ -668,6 +678,7 @@ def main():
 
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
+        do_cleanup = True
         convert2rhel_installed, transaction_id = install_convert2rhel()
         if convert2rhel_installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
@@ -745,9 +756,10 @@ def main():
 
             # At this point we know JSON report exists and no rollback errors occured
             # we can rewrite possible previous message with more specific one and set alert
-            if not rollback_errors and (SCRIPT_TYPE == 'CONVERSION' or not output.message):
+            if not rollback_errors and (
+                SCRIPT_TYPE == "CONVERSION" or not output.message
+            ):
                 output.message, output.alert = generate_report_message(output.status)
-
 
             # If successfull conversion
             if SCRIPT_TYPE == "CONVERSION" and not output.alert:
@@ -762,8 +774,12 @@ def main():
                 # (if repo existed, the .backup file will remain on system)
                 c2r_repo.keep = True
 
-            is_failed_conversion = SCRIPT_TYPE == "CONVERSION" and not execution_successful
-            should_attach_entries_and_report = SCRIPT_TYPE == "ANALYSIS" or is_failed_conversion
+            is_failed_conversion = (
+                SCRIPT_TYPE == "CONVERSION" and not execution_successful
+            )
+            should_attach_entries_and_report = (
+                SCRIPT_TYPE == "ANALYSIS" or is_failed_conversion
+            )
             if not output.report and should_attach_entries_and_report:
                 # Try to attach the textual report in the report if we have json
                 # report, otherwise, we would overwrite the report raised by the
@@ -771,10 +787,11 @@ def main():
                 output.report = gather_textual_report()
 
             if not rollback_errors and should_attach_entries_and_report:
-                    output.entries = transform_raw_data(data)
+                output.entries = transform_raw_data(data)
 
-        print("Cleaning up modifications to the system.")
-        cleanup(required_files)
+        if do_cleanup:
+            print("Cleaning up modifications to the system.")
+            cleanup(required_files)
 
         print("### JSON START ###")
         print(json.dumps(output.to_dict(), indent=4))

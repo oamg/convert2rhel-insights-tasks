@@ -4,10 +4,9 @@ from mock import patch, Mock
 
 from scripts.c2r_script import main
 
+
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
-@patch(
-    "scripts.c2r_script.get_system_distro_version", return_value=("centos", "7")
-)
+@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.c2r_script.cleanup")
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
@@ -25,7 +24,7 @@ def test_main_non_eligible_release(
     assert '"alert": true' in output
 
     mock_get_system_distro_version.assert_called_once()
-    mock_cleanup.assert_called_once()
+    mock_cleanup.assert_not_called()
     assert mock_archive_analysis_report.call_count == 0
     assert mock_update_insights_inventory.call_count == 0
 

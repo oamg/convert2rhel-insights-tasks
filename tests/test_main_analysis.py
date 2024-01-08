@@ -23,7 +23,7 @@ def test_main_non_eligible_release(
 
     mock_get_system_distro_version.assert_called_once()
     mock_output_collector.assert_called()
-    mock_cleanup.assert_called_once()
+    mock_cleanup.assert_not_called()
 
 
 # fmt: off
