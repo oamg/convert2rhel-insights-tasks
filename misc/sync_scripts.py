@@ -2,8 +2,7 @@ import os
 import ruamel.yaml
 
 # Scripts located in this project
-PRE_CONVERSION_SCRIPT_PATH = "scripts/preconversion_assessment_script.py"
-CONVERSION_SCRIPT_PATH = "scripts/conversion_script.py"
+SCRIPT_PATH = "scripts/c2r_script.py"
 
 # Yaml playbooks in rhc-worker-script
 PRE_CONVERSION_YAML_PATH = os.path.join(
@@ -19,8 +18,9 @@ def _get_updated_yaml_content(yaml_path, script_path):
     with open(script_path) as script:
         content = script.read()
 
+    script_type = "ANALYSIS" if "analysis" in yaml_path else "CONVERSION"
     config[0]["vars"]["content"] = content
-
+    config[0]["vars"]["content_vars"]["CONVERT2RHEL_SCRIPT_TYPE"] = script_type
     return config, mapping, offset
 
 
@@ -33,12 +33,12 @@ def _write_content(config, path, mapping, offset):
 
 def main():
     config, mapping, offset = _get_updated_yaml_content(
-        PRE_CONVERSION_YAML_PATH, PRE_CONVERSION_SCRIPT_PATH
+        PRE_CONVERSION_YAML_PATH, SCRIPT_PATH
     )
     print("Writing new content to %s" % PRE_CONVERSION_YAML_PATH)
     _write_content(config, PRE_CONVERSION_YAML_PATH, mapping, offset)
     config, mapping, offset = _get_updated_yaml_content(
-        CONVERSION_YAML_PATH, CONVERSION_SCRIPT_PATH
+        CONVERSION_YAML_PATH, SCRIPT_PATH
     )
     print("Writing new content to %s" % CONVERSION_YAML_PATH)
     _write_content(config, CONVERSION_YAML_PATH, mapping, offset)
