@@ -12,21 +12,49 @@ CONVERSION_YAML_PATH = os.path.join(
     "..", "rhc-worker-script/development/nginx/data/convert2rhel_conversion.yml"
 )
 
+DEFAULT_YAML_ENVELOPE = """
+- name: Convert2RHEL
+  vars:
+    insights_signature: |
+      ascii_armored gpg signature
+    insights_signature_exclude: /vars/insights_signature,/vars/content_vars
+    interpreter: /usr/bin/python
+    content: |
+      placeholder
+    content_vars:
+      # variables that will be handed to the script as environment vars
+      # will be prefixed with RHC_WORKER_*
+      CONVERT2RHEL_DISABLE_TELEMETRY: 1
+      CONVERT2RHEL_SCRIPT_TYPE: type
+"""
+
 
 def _get_updated_yaml_content(yaml_path, script_path):
-    config, mapping, offset = ruamel.yaml.util.load_yaml_guess_indent(open(yaml_path))
+    if not os.path.exists(yaml_path):
+        yaml = ruamel.yaml.YAML()
+        config = yaml.load(DEFAULT_YAML_ENVELOPE)
+        mapping = 2
+        offset = 0
+    else:
+        config, mapping, offset = ruamel.yaml.util.load_yaml_guess_indent(
+            open(yaml_path)
+        )
+        print(mapping, offset)
+
     with open(script_path) as script:
         content = script.read()
 
     script_type = "ANALYSIS" if "analysis" in yaml_path else "CONVERSION"
+    config[0]["name"] = "Convert2RHEL %s" % script_type.title()
     config[0]["vars"]["content"] = content
     config[0]["vars"]["content_vars"]["CONVERT2RHEL_SCRIPT_TYPE"] = script_type
     return config, mapping, offset
 
 
-def _write_content(config, path, mapping, offset):
+def _write_content(config, path, mapping=None, offset=None):
     yaml = ruamel.yaml.YAML()
-    yaml.indent(mapping=mapping, sequence=mapping, offset=offset)
+    if mapping and offset:
+        yaml.indent(mapping=mapping, sequence=mapping, offset=offset)
     with open(path, "w") as handler:
         yaml.dump(config, handler)
 
