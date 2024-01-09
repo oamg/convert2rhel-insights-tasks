@@ -9,8 +9,8 @@ from time import gmtime, strftime
 from urllib2 import urlopen
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
-# is set in signed yaml envelope in content_vars
-SCRIPT_TYPE = os.getenv("C2R_SCRIPT_TYPE", None)
+# Value is set in signed yaml envelope in content_vars (CONVERT2RHEL_SCRIPT_TYPE)
+SCRIPT_TYPE = os.getenv("RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE", None)
 
 STATUS_CODE = {
     "SUCCESS": 0,
