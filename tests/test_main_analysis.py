@@ -5,6 +5,7 @@ from mock import patch, mock_open, Mock
 from scripts.c2r_script import OutputCollector, main, ProcessError
 
 
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch(
     "scripts.c2r_script.get_system_distro_version",
@@ -27,6 +28,7 @@ def test_main_non_eligible_release(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -81,6 +83,7 @@ def test_main_success_c2r_installed(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", new_callable=mock_open())
 @patch("scripts.c2r_script.gather_json_report", return_value={})
@@ -126,6 +129,7 @@ def test_main_process_error(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -166,6 +170,7 @@ def test_main_general_exception(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -210,6 +215,7 @@ def test_main_inhibited_ini_modified(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -251,6 +257,7 @@ def test_main_inhibited_custom_ini(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())

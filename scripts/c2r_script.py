@@ -11,6 +11,8 @@ from urllib2 import urlopen
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
 # Value is set in signed yaml envelope in content_vars (CONVERT2RHEL_SCRIPT_TYPE)
 SCRIPT_TYPE = os.getenv("RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE", None)
+IS_CONVERSION = SCRIPT_TYPE == "CONVERSION"
+IS_ANALYSIS = SCRIPT_TYPE == "ANALYSIS"
 
 STATUS_CODE = {
     "SUCCESS": 0,
@@ -349,15 +351,15 @@ def generate_report_message(highest_status):
     )
 
     if STATUS_CODE[highest_status] < STATUS_CODE["WARNING"]:
-        if SCRIPT_TYPE == "CONVERSION":
+        if IS_CONVERSION:
             message = conversion_successful_msg
-        elif SCRIPT_TYPE == "ANALYSIS":
+        elif IS_ANALYSIS:
             message = "No problems found. The system is ready for conversion."
 
     if STATUS_CODE[highest_status] == STATUS_CODE["WARNING"]:
-        if SCRIPT_TYPE == "CONVERSION":
+        if IS_CONVERSION:
             message = conversion_successful_msg
-        elif SCRIPT_TYPE == "ANALYSIS":
+        elif IS_ANALYSIS:
             message = (
                 "The conversion can proceed. "
                 "However, there is one or more warnings about issues that might occur after the conversion."
@@ -483,10 +485,9 @@ def run_convert2rhel():
             "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
         ]
 
-    if SCRIPT_TYPE == "CONVERSION":
+    command = ["/usr/bin/convert2rhel", "analyze", "-y"]
+    if IS_CONVERSION:
         command = ["/usr/bin/convert2rhel", "-y"]
-    elif SCRIPT_TYPE == "ANALYSIS":
-        command = ["/usr/bin/convert2rhel", "analyze", "-y"]
 
     output, returncode = run_subprocess(command, env=env)
     return output, returncode
@@ -611,7 +612,7 @@ def transform_raw_data(raw_data):
 def update_insights_inventory():
     """
     Call insights-client to update insights inventory.
-    SCRIPT_TYPE=CONVERSION SPECIFIC.
+    SCRIPT_TYPE == "CONVERSION" specific.
     """
     print("Updating system status in Red Hat Insights.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
@@ -657,8 +658,9 @@ def main():
     try:
         if SCRIPT_TYPE not in ["CONVERSION", "ANALYSIS"]:
             raise ProcessError(
-                message="Allowed values for SCRIPT_TYPE are 'CONVERSION' and 'ANALYSIS'.",
-                report='Exiting because SCRIPT_TYPE="%s"' % SCRIPT_TYPE,
+                message="Allowed values for RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE are 'CONVERSION' and 'ANALYSIS'.",
+                report='Exiting because RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE="%s"'
+                % SCRIPT_TYPE,
             )
 
         if os.path.exists(C2R_REPORT_FILE):
@@ -725,10 +727,10 @@ def main():
             )
 
         # Only call insights to update inventory on successful conversion.
-        if SCRIPT_TYPE == "CONVERSION":
+        if IS_CONVERSION:
             update_insights_inventory()
 
-        print("%s script finished successfully!" % SCRIPT_TYPE)
+        print("Convert2RHEL %s script finished successfully!" % SCRIPT_TYPE.title())
     except ProcessError as exception:
         print(exception.report)
         output = OutputCollector(
@@ -754,15 +756,15 @@ def main():
         if data:
             output.status = data.get("status", None)
 
-            # At this point we know JSON report exists and no rollback errors occured
-            # we can rewrite possible previous message with more specific one and set alert
-            if not rollback_errors and (
-                SCRIPT_TYPE == "CONVERSION" or not output.message
-            ):
+            if not rollback_errors and (IS_CONVERSION or not output.message):
+                # At this point we know JSON report exists and no rollback errors occured
+                # we can rewrite previous conversion message with more specific one (or add missing message)
+                # and set alert
                 output.message, output.alert = generate_report_message(output.status)
 
-            # If successfull conversion
-            if SCRIPT_TYPE == "CONVERSION" and not output.alert:
+            is_successful_conversion = IS_CONVERSION and execution_successful
+
+            if is_successful_conversion:
                 gpg_key_file.keep = True
 
                 # NOTE: When c2r statistics on insights are not reliant on rpm being installed
@@ -774,11 +776,8 @@ def main():
                 # (if repo existed, the .backup file will remain on system)
                 c2r_repo.keep = True
 
-            is_failed_conversion = (
-                SCRIPT_TYPE == "CONVERSION" and not execution_successful
-            )
             should_attach_entries_and_report = (
-                SCRIPT_TYPE == "ANALYSIS" or is_failed_conversion
+                IS_ANALYSIS or not is_successful_conversion
             )
             if not output.report and should_attach_entries_and_report:
                 # Try to attach the textual report in the report if we have json

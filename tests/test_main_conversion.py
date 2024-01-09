@@ -5,6 +5,7 @@ from mock import patch, Mock
 from scripts.c2r_script import main
 
 
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7"))
 @patch("scripts.c2r_script.cleanup")
@@ -30,6 +31,7 @@ def test_main_non_eligible_release(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "SUCCESS"}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
@@ -87,6 +89,7 @@ def test_main_success_c2r_installed(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
@@ -144,6 +147,7 @@ def test_main_success_c2r_updated(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "ERROR"}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
@@ -201,6 +205,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", return_value={})
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -249,6 +254,7 @@ def test_main_process_error_no_report(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.install_convert2rhel", return_value=(False, 1))
@@ -297,6 +303,7 @@ def test_main_general_exception(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
@@ -348,6 +355,7 @@ def test_main_inhibited_ini_modified(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=Mock(return_value={}))
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
@@ -399,6 +407,7 @@ def test_main_inhibited_custom_ini(
 
 
 # fmt: off
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())

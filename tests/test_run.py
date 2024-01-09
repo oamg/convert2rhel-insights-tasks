@@ -4,6 +4,7 @@ from scripts.c2r_script import run_convert2rhel
 
 
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
+@patch("scripts.c2r_script.IS_CONVERSION", True)
 def test_run_convert2rhel_conversion():
     mock_env = {"PATH": "/fake/path", "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1"}
 
@@ -19,6 +20,7 @@ def test_run_convert2rhel_conversion():
 
 
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
+@patch("scripts.c2r_script.IS_ANALYSIS", True)
 def test_run_convert2rhel_analysis():
     mock_env = {"PATH": "/fake/path", "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1"}
 
