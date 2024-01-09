@@ -656,18 +656,13 @@ def main():
     do_cleanup = False
 
     try:
+        # Exit if invalid value for SCRIPT_TYPE
         if SCRIPT_TYPE not in ["CONVERSION", "ANALYSIS"]:
             raise ProcessError(
                 message="Allowed values for RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE are 'CONVERSION' and 'ANALYSIS'.",
                 report='Exiting because RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE="%s"'
                 % SCRIPT_TYPE,
             )
-
-        if os.path.exists(C2R_REPORT_FILE):
-            archive_analysis_report(C2R_REPORT_FILE)
-
-        if os.path.exists(C2R_REPORT_TXT_FILE):
-            archive_analysis_report(C2R_REPORT_TXT_FILE)
 
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
@@ -677,6 +672,12 @@ def main():
                 report='Exiting because distribution="%s" and version="%s"'
                 % (dist.title(), version),
             )
+
+        if os.path.exists(C2R_REPORT_FILE):
+            archive_analysis_report(C2R_REPORT_FILE)
+
+        if os.path.exists(C2R_REPORT_TXT_FILE):
+            archive_analysis_report(C2R_REPORT_TXT_FILE)
 
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
@@ -756,7 +757,7 @@ def main():
         if data:
             output.status = data.get("status", None)
 
-            if not rollback_errors and (IS_CONVERSION or not output.message):
+            if not rollback_errors:
                 # At this point we know JSON report exists and no rollback errors occured
                 # we can rewrite previous conversion message with more specific one (or add missing message)
                 # and set alert
