@@ -9,8 +9,8 @@ from time import gmtime, strftime
 from urllib2 import urlopen
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
-# Value is set in signed yaml envelope in content_vars (CONVERT2RHEL_SCRIPT_TYPE)
-SCRIPT_TYPE = os.getenv("RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE", None)
+# Value is set in signed yaml envelope in content_vars (SCRIPT_MODE)
+SCRIPT_TYPE = os.getenv("RHC_WORKER_SCRIPT_MODE", "").upper()
 IS_CONVERSION = SCRIPT_TYPE == "CONVERSION"
 IS_ANALYSIS = SCRIPT_TYPE == "ANALYSIS"
 
@@ -344,26 +344,28 @@ def generate_report_message(highest_status):
     message = ""
     alert = False
 
-    conversion_successful_msg = (
+    conversion_succes_msg = (
         "No problems found. The system was converted successfully. Please,"
         " reboot your system at your earliest convenience to make sure that"
         " the system is using the RHEL Kernel."
     )
 
     if STATUS_CODE[highest_status] < STATUS_CODE["WARNING"]:
-        if IS_CONVERSION:
-            message = conversion_successful_msg
-        elif IS_ANALYSIS:
-            message = "No problems found. The system is ready for conversion."
+        message = (
+            conversion_succes_msg
+            if IS_CONVERSION
+            else "No problems found. The system is ready for conversion."
+        )
 
     if STATUS_CODE[highest_status] == STATUS_CODE["WARNING"]:
-        if IS_CONVERSION:
-            message = conversion_successful_msg
-        elif IS_ANALYSIS:
-            message = (
+        message = (
+            conversion_succes_msg
+            if IS_CONVERSION
+            else (
                 "The conversion can proceed. "
                 "However, there is one or more warnings about issues that might occur after the conversion."
             )
+        )
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
         message = "The conversion cannot proceed. You must resolve existing issues to perform the conversion."
@@ -485,10 +487,11 @@ def run_convert2rhel():
             "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
         ]
 
-    command = ["/usr/bin/convert2rhel", "analyze", "-y"]
-    if IS_CONVERSION:
-        command = ["/usr/bin/convert2rhel", "-y"]
+    command = ["/usr/bin/convert2rhel"]
+    if IS_ANALYSIS:
+        command.append("analyze")
 
+    command.append("-y")
     output, returncode = run_subprocess(command, env=env)
     return output, returncode
 
@@ -612,7 +615,6 @@ def transform_raw_data(raw_data):
 def update_insights_inventory():
     """
     Call insights-client to update insights inventory.
-    SCRIPT_TYPE == "CONVERSION" specific.
     """
     print("Updating system status in Red Hat Insights.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
@@ -659,9 +661,8 @@ def main():
         # Exit if invalid value for SCRIPT_TYPE
         if SCRIPT_TYPE not in ["CONVERSION", "ANALYSIS"]:
             raise ProcessError(
-                message="Allowed values for RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE are 'CONVERSION' and 'ANALYSIS'.",
-                report='Exiting because RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE="%s"'
-                % SCRIPT_TYPE,
+                message="Allowed values for RHC_WORKER_SCRIPT_MODE are 'CONVERSION' and 'ANALYSIS'.",
+                report='Exiting because RHC_WORKER_SCRIPT_MODE="%s"' % SCRIPT_TYPE,
             )
 
         # Exit if not CentOS 7.9

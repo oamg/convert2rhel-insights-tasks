@@ -25,7 +25,7 @@ DEFAULT_YAML_ENVELOPE = """
       # variables that will be handed to the script as environment vars
       # will be prefixed with RHC_WORKER_*
       CONVERT2RHEL_DISABLE_TELEMETRY: 1
-      CONVERT2RHEL_SCRIPT_TYPE: type
+      SCRIPT_MODE: type
 """
 
 
@@ -39,7 +39,6 @@ def _get_updated_yaml_content(yaml_path, script_path):
         config, mapping, offset = ruamel.yaml.util.load_yaml_guess_indent(
             open(yaml_path)
         )
-        print(mapping, offset)
 
     with open(script_path) as script:
         content = script.read()
@@ -47,7 +46,7 @@ def _get_updated_yaml_content(yaml_path, script_path):
     script_type = "ANALYSIS" if "analysis" in yaml_path else "CONVERSION"
     config[0]["name"] = "Convert2RHEL %s" % script_type.title()
     config[0]["vars"]["content"] = content
-    config[0]["vars"]["content_vars"]["CONVERT2RHEL_SCRIPT_TYPE"] = script_type
+    config[0]["vars"]["content_vars"]["SCRIPT_MODE"] = script_type
     return config, mapping, offset
 
 

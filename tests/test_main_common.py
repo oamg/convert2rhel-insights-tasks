@@ -18,7 +18,7 @@ def test_main_invalid_script_value(
     main()
 
     output = capsys.readouterr().out
-    assert "Exiting because RHC_WORKER_CONVERT2RHEL_SCRIPT_TYPE" in output
+    assert "Exiting because RHC_WORKER_SCRIPT_MODE" in output
     assert '"alert": false' in output
 
     mock_output_collector.assert_called()
