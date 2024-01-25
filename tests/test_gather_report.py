@@ -2,7 +2,7 @@ import json
 import pytest
 from mock import mock_open, patch
 
-from scripts.conversion_script import gather_textual_report, gather_json_report
+from scripts.c2r_script import gather_textual_report, gather_json_report
 
 
 @patch("os.path.exists", return_value=True)
@@ -24,7 +24,7 @@ def test_gather_json_report(tmpdir):
     file = tmpdir.join("report.jsn")
     file.write(json.dumps({"test": "hi"}))
     file = str(file)
-    with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
+    with patch("scripts.c2r_script.C2R_REPORT_FILE", file):
         report_data = gather_json_report()
 
     assert report_data == {"test": "hi"}
@@ -44,10 +44,10 @@ def test_gather_json_report_bad_content(content, expected, tmpdir):
     file = tmpdir.join("report.json")
     file.write(content)
     file = str(file)
-    with patch("scripts.conversion_script.C2R_REPORT_FILE", file):
+    with patch("scripts.c2r_script.C2R_REPORT_FILE", file):
         assert gather_json_report() == expected
 
 
 def test_gather_json_report_missing_file():
-    with patch("scripts.conversion_script.C2R_REPORT_FILE", "/missing/file"):
+    with patch("scripts.c2r_script.C2R_REPORT_FILE", "/missing/file"):
         assert gather_json_report() == {}

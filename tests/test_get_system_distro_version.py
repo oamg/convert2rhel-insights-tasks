@@ -1,5 +1,5 @@
 from mock import patch, mock_open
-from scripts.conversion_script import get_system_distro_version
+from scripts.c2r_script import get_system_distro_version
 
 
 @patch("__builtin__.open", mock_open(read_data="CentOS Linux release 7.9.0 (Core)\n"))

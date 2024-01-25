@@ -2,7 +2,7 @@ import subprocess
 import pytest
 from mock import patch
 
-from scripts.conversion_script import run_subprocess
+from scripts.c2r_script import run_subprocess
 
 
 class SubprocessMock(object):

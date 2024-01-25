@@ -8,6 +8,12 @@ from time import gmtime, strftime
 
 from urllib2 import urlopen
 
+# SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
+# Value is set in signed yaml envelope in content_vars (SCRIPT_MODE)
+SCRIPT_TYPE = os.getenv("RHC_WORKER_SCRIPT_MODE", "").upper()
+IS_CONVERSION = SCRIPT_TYPE == "CONVERSION"
+IS_ANALYSIS = SCRIPT_TYPE == "ANALYSIS"
+
 STATUS_CODE = {
     "SUCCESS": 0,
     "INFO": 25,
@@ -16,6 +22,7 @@ STATUS_CODE = {
     "OVERRIDABLE": 152,
     "ERROR": 202,
 }
+
 # Revert the `STATUS_CODE` dictionary to map number: name instead of name:
 # number as used originally.
 STATUS_CODE_NAME = {number: name for name, number in STATUS_CODE.items()}
@@ -48,7 +55,7 @@ class RequiredFile(object):
     def __init__(self, path="", host="", keep=False):
         self.path = path
         self.host = host
-        self.keep = keep
+        self.keep = keep  # conversion specific
         self.backup_suffix = ".backup"
 
     def create_from_host_url_data(self):
@@ -214,6 +221,10 @@ def check_convert2rhel_inhibitors_before_run():
     """
     default_ini_path = "/etc/convert2rhel.ini"
     custom_ini_path = os.path.expanduser("~/.convert2rhel.ini")
+    print(
+        "Checking that '%s' wasn't modified and '%s' doesn't exist ..."
+        % (default_ini_path, custom_ini_path)
+    )
 
     if os.path.exists(custom_ini_path):
         raise ProcessError(
@@ -241,9 +252,9 @@ def check_convert2rhel_inhibitors_before_run():
 def get_system_distro_version():
     """Currently we execute the task only for RHEL 7 or 8"""
     print("Checking OS distribution and version ID ...")
-    distribution_id = None
-    version_id = None
     try:
+        distribution_id = None
+        version_id = None
         with open("/etc/system-release", "r") as system_release_file:
             data = system_release_file.readline()
             match = re.search(r"(.+?)\s?(?:release\s?)?\d", data)
@@ -333,11 +344,27 @@ def generate_report_message(highest_status):
     message = ""
     alert = False
 
-    if STATUS_CODE[highest_status] <= STATUS_CODE["WARNING"]:
+    conversion_succes_msg = (
+        "No problems found. The system was converted successfully. Please,"
+        " reboot your system at your earliest convenience to make sure that"
+        " the system is using the RHEL Kernel."
+    )
+
+    if STATUS_CODE[highest_status] < STATUS_CODE["WARNING"]:
         message = (
-            "No problems found. The system was converted successfully. Please,"
-            " reboot your system at your earliest convenience to make sure that"
-            " the system is using the RHEL Kernel."
+            conversion_succes_msg
+            if IS_CONVERSION
+            else "No problems found. The system is ready for conversion."
+        )
+
+    if STATUS_CODE[highest_status] == STATUS_CODE["WARNING"]:
+        message = (
+            conversion_succes_msg
+            if IS_CONVERSION
+            else (
+                "The conversion can proceed. "
+                "However, there is one or more warnings about issues that might occur after the conversion."
+            )
         )
 
     if STATUS_CODE[highest_status] > STATUS_CODE["WARNING"]:
@@ -452,7 +479,7 @@ def run_convert2rhel():
     """
     Run the convert2rhel tool assigning the correct environment variables.
     """
-    print("Running Convert2RHEL Conversion")
+    print("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
     env = {"PATH": os.environ["PATH"]}
 
     if "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY" in os.environ:
@@ -460,7 +487,13 @@ def run_convert2rhel():
             "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
         ]
 
-    return run_subprocess(["/usr/bin/convert2rhel", "-y"], env=env)
+    command = ["/usr/bin/convert2rhel"]
+    if IS_ANALYSIS:
+        command.append("analyze")
+
+    command.append("-y")
+    output, returncode = run_subprocess(command, env=env)
+    return output, returncode
 
 
 def cleanup(required_files):
@@ -580,7 +613,9 @@ def transform_raw_data(raw_data):
 
 
 def update_insights_inventory():
-    """Call insights-client to update insights inventory."""
+    """
+    Call insights-client to update insights inventory.
+    """
     print("Updating system status in Red Hat Insights.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
@@ -598,16 +633,7 @@ def update_insights_inventory():
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-locals
 def main():
-    # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
-
     """Main entrypoint for the script."""
-    if os.path.exists(C2R_REPORT_FILE):
-        archive_analysis_report(C2R_REPORT_FILE)
-
-    if os.path.exists(C2R_REPORT_TXT_FILE):
-        archive_analysis_report(C2R_REPORT_TXT_FILE)
-
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
@@ -623,12 +649,22 @@ def main():
     ]
 
     convert2rhel_installed = False
-    # Flag that indicate if the conversion was successful or not.
-    conversion_successful = False
+    # Flag that indicate if the (pre)conversion was successful or not.
+    execution_successful = False
     # String to hold any errors that happened during rollback.
     rollback_errors = ""
 
+    # Switched to True only after setup is called
+    do_cleanup = False
+
     try:
+        # Exit if invalid value for SCRIPT_TYPE
+        if SCRIPT_TYPE not in ["CONVERSION", "ANALYSIS"]:
+            raise ProcessError(
+                message="Allowed values for RHC_WORKER_SCRIPT_MODE are 'CONVERSION' and 'ANALYSIS'.",
+                report='Exiting because RHC_WORKER_SCRIPT_MODE="%s"' % SCRIPT_TYPE,
+            )
+
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
         if not dist.startswith("centos") or not is_eligible_releases(version):
@@ -638,15 +674,22 @@ def main():
                 % (dist.title(), version),
             )
 
+        if os.path.exists(C2R_REPORT_FILE):
+            archive_analysis_report(C2R_REPORT_FILE)
+
+        if os.path.exists(C2R_REPORT_TXT_FILE):
+            archive_analysis_report(C2R_REPORT_TXT_FILE)
+
         # Setup Convert2RHEL to be executed.
         setup_convert2rhel(required_files)
+        do_cleanup = True
         convert2rhel_installed, transaction_id = install_convert2rhel()
         if convert2rhel_installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         check_convert2rhel_inhibitors_before_run()
         stdout, returncode = run_convert2rhel()
-        conversion_successful = returncode == 0
+        execution_successful = returncode == 0
         rollback_errors = check_for_inhibitors_in_rollback()
 
         # Returncode other than 0 can happen in two states in analysis mode:
@@ -656,7 +699,7 @@ def main():
         # In any case, we should treat this as separate and give it higher
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
-        if not conversion_successful:
+        if not execution_successful:
             # Check if there are any inhibitors in the rollback logging. This is
             # necessary in the case where the analysis was done successfully, but
             # there was an error in the rollback log.
@@ -686,9 +729,10 @@ def main():
             )
 
         # Only call insights to update inventory on successful conversion.
-        update_insights_inventory()
+        if IS_CONVERSION:
+            update_insights_inventory()
 
-        print("Conversion script finished successfully!")
+        print("Convert2RHEL %s script finished successfully!" % SCRIPT_TYPE.title())
     except ProcessError as exception:
         print(exception.report)
         output = OutputCollector(
@@ -710,38 +754,45 @@ def main():
     finally:
         # Gather JSON & Textual report
         data = gather_json_report()
-        if data and not rollback_errors:
+
+        if data:
             output.status = data.get("status", None)
 
-            # At this point we know JSON report exists and no rollback errors occured
-            # we can rewrite possible previous message with more specific one and set alert
-            output.message, output.alert = generate_report_message(output.status)
+            if not rollback_errors:
+                # At this point we know JSON report exists and no rollback errors occured
+                # we can rewrite previous conversion message with more specific one (or add missing message)
+                # and set alert
+                output.message, output.alert = generate_report_message(output.status)
 
-            # Alert not present for successfull conversion
-            if not output.alert:
+            is_successful_conversion = IS_CONVERSION and execution_successful
+
+            if is_successful_conversion:
                 gpg_key_file.keep = True
 
                 # NOTE: When c2r statistics on insights are not reliant on rpm being installed
                 # remove below line (=decide only based on install_convert2rhel() result)
                 if convert2rhel_installed:
                     YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
+
                 # NOTE: Keep always because added/updated pkg is also kept
                 # (if repo existed, the .backup file will remain on system)
                 c2r_repo.keep = True
 
-            if not output.report and not conversion_successful:
-                # Try to attach the textual report in the report if we have
-                # json report, otherwise, we would overwrite the report raised
-                # by the exception.
+            should_attach_entries_and_report = (
+                IS_ANALYSIS or not is_successful_conversion
+            )
+            if not output.report and should_attach_entries_and_report:
+                # Try to attach the textual report in the report if we have json
+                # report, otherwise, we would overwrite the report raised by the
+                # exception.
                 output.report = gather_textual_report()
 
-            # Only add entries (report_json = Insights colorful report)
-            # if the returncode is not 0 and here are no rollback errors.
-            if not conversion_successful and not rollback_errors:
+            if not rollback_errors and should_attach_entries_and_report:
                 output.entries = transform_raw_data(data)
 
-        print("Cleaning up modifications to the system.")
-        cleanup(required_files)
+        if do_cleanup:
+            print("Cleaning up modifications to the system.")
+            cleanup(required_files)
 
         print("### JSON START ###")
         print(json.dumps(output.to_dict(), indent=4))
