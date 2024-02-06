@@ -1,5 +1,6 @@
 # pylint: disable=too-many-arguments
 
+import pytest
 from mock import patch, mock_open, Mock
 
 from scripts.c2r_script import main, ProcessError
@@ -389,13 +390,19 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 
 
 # fmt: off
+@pytest.mark.parametrize(
+    ("run_return_code"),
+    (
+        (0),
+        (1),
+    ),
+)
 @patch("scripts.c2r_script.IS_ANALYSIS", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.install_convert2rhel", return_value=(False, 1))
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", return_value=("", 1))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("ERROR", False)))
 @patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
@@ -417,17 +424,22 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_transform_raw_data,
     mock_generate_report_message,
     mock_gather_textual_report,
-    mock_run_convert2rhel,
     mock_inhibitor_check,
     mock_install_convert2rhel,
     mock_setup_convert2rhel,
     mock_gather_json_report,
+    run_return_code,
     capsys,
 ):
-    main()
+
+    with patch(
+        "scripts.c2r_script.run_convert2rhel", return_value=("", run_return_code)
+    ) as mock_run_convert2rhel:
+        main()
 
     mock_rollback_inhibitor_check.assert_called_once()
     output = capsys.readouterr().out
+    assert "### JSON START ###" in output
     assert "A rollback of changes performed by convert2rhel failed" in output
     assert '"alert": true' in output
 
