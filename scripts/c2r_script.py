@@ -6,7 +6,7 @@ import subprocess
 import copy
 from time import gmtime, strftime
 
-from urllib2 import urlopen
+from urllib2 import urlopen, URLError
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
 # Value is set in signed yaml envelope in content_vars (SCRIPT_MODE)
@@ -377,9 +377,18 @@ def generate_report_message(highest_status):
 def setup_convert2rhel(required_files):
     """Setup convert2rhel tool by downloading the required files."""
     print("Downloading required files.")
-    for required_file in required_files:
-        required_file.backup()
-        required_file.create_from_host_url_data()
+    try:
+        for required_file in required_files:
+            required_file.backup()
+            required_file.create_from_host_url_data()
+    except URLError as err:
+        url = required_file.host
+        # pylint: disable=raise-missing-from
+        raise ProcessError(
+            message="Failed to download required files needed for convert2rhel to run.",
+            report="Download of required file from %s failed with error: %s"
+            % (url, err),
+        )
 
 
 # Code taken from
