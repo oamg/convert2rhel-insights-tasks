@@ -650,7 +650,7 @@ def main():
     )
     c2r_repo = RequiredFile(
         path="/etc/yum.repos.d/convert2rhel.repo",
-        host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
+        host="https://cdn-public.redhat.com/content/public/addon/dist/convert2rhel/server/7/7Server/x86_64/files/repofile.repo",
     )
     required_files = [
         gpg_key_file,
