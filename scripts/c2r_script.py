@@ -491,10 +491,10 @@ def run_convert2rhel():
     print("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
     env = {"PATH": os.environ["PATH"]}
 
-    if "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY" in os.environ:
-        env["CONVERT2RHEL_DISABLE_TELEMETRY"] = os.environ[
-            "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY"
-        ]
+    for key, value in os.environ.items():
+        valid_prefix = "RHC_WORKER_"
+        if key.startswith(valid_prefix):
+            env[key.replace(valid_prefix, "")] = value
 
     command = ["/usr/bin/convert2rhel"]
     if IS_ANALYSIS:
