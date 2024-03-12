@@ -650,7 +650,7 @@ def main():
     )
     c2r_repo = RequiredFile(
         path="/etc/yum.repos.d/convert2rhel.repo",
-        host="https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo",
+        host="https://cdn-public.redhat.com/content/public/addon/dist/convert2rhel/server/7/7Server/x86_64/files/repofile.repo",
     )
     required_files = [
         gpg_key_file,
@@ -725,11 +725,13 @@ def main():
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
         if not execution_successful:
+            step = "pre-conversion analysis" if IS_ANALYSIS else "conversion"
             raise ProcessError(
                 message=(
-                    "An error occurred during the pre-conversion analysis. For details, refer to "
+                    "An error occurred during the %s. For details, refer to "
                     "the convert2rhel log file on the host at /var/log/convert2rhel/convert2rhel.log"
-                ),
+                )
+                % step,
                 report=(
                     "convert2rhel exited with code %s.\n"
                     "Output of the failed command: %s"

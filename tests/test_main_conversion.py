@@ -153,7 +153,7 @@ def test_main_process_error_no_report(
     main()
 
     output = capsys.readouterr().out
-    assert "An error occurred during the pre-conversion analysis" in output
+    assert "An error occurred during the conversion" in output
     assert '"alert": true' in output
 
     # Zero because os.path.exists is not mocked and reports do not exist
