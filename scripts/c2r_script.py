@@ -450,7 +450,7 @@ def _check_if_package_installed(pkg_name):
     return return_code == 0
 
 
-def install_convert2rhel():
+def install_or_update_convert2rhel(required_files):
     """
     Install the convert2rhel tool to the system.
     Returns True and transaction ID if the c2r pkg was installed, otherwise False, None.
@@ -461,6 +461,7 @@ def install_convert2rhel():
     c2r_installed = _check_if_package_installed(c2r_pkg_name)
 
     if not c2r_installed:
+        setup_convert2rhel(required_files)
         output, returncode = run_subprocess(
             ["/usr/bin/yum", "install", c2r_pkg_name, "-y"],
         )
@@ -690,9 +691,10 @@ def main():
             archive_analysis_report(C2R_REPORT_TXT_FILE)
 
         # Setup Convert2RHEL to be executed.
-        setup_convert2rhel(required_files)
         do_cleanup = True
-        convert2rhel_installed, transaction_id = install_convert2rhel()
+        convert2rhel_installed, transaction_id = install_or_update_convert2rhel(
+            required_files
+        )
         if convert2rhel_installed:
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
@@ -781,7 +783,7 @@ def main():
                 gpg_key_file.keep = True
 
                 # NOTE: When c2r statistics on insights are not reliant on rpm being installed
-                # remove below line (=decide only based on install_convert2rhel() result)
+                # remove below line (=decide only based on install_or_update_convert2rhel() result)
                 if convert2rhel_installed:
                     YUM_TRANSACTIONS_TO_UNDO.remove(transaction_id)
 
