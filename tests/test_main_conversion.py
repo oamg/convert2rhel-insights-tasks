@@ -10,8 +10,7 @@ from scripts.c2r_script import main
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "SUCCESS"}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.c2r_script.run_convert2rhel", return_value=("", 0))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -34,8 +33,7 @@ def test_main_success_c2r_installed(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
     capsys,  # to check for rollback info in stdout
@@ -49,9 +47,8 @@ def test_main_success_c2r_installed(
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
@@ -71,8 +68,7 @@ def test_main_success_c2r_installed(
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "SUCCESS"}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(False, None))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, None))
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.c2r_script.run_convert2rhel", return_value=("", 0))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -89,8 +85,7 @@ def test_main_success_c2r_updated(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
     mock_is_eligible_releases,
@@ -107,9 +102,8 @@ def test_main_success_c2r_updated(
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
@@ -125,8 +119,7 @@ def test_main_success_c2r_updated(
 @patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", return_value={})
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(False, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, 1))
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.c2r_script.run_convert2rhel", return_value=("", 1))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -145,8 +138,7 @@ def test_main_process_error_no_report(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_gather_json_report,
     capsys,
 ):
@@ -160,9 +152,8 @@ def test_main_process_error_no_report(
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_gather_textual_report.call_count == 0
@@ -173,8 +164,7 @@ def test_main_process_error_no_report(
 # fmt: off
 @patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(False, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, 1))
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
 @patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value="failed"))
@@ -195,8 +185,7 @@ def test_main_general_exception(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     capsys,
 ):
     main()
@@ -209,9 +198,8 @@ def test_main_general_exception(
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
@@ -222,8 +210,7 @@ def test_main_general_exception(
 # fmt: off
 @patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=False)
 @patch("scripts.c2r_script._check_ini_file_modified", return_value=True)
 @patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
@@ -246,8 +233,7 @@ def test_main_inhibited_ini_modified(
     mock_run_convert2rhel,
     mock_custom_ini,
     mock_os_exists,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     capsys,
 ):
     main()
@@ -262,8 +248,7 @@ def test_main_inhibited_ini_modified(
     assert mock_custom_ini.call_count == 1
     # 2x for archive check + 1 inside in inhibitor check + 1 gather json
     assert mock_os_exists.call_count == 4
-    assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
@@ -275,8 +260,7 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.c2r_script.IS_CONVERSION", True)
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=Mock(return_value={}))
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=True)
 @patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
@@ -297,8 +281,7 @@ def test_main_inhibited_custom_ini(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_os_exists,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_gather_json_report,
     capsys,
 ):
@@ -311,10 +294,9 @@ def test_main_inhibited_custom_ini(
     assert mock_archive_analysis_report.call_count == 2
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
     # Twice for archiving reports + 1 inside inhibitor check
     assert mock_os_exists.call_count == 3
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_json_report.call_count == 1
     assert mock_gather_textual_report.call_count == 0
@@ -328,9 +310,8 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "ERROR"}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("scripts.c2r_script.run_convert2rhel", return_value=("", 1))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
@@ -352,8 +333,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
     capsys,
@@ -369,8 +349,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_transform_raw_data.call_count == 1
@@ -386,9 +365,8 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 @patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
 @patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_convert2rhel", side_effect=Mock())
 @patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.install_convert2rhel", return_value=(True, 1))
+@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("scripts.c2r_script.run_convert2rhel", return_value=("", 1))
 @patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
 @patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("inhibited", False)))
@@ -412,8 +390,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_inhibitor_check,
-    mock_install_convert2rhel,
-    mock_setup_convert2rhel,
+    mock_install_or_update_convert2rhel,
     mock_update_insights_inventory,
     mock_gather_json_report,
     capsys,
@@ -428,8 +405,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
-    assert mock_setup_convert2rhel.call_count == 1
-    assert mock_install_convert2rhel.call_count == 1
+    assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 1
     assert mock_gather_json_report.call_count == 1
     assert mock_transform_raw_data.call_count == 0
