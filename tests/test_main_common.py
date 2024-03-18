@@ -12,13 +12,14 @@ def test_main_invalid_script_value(
     mock_cleanup,
     mock_archive,
     capsys,
+    caplog,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
 
     main()
 
     output = capsys.readouterr().out
-    assert "Exiting because RHC_WORKER_SCRIPT_MODE" in output
+    assert "Exiting because RHC_WORKER_SCRIPT_MODE" in caplog.text
     assert '"alert": false' in output
 
     mock_output_collector.assert_called()

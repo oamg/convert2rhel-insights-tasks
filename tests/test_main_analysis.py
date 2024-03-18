@@ -39,12 +39,13 @@ def test_main_success_c2r_installed(
     mock_install_or_update_convert2rhel,
     mock_gather_json_report,
     capsys,  # to check for rollback info in stdout
+    caplog,
 ):
     main()
 
     output = capsys.readouterr().out
-    assert "rollback" not in output
-    assert "Convert2RHEL Analysis script finished successfully!" in output
+    assert "rollback" not in caplog.text
+    assert "Convert2RHEL Analysis script finished successfully!" in caplog.text
     assert '"alert": false' in output
     assert mock_rollback_inhibitor_check.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
@@ -95,12 +96,13 @@ def test_main_success_c2r_updated(
     mock_install_or_update_convert2rhel,
     mock_gather_json_report,
     capsys,  # to check for rollback info in stdout
+    caplog,
 ):
     main()
 
     output = capsys.readouterr().out
-    assert "rollback" not in output
-    assert "Convert2RHEL Analysis script finished successfully!" in output
+    assert "rollback" not in caplog.text
+    assert "Convert2RHEL Analysis script finished successfully!" in caplog.text
     assert '"alert": false' in output
     assert mock_rollback_inhibitor_check.call_count == 1
 
