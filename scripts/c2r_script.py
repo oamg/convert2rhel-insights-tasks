@@ -92,23 +92,22 @@ class RequiredFile(object):
     def restore(self):
         """Restores file backup (rename). Returns True if restored, otherwise False."""
         try:
-            print("Restoring backed up file %s." % (self.path))
+            print("Trying to restore %s" % (self.path + self.backup_suffix))
             os.rename(self.path + self.backup_suffix, self.path)
+            print("File restored (%s)." % (self.path))
         except OSError as err:
-            print(err)
+            print("Failed to restore %s (%s)" % (self.path + self.backup_suffix, err))
             return False
         return True
 
     def backup(self):
         """Creates backup file (rename). Returns True if backed up, otherwise False."""
         try:
-            print(
-                "File %s already present on system, backing up to %s."
-                % (self.path, self.path + self.backup_suffix)
-            )
+            print("Trying to create back up of %s" % (self.path))
             os.rename(self.path, self.path + self.backup_suffix)
+            print("Back up created (%s)." % (self.path + self.backup_suffix))
         except OSError as err:
-            print(err)
+            print("Failed to create back up of %s (%s)" % (self.path, err))
             return False
         return True
 
