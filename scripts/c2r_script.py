@@ -5,14 +5,10 @@ import re
 import shutil
 import subprocess
 import copy
+import sys
 from time import gmtime, strftime
 
 from urllib2 import urlopen, URLError
-
-# NOTE: What are all possible levels we can get from rhc?
-log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-log_level = getattr(logging, log_level, logging.INFO)
-logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
 # Value is set in signed yaml envelope in content_vars (SCRIPT_MODE)
@@ -54,6 +50,23 @@ DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
 # Detect the last transaction id in yum.
 LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
 
+# Path to store the script logs
+LOG_DIR = "/var/log/convert2rhel-worker-scripts"
+# Log filename for the script. It will be created based on the script type of
+# execution.
+LOG_FILENAME = "convert2rhel-worker-script-%s.log" % (
+    "conversion" if IS_CONVERSION else "analysis"
+)
+
+# Path to the sos extras folder
+SOS_REPORT_FOLDER = "/etc/sos.extras.d"
+# Name of the file based on the conversion type for sos report
+SOS_REPORT_FILE = "convert2rhel-worker-scripts-%s-logs" % (
+    "conversion" if IS_CONVERSION else "analysis"
+)
+
+logger = logging.getLogger(__name__)
+
 
 class RequiredFile(object):
     """Holds data about files needed to download convert2rhel"""
@@ -74,44 +87,44 @@ class RequiredFile(object):
         try:
             directory = os.path.dirname(self.path)
             if not os.path.exists(directory):
-                logging.info("Creating directory at '%s'", directory)
+                logger.info("Creating directory at '%s'", directory)
                 os.makedirs(directory, mode=0o755)
 
-            logging.info("Writing file to destination: '%s'", self.path)
+            logger.info("Writing file to destination: '%s'", self.path)
             with open(self.path, mode="w") as handler:
                 handler.write(data)
                 os.chmod(self.path, 0o644)
         except OSError as err:
-            logging.warning(err)
+            logger.warning(err)
             return False
         return True
 
     def delete(self):
         try:
-            logging.info(
+            logger.info(
                 "Removing the file '%s' as it was previously downloaded.", self.path
             )
             os.remove(self.path)
         except OSError as err:
-            logging.warning(err)
+            logger.warning(err)
             return False
         return True
 
     def restore(self):
         """Restores file backup (rename). Returns True if restored, otherwise False."""
         try:
-            logging.info("Restoring backed up file %s.", (self.path + self.backup_suffix))
+            logger.info("Restoring backed up file %s.", (self.path + self.backup_suffix))
             os.rename(self.path + self.backup_suffix, self.path)
             print("File restored (%s)." % (self.path))
         except OSError as err:
-            logging.warning("Failed to restore %s (%s)" % (self.path + self.backup_suffix, err))
+            logger.warning("Failed to restore %s (%s)" % (self.path + self.backup_suffix, err))
             return False
         return True
 
     def backup(self):
         """Creates backup file (rename). Returns True if backed up, otherwise False."""
         try:
-            logging.info(
+            logger.info(
                 "File %s already present on system, backing up to %s.",
                 self.path,
                 self.backup_suffix,
@@ -119,7 +132,7 @@ class RequiredFile(object):
             os.rename(self.path, self.path + self.backup_suffix)
             print("Back up created (%s)." % (self.path + self.backup_suffix))
         except OSError as err:
-            logging.warning("Failed to create back up of %s (%s)" % (self.path, err))
+            logger.warning("Failed to create back up of %s (%s)" % (self.path, err))
             return False
         return True
 
@@ -174,9 +187,102 @@ class OutputCollector(object):
         }
 
 
+def setup_sos_report():
+    """Setup sos report log collection."""
+    if not os.path.exists(SOS_REPORT_FOLDER):
+        os.makedirs(SOS_REPORT_FOLDER)
+
+    script_log_file = os.path.join(LOG_DIR, LOG_FILENAME)
+    sosreport_link_file = os.path.join(SOS_REPORT_FOLDER, SOS_REPORT_FILE)
+    # In case the file for sos report does not exist, lets create one and add
+    # the log file path to it.
+    if not os.path.exists(sosreport_link_file):
+        with open(sosreport_link_file, mode="w") as handler:
+            handler.write(":%s\n" % script_log_file)
+
+
+def setup_logger_handler():
+    """
+    Setup custom logging levels, handlers, and so on. Call this method from
+    your application's main start point.
+    """
+    # Receive the log level from the worker and try to parse it. If the log
+    # level is not compatible with what the logging library expects, set the
+    # log level to INFO automatically.
+    log_level = os.getenv("RHC_WORKER_LOG_LEVEL", "INFO").upper()
+    log_level = logging.getLevelName(log_level)
+    if isinstance(log_level, str):
+        log_level = logger.INFO
+
+    # enable raising exceptions
+    logging.raiseExceptions = True
+    logger.setLevel(log_level)
+
+    # create sys.stdout handler for info/debug
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    stdout_handler.setFormatter(formatter)
+
+    # Create the directory if it don't exist
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+
+    log_filepath = os.path.join(LOG_DIR, LOG_FILENAME)
+    file_handler = logging.FileHandler(log_filepath)
+    file_handler.setFormatter(formatter)
+
+    # can flush logs to the file that were logged before initializing the file handler
+    logger.addHandler(stdout_handler)
+    logger.addHandler(file_handler)
+
+
+def archive_old_logger_files():
+    """
+    Archive the old log files to not mess with multiple runs outputs. Every
+    time a new run begins, this method will be called to archive the previous
+    logs if there is a `convert2rhel.log` file there, it will be archived using
+    the same name for the log file, but having an appended timestamp to it.
+
+    For example:
+        /var/log/convert2rhel-worker-scripts/archive/convert2rhel-worker-scripts-1635162445070567607.log
+        /var/log/convert2rhel-worker-scripts/archive/convert2rhel-worker-scripts-1635162478219820043.log
+
+    This way, the user can track the logs for each run individually based on
+    the timestamp.
+    """
+
+    current_log_file = os.path.join(LOG_DIR, LOG_FILENAME)
+    archive_log_dir = os.path.join(LOG_DIR, "archive")
+
+    # No log file found, that means it's a first run or it was manually deleted
+    if not os.path.exists(current_log_file):
+        return
+
+    stat = os.stat(current_log_file)
+
+    # Get the last modified time in UTC
+    last_modified_at = gmtime(stat.st_mtime)
+
+    # Format time to a human-readable format
+    formatted_time = strftime("%Y%m%dT%H%M%SZ", last_modified_at)
+
+    # Create the directory if it don't exist
+    if not os.path.exists(archive_log_dir):
+        os.makedirs(archive_log_dir)
+
+    file_name, suffix = tuple(LOG_FILENAME.rsplit(".", 1))
+    archive_log_file = "%s/%s-%s.%s" % (
+        archive_log_dir,
+        file_name,
+        formatted_time,
+        suffix,
+    )
+    shutil.move(current_log_file, archive_log_file)
+
+
 def check_for_inhibitors_in_rollback():
     """Returns lines with errors in rollback section of c2r log file, or empty string."""
-    logging.info(
+    logger.info(
         "Checking content of '%s' for possible rollback problems ...", C2R_LOG_FILE
     )
     matches = ""
@@ -195,13 +301,13 @@ def check_for_inhibitors_in_rollback():
             matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
             matches = "\n".join(matches)
     except ValueError:
-        logging.info(
+        logger.info(
             "Failed to find rollback section ('%s') in '%s' file.",
             start_of_rollback_section,
             C2R_LOG_FILE,
         )
     except IOError:
-        logging.warning("Failed to read '%s' file.", C2R_LOG_FILE)
+        logger.warning("Failed to read '%s' file.", C2R_LOG_FILE)
 
     return matches
 
@@ -235,7 +341,7 @@ def check_convert2rhel_inhibitors_before_run():
     """
     default_ini_path = "/etc/convert2rhel.ini"
     custom_ini_path = os.path.expanduser("~/.convert2rhel.ini")
-    logging.info(
+    logger.info(
         "Checking that '%s' wasn't modified and '%s' doesn't exist ...",
         default_ini_path,
         custom_ini_path,
@@ -266,7 +372,7 @@ def check_convert2rhel_inhibitors_before_run():
 
 def get_system_distro_version():
     """Currently we execute the task only for RHEL 7 or 8"""
-    logging.info("Checking OS distribution and version ID ...")
+    logger.info("Checking OS distribution and version ID ...")
     try:
         distribution_id = None
         version_id = None
@@ -282,9 +388,9 @@ def get_system_distro_version():
             if match:
                 version_id = "%s.%s" % (match.group(1), match.group(2))
     except IOError:
-        logging.warning("Couldn't read /etc/system-release")
+        logger.warning("Couldn't read /etc/system-release")
 
-    logging.info(
+    logger.info(
         "Detected distribution='%s' in version='%s'",
         distribution_id,
         version_id,
@@ -322,7 +428,7 @@ def archive_analysis_report(file):
 
 def gather_json_report():
     """Collect the json report generated by convert2rhel."""
-    logging.info("Collecting JSON report.")
+    logger.info("Collecting JSON report.")
 
     if not os.path.exists(C2R_REPORT_FILE):
         return {}
@@ -350,7 +456,7 @@ def gather_textual_report():
             It's fine if the textual report does not exist, but the JSON one is
             required.
     """
-    logging.info("Collecting TXT report.")
+    logger.info("Collecting TXT report.")
     data = ""
     if os.path.exists(C2R_REPORT_TXT_FILE):
         with open(C2R_REPORT_TXT_FILE, mode="r") as handler:
@@ -395,7 +501,7 @@ def generate_report_message(highest_status):
 
 def setup_convert2rhel(required_files):
     """Setup convert2rhel tool by downloading the required files."""
-    logging.info("Downloading required files.")
+    logger.info("Downloading required files.")
     try:
         for required_file in required_files:
             required_file.backup()
@@ -431,7 +537,7 @@ def run_subprocess(cmd, print_cmd=True, env=None):
         raise TypeError("cmd should be a list, not a str")
 
     if print_cmd:
-        logging.info("Calling command '%s'", " ".join(cmd))
+        logger.info("Calling command '%s'", " ".join(cmd))
 
     process = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, env=env
@@ -452,7 +558,7 @@ def _get_last_yum_transaction_id(pkg_name):
     output, return_code = run_subprocess(["/usr/bin/yum", "history", "list", pkg_name])
     if return_code:
         # NOTE: There is only print because list will exit with 1 when no such transaction exist
-        logging.warning(
+        logger.warning(
             "Listing yum transaction history for '%s' failed with exit status '%s' and output '%s'"
             "\nThis may cause clean up function to not remove '%s' after Task run.",
             pkg_name,
@@ -476,7 +582,7 @@ def install_or_update_convert2rhel(required_files):
     Install the convert2rhel tool to the system.
     Returns True and transaction ID if the c2r pkg was installed, otherwise False, None.
     """
-    logging.info("Installing & updating Convert2RHEL package.")
+    logger.info("Installing & updating Convert2RHEL package.")
 
     c2r_pkg_name = "convert2rhel"
     c2r_installed = _check_if_package_installed(c2r_pkg_name)
@@ -510,7 +616,7 @@ def run_convert2rhel():
     """
     Run the convert2rhel tool assigning the correct environment variables.
     """
-    logging.info("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
+    logger.info("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
     env = os.environ
 
     for key in env:
@@ -546,7 +652,7 @@ def cleanup(required_files):
             ["/usr/bin/yum", "history", "undo", "-y", transaction_id],
         )
         if returncode:
-            logging.warning(
+            logger.warning(
                 "Undo of yum transaction with ID %s failed with exit status '%s' and output:\n%s",
                 transaction_id,
                 returncode,
@@ -649,7 +755,7 @@ def update_insights_inventory():
     """
     Call insights-client to update insights inventory.
     """
-    logging.info("Updating system status in Red Hat Insights.")
+    logger.info("Updating system status in Red Hat Insights.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
@@ -659,7 +765,7 @@ def update_insights_inventory():
             % (returncode, output.rstrip("\n")),
         )
 
-    logging.info("System registered with insights-client successfully.")
+    logger.info("System registered with insights-client successfully.")
 
 
 # pylint: disable=too-many-branches
@@ -689,6 +795,10 @@ def main():
 
     # Switched to True only after setup is called
     do_cleanup = False
+
+    setup_sos_report()
+    archive_old_logger_files()
+    setup_logger_handler()
 
     try:
         # Exit if invalid value for SCRIPT_TYPE
@@ -768,11 +878,11 @@ def main():
         if IS_CONVERSION:
             update_insights_inventory()
 
-        logging.info(
+        logger.info(
             "Convert2RHEL %s script finished successfully!", SCRIPT_TYPE.title()
         )
     except ProcessError as exception:
-        logging.error(exception.report)
+        logger.error(exception.report)
         output = OutputCollector(
             status="ERROR",
             alert=True,
@@ -781,7 +891,7 @@ def main():
             report=exception.report,
         )
     except Exception as exception:
-        logging.critical(str(exception))
+        logger.critical(str(exception))
         output = OutputCollector(
             status="ERROR",
             alert=True,
@@ -829,7 +939,7 @@ def main():
                 output.entries = transform_raw_data(data)
 
         if do_cleanup:
-            logging.info("Cleaning up modifications to the system.")
+            logger.info("Cleaning up modifications to the system.")
             cleanup(required_files)
 
         print("### JSON START ###")
