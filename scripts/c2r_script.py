@@ -489,12 +489,12 @@ def run_convert2rhel():
     Run the convert2rhel tool assigning the correct environment variables.
     """
     print("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
-    env = {"PATH": os.environ["PATH"]}
+    env = os.environ
 
-    for key, value in os.environ.items():
+    for key in env:
         valid_prefix = "RHC_WORKER_"
         if key.startswith(valid_prefix):
-            env[key.replace(valid_prefix, "")] = value
+            env[key.replace(valid_prefix, "")] = env.pop(key)
 
     command = ["/usr/bin/convert2rhel"]
     if IS_ANALYSIS:
