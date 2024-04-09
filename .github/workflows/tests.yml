@@ -11,14 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:2.7
+
     steps:
     - uses: actions/checkout@v3
+
     - name: Install requirements
       run: pip install --upgrade -r requirements.txt
+
     - name: Test
       run: python -m pytest --cov --cov-report=xml
-    - name: Upload coverage reports to Codecov
+
+    - name: Upload coverage to Codecov - First Attempt
       uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
+        env_vars: OS,PYTHON
+        flags: python-2.7-container
+        name: coverage-python-2.7
         fail_ci_if_error: true
+        files: ./coverage.xml
         verbose: true # optional (default = false)
