@@ -1,6 +1,6 @@
-[![codecov](https://codecov.io/gh/oamg/convert2rhel-worker-scripts/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-worker-scripts)
+[![codecov](https://codecov.io/gh/oamg/convert2rhel-insights-tasks/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-insights-tasks)
 
-# Convert2RHEL worker scripts
+# Convert2RHEL Inights Tasks
 
 Scripts related to [convert2rhel](https://github.com/oamg/convert2rhel) to be run via [rhc-worker-script](https://github.com/oamg/rhc-worker-script) on Red Hat Insights.
 
