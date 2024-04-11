@@ -1,0 +1,45 @@
+name: build_and_publish_images
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_and_publish:
+    name: build-${{ matrix.el.distro }}${{ matrix.el.ver }}
+    strategy:
+      fail-fast: false
+      matrix:
+        el:
+          - distro: centos
+            ver: 7
+
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.1.1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: .
+          file: ./Containerfiles/${{ matrix.el.distro }}${{ matrix.el.ver }}.Containerfile
+          tags: ghcr.io/${{ github.repository_owner }}/convert2rhel-insights-tasks-${{ matrix.el.distro }}${{ matrix.el.ver }}:latest
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/convert2rhel-insights-tasks-${{ matrix.el.distro }}${{ matrix.el.ver }}:latest
+          cache-to: type=inline

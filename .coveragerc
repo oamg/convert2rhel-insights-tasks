@@ -1,7 +1,6 @@
 [run]
-omit =
-    tests/*
-    venv*
+branch = True
+source = scripts
 
 [report]
 fail_under = 80
