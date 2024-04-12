@@ -4,6 +4,8 @@
 **/__pycache__/**
 
 .coverage
+coverage.xml
+.build-image7
 
 install-deps
 pre-commit
