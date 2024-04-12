@@ -112,12 +112,13 @@ class RequiredFile(object):
 
     def restore(self):
         """Restores file backup (rename). Returns True if restored, otherwise False."""
+        file_path = os.path.join(self.path, self.backup_suffix)
         try:
-            logger.info("Restoring backed up file %s.", (self.path + self.backup_suffix))
-            os.rename(self.path + self.backup_suffix, self.path)
-            print("File restored (%s)." % (self.path))
+            logger.info("Restoring backed up file %s.", file_path)
+            os.rename(file_path, self.path)
+            logger.info("File restored (%s).", self.path)
         except OSError as err:
-            logger.warning("Failed to restore %s (%s)" % (self.path + self.backup_suffix, err))
+            logger.warning("Failed to restore %s:\n %s", file_path, err)
             return False
         return True
 
@@ -132,7 +133,7 @@ class RequiredFile(object):
             os.rename(self.path, self.path + self.backup_suffix)
             print("Back up created (%s)." % (self.path + self.backup_suffix))
         except OSError as err:
-            logger.warning("Failed to create back up of %s (%s)" % (self.path, err))
+            logger.warning("Failed to create back up of %s (%s)", self.path, err)
             return False
         return True
 
@@ -616,7 +617,7 @@ def run_convert2rhel():
     """
     Run the convert2rhel tool assigning the correct environment variables.
     """
-    logger.info("Running Convert2RHEL %s" % SCRIPT_TYPE.title())
+    logger.info("Running Convert2RHEL %s", (SCRIPT_TYPE.title()))
     env = os.environ
 
     for key in env:
