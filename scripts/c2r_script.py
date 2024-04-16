@@ -379,7 +379,7 @@ def get_system_distro_version():
         version_id = None
         with open("/etc/system-release", "r") as system_release_file:
             data = system_release_file.readline()
-            match = re.search(r"(.+?)\s?(?:release\s?)?\d", data)
+            match = re.search(r"(.+?)\s?(?:release\s?)", data)
             if match:
                 # Split and get the first position, which will contain the system
                 # name.

@@ -1,5 +1,6 @@
 import os
 import logging
+from mock import patch
 import pytest
 import scripts
 
@@ -27,6 +28,21 @@ def test_setup_sos_report(monkeypatch, tmpdir):
             ":/var/log/convert2rhel-worker-scripts/convert2rhel-worker-script-analysis.log"
             == handler.read().strip()
         )
+
+
+@patch("scripts.c2r_script.os.makedirs")
+@patch("scripts.c2r_script.os.path.exists", side_effect=[False, True])
+def test_setup_sos_report_no_sos_report_folder(
+    patch_exists, patch_makedirs, monkeypatch, tmpdir
+):
+    sos_report_folder = str(tmpdir)
+    monkeypatch.setattr(scripts.c2r_script, "SOS_REPORT_FOLDER", sos_report_folder)
+
+    setup_sos_report()
+
+    # Folder created
+    assert patch_exists.call_count == 2
+    patch_makedirs.assert_called_once_with(sos_report_folder)
 
 
 @pytest.mark.noautofixtures
