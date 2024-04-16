@@ -112,7 +112,7 @@ class RequiredFile(object):
 
     def restore(self):
         """Restores file backup (rename). Returns True if restored, otherwise False."""
-        file_path = os.path.join(self.path, self.backup_suffix)
+        file_path = self.path + self.backup_suffix
         try:
             logger.info("Restoring backed up file %s.", file_path)
             os.rename(file_path, self.path)
