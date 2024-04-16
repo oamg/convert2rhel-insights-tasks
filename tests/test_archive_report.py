@@ -22,3 +22,12 @@ def test_archive_old_report(create_json_report_mock, tmpdir):
         archive_analysis_report(create_json_report_mock)
 
     assert len(os.listdir(tmp_archive_dir)) == 1
+
+
+@patch("scripts.c2r_script.os.path.exists", return_value=True)
+@patch("scripts.c2r_script.shutil.move")
+def test_archive_old_report_no_dir(mock_dir_exists, mock_move, create_json_report_mock):
+    archive_analysis_report(create_json_report_mock)
+
+    mock_dir_exists.assert_called_once()
+    mock_move.assert_called_once()

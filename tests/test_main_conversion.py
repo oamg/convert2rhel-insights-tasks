@@ -21,9 +21,15 @@ from scripts.c2r_script import main
 @patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
@@ -44,6 +50,9 @@ def test_main_success_c2r_installed(
     assert "No problems found. The system was converted successfully." in output
     assert '"alert": false' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
@@ -76,9 +85,15 @@ def test_main_success_c2r_installed(
 # These patches are calls made in cleanup
 @patch("os.path.exists", return_value=False)
 @patch("scripts.c2r_script.run_subprocess", return_value=("", 1))
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_updated(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_cleanup_pkg_call,
     mock_os_exists,
     mock_transform_raw_data,
@@ -99,6 +114,9 @@ def test_main_success_c2r_updated(
     assert "No problems found. The system was converted successfully." in output
     assert '"alert": false' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
@@ -128,8 +146,14 @@ def test_main_success_c2r_updated(
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 def test_main_process_error_no_report(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
@@ -148,6 +172,9 @@ def test_main_process_error_no_report(
     assert "An error occurred during the conversion" in output
     assert '"alert": true' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     # Zero because os.path.exists is not mocked and reports do not exist
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
@@ -174,8 +201,14 @@ def test_main_process_error_no_report(
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
@@ -194,6 +227,9 @@ def test_main_general_exception(
     assert "An unexpected error occurred" in output
     assert '"alert": true' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     # Zero because os.path.exists is not mocked and reports do not exist
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
@@ -221,8 +257,15 @@ def test_main_general_exception(
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_inhibited_ini_modified(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
@@ -242,6 +285,9 @@ def test_main_inhibited_ini_modified(
     assert "/etc/convert2rhel.ini was modified" in output
     assert '"alert": true' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     assert mock_archive_analysis_report.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
@@ -270,8 +316,15 @@ def test_main_inhibited_ini_modified(
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
 @patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
+# pylint: disable=too-many-locals
 def test_main_inhibited_custom_ini(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_archive_analysis_report,
     mock_is_eligible_releases,
@@ -291,6 +344,9 @@ def test_main_inhibited_custom_ini(
     assert ".convert2rhel.ini was found" in output
     assert '"alert": true' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     assert mock_archive_analysis_report.call_count == 2
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
@@ -321,9 +377,15 @@ def test_main_inhibited_custom_ini(
 @patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="")
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_no_rollback_err(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_rollback_inhibitor_check,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
@@ -346,6 +408,9 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 
     mock_rollback_inhibitor_check.assert_called_once()
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -377,9 +442,15 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 @patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("scripts.c2r_script.is_eligible_releases", return_value=True)
 @patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="rollback error")
+@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
+@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
+@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_rollback_errors(
+    mock_setup_logger_handler,
+    mock_setup_sos_report,
+    mock_archive_old_logger_files,
     mock_rollback_inhibitor_check,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
@@ -401,6 +472,9 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert "A rollback of changes performed by convert2rhel failed" in output
     assert '"alert": true' in output
 
+    assert mock_setup_logger_handler.call_count == 1
+    assert mock_setup_sos_report.call_count == 1
+    assert mock_archive_old_logger_files.call_count == 1
     mock_rollback_inhibitor_check.assert_called_once()
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1

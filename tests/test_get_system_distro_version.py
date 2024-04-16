@@ -10,6 +10,14 @@ def test_get_system_distro_version_existing_file_centos():
     assert version_id == "7.9"
 
 
+@patch("__builtin__.open", mock_open(read_data="foo 7.9.0 (Core)\n"))
+def test_get_version_no_matching_system_distro():
+    distribution_id, version_id = get_system_distro_version()
+
+    assert distribution_id is None
+    assert version_id == "7.9"
+
+
 @patch(
     "__builtin__.open",
     mock_open(read_data="Red Hat Enterprise Linux Server release 7.9 (Maipo)\n"),

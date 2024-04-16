@@ -28,14 +28,22 @@ def test_create_host(required_file_instance):
 
 def test_create_data(required_file_instance):
     with patch("scripts.c2r_script.urlopen") as mock_urlopen, patch(
+        "scripts.c2r_script.os.path.dirname", return_value="/test"
+    ) as mock_dirname, patch(
+        "scripts.c2r_script.os.path.exists", return_value=True
+    ) as mock_exists, patch(
         "scripts.c2r_script.os.makedirs"
-    ) as mock_makedirs, patch("scripts.c2r_script.open") as mock_open, patch(
+    ) as mock_makedirs, patch(
+        "scripts.c2r_script.open"
+    ) as mock_open, patch(
         "scripts.c2r_script.os.chmod"
     ) as mock_chmod:
         required_file_instance.create_from_data(b"Mocked data")
 
         mock_urlopen.assert_not_called()
-        mock_makedirs.assert_called_once_with("/test", mode=0o755)
+        mock_dirname.assert_called_once()
+        mock_exists.assert_called_once()
+        mock_makedirs.assert_not_called()
         mock_open.assert_called_once_with("/test/path", mode="w")
         mock_chmod.assert_called_once_with("/test/path", 0o644)
 

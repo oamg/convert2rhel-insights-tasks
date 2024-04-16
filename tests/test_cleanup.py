@@ -30,7 +30,7 @@ def test_cleanup_with_file_to_keep(mock_yum_undo):
 
 
 @patch("scripts.c2r_script.YUM_TRANSACTIONS_TO_UNDO", new=set([1]))
-@patch("scripts.c2r_script.run_subprocess", return_value=("", 1))
+@patch("scripts.c2r_script.run_subprocess", return_value=("", 0))
 def test_cleanup_with_undo_yum(mock_yum_undo):
     """Only downloaded files are removed."""
 
