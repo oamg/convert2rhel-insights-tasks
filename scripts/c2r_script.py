@@ -379,15 +379,15 @@ def get_system_distro_version():
         version_id = None
         with open("/etc/system-release", "r") as system_release_file:
             data = system_release_file.readline()
-            match = re.search(r"(.+?)\s?(?:release\s?)", data)
-            if match:
-                # Split and get the first position, which will contain the system
-                # name.
-                distribution_id = match.group(1).lower()
+        match = re.search(r"(.+?)\s?(?:release\s?)", data)
+        if match:
+            # Split and get the first position, which will contain the system
+            # name.
+            distribution_id = match.group(1).lower()
 
-            match = re.search(r".+?(\d+)\.(\d+)\D?", data)
-            if match:
-                version_id = "%s.%s" % (match.group(1), match.group(2))
+        match = re.search(r".+?(\d+)\.(\d+)\D?", data)
+        if match:
+            version_id = "%s.%s" % (match.group(1), match.group(2))
     except IOError:
         logger.warning("Couldn't read /etc/system-release")
 
@@ -811,12 +811,18 @@ def main():
 
         # Exit if not CentOS 7.9
         dist, version = get_system_distro_version()
-        if not dist.startswith("centos") or not is_eligible_releases(version):
-            raise ProcessError(
-                message="Conversion is only supported on CentOS 7.9 distributions.",
-                report='Exiting because distribution="%s" and version="%s"'
-                % (dist.title(), version),
-            )
+
+        # Just try (pre)conversion if we can't read the dist or version
+        # (e.g. /etc/system-release is missing), such state is logged in get_system_distro_version
+        if dist and version:
+            is_valid_dist = dist.startswith("centos")
+            is_valid_version = is_eligible_releases(version)
+            if not is_valid_dist or not is_valid_version:
+                raise ProcessError(
+                    message="Conversion is only supported on CentOS 7.9 distributions.",
+                    report='Exiting because distribution="%s" and version="%s"'
+                    % (dist.title(), version),
+                )
 
         if os.path.exists(C2R_REPORT_FILE):
             archive_analysis_report(C2R_REPORT_FILE)
