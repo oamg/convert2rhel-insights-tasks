@@ -814,7 +814,7 @@ def main():
 
         # Just try (pre)conversion if we can't read the dist or version
         # (e.g. /etc/system-release is missing), such state is logged in get_system_distro_version
-        if dist is not None and version is not None:
+        if dist and version:
             is_valid_dist = dist.startswith("centos")
             is_valid_version = is_eligible_releases(version)
             if not is_valid_dist or not is_valid_version:
