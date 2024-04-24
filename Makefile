@@ -61,15 +61,9 @@ pre-commit:
 
 install: install-deps pre-commit
 
-tests: install-deps
-	. $(PYTHON_VENV)/bin/activate; \
-	$(PYTEST_CALL)
-
 sync: install-deps
 	. $(PYTHON_VENV)/bin/activate; \
 	python misc/sync_scripts.py
-
-image7: .build-image7
 
 .fetch-image7:
 	@echo "Pulling $(IMAGE)-centos7"
