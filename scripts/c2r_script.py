@@ -51,17 +51,17 @@ DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
 LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
 
 # Path to store the script logs
-LOG_DIR = "/var/log/convert2rhel-worker-scripts"
+LOG_DIR = "/var/log/convert2rhel-insights-tasks"
 # Log filename for the script. It will be created based on the script type of
 # execution.
-LOG_FILENAME = "convert2rhel-worker-script-%s.log" % (
+LOG_FILENAME = "convert2rhel-insights-tasks-%s.log" % (
     "conversion" if IS_CONVERSION else "analysis"
 )
 
 # Path to the sos extras folder
 SOS_REPORT_FOLDER = "/etc/sos.extras.d"
 # Name of the file based on the conversion type for sos report
-SOS_REPORT_FILE = "convert2rhel-worker-scripts-%s-logs" % (
+SOS_REPORT_FILE = "convert2rhel-insights-tasks-%s-logs" % (
     "conversion" if IS_CONVERSION else "analysis"
 )
 
@@ -245,8 +245,8 @@ def archive_old_logger_files():
     the same name for the log file, but having an appended timestamp to it.
 
     For example:
-        /var/log/convert2rhel-worker-scripts/archive/convert2rhel-worker-scripts-1635162445070567607.log
-        /var/log/convert2rhel-worker-scripts/archive/convert2rhel-worker-scripts-1635162478219820043.log
+        /var/log/convert2rhel-insights-tasks/archive/convert2rhel-insights-tasks-1635162445070567607.log
+        /var/log/convert2rhel-insights-tasks/archive/convert2rhel-insights-tasks-1635162478219820043.log
 
     This way, the user can track the logs for each run individually based on
     the timestamp.

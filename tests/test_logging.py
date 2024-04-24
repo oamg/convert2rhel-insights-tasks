@@ -18,14 +18,14 @@ def test_setup_sos_report(monkeypatch, tmpdir):
     setup_sos_report()
 
     sos_report_file = os.path.join(
-        sos_report_folder, "convert2rhel-worker-scripts-analysis-logs"
+        sos_report_folder, "convert2rhel-insights-tasks-analysis-logs"
     )
     assert os.path.exists(sos_report_folder)
     assert os.path.exists(sos_report_file)
 
     with open(sos_report_file) as handler:
         assert (
-            ":/var/log/convert2rhel-worker-scripts/convert2rhel-worker-script-analysis.log"
+            ":/var/log/convert2rhel-insights-tasks/convert2rhel-insights-tasks-analysis.log"
             == handler.read().strip()
         )
 
