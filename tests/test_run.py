@@ -25,6 +25,7 @@ def test_run_convert2rhel_conversion():
         "PATH": "/fake/path",
         "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1",
         "RHC_WORKER_FOO": "1",
+        "RHC_WORKER_RHC_WORKER_BAR": "1",
     }
 
     with patch("os.environ", mock_env), patch(
@@ -38,6 +39,7 @@ def test_run_convert2rhel_conversion():
             "PATH": "/fake/path",
             "CONVERT2RHEL_DISABLE_TELEMETRY": "1",
             "FOO": "1",
+            "BAR": "1",
         },
     )
 
