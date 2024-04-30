@@ -213,10 +213,10 @@ def setup_logger_handler():
     log_level = os.getenv("RHC_WORKER_LOG_LEVEL", "INFO").upper()
     log_level = logging.getLevelName(log_level)
     if isinstance(log_level, str):
-        log_level = logger.INFO
+        log_level = logging.INFO
 
     # enable raising exceptions
-    logging.raiseExceptions = True
+    logger.propagate = True
     logger.setLevel(log_level)
 
     # create sys.stdout handler for info/debug
