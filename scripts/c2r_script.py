@@ -77,6 +77,9 @@ class RequiredFile(object):
         self.keep = keep  # conversion specific
         self.backup_suffix = ".backup"
 
+        self.backup_created = False
+        self.created = False
+
     def create_from_host_url_data(self):
         return self._create(urlopen(self.host).read())
 
@@ -94,24 +97,31 @@ class RequiredFile(object):
             with open(self.path, mode="w") as handler:
                 handler.write(data)
                 os.chmod(self.path, 0o644)
+
+            self.created = True
         except OSError as err:
-            logger.warning(err)
+            logger.warning("Failed to write file to '%s':\n %s", self.path, err)
             return False
         return True
 
     def delete(self):
+        """Deletes the file. Returns True if deleted, otherwise False."""
+        if not self.created:
+            return False
+
         try:
-            logger.info(
-                "Removing the file '%s' as it was previously downloaded.", self.path
-            )
+            logger.info("Removing the previously downloaded file '%s'", self.path)
             os.remove(self.path)
         except OSError as err:
-            logger.warning(err)
+            logger.warning("Failed to remove '%s':\n %s", self.path, err)
             return False
         return True
 
     def restore(self):
         """Restores file backup (rename). Returns True if restored, otherwise False."""
+        if not self.backup_created:
+            return False
+
         file_path = self.path + self.backup_suffix
         try:
             logger.info("Restoring backed up file %s.", file_path)
@@ -124,14 +134,19 @@ class RequiredFile(object):
 
     def backup(self):
         """Creates backup file (rename). Returns True if backed up, otherwise False."""
+        if not os.path.exists(self.path):
+            logger.info("File %s does not exist, no need to back up.", self.path)
+            return False
+
         try:
             logger.info(
-                "File %s already present on system, backing up to %s.",
+                "Trying to create backup of %s (%s) ...",
                 self.path,
                 self.backup_suffix,
             )
             os.rename(self.path, self.path + self.backup_suffix)
-            print("Back up created (%s)." % (self.path + self.backup_suffix))
+            logger.info("Back up created (%s).", (self.path + self.backup_suffix))
+            self.backup_created = True
         except OSError as err:
             logger.warning("Failed to create back up of %s (%s)", self.path, err)
             return False
@@ -645,6 +660,8 @@ def cleanup(required_files):
     will not remove that file, as it understand that it is a system file and
     not something that was downloaded by the script.
     """
+    logger.info("Cleaning up modifications to the system ...")
+
     for required_file in required_files:
         if required_file.keep:
             continue
@@ -949,7 +966,6 @@ def main():
                 output.entries = transform_raw_data(data)
 
         if do_cleanup:
-            logger.info("Cleaning up modifications to the system.")
             cleanup(required_files)
 
         print("### JSON START ###")
