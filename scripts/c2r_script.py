@@ -144,8 +144,9 @@ class RequiredFile(object):
                 self.path,
                 self.backup_suffix,
             )
-            os.rename(self.path, self.path + self.backup_suffix)
-            logger.info("Back up created (%s).", (self.path + self.backup_suffix))
+            full_path = self.path + self.backup_suffix
+            os.rename(self.path, full_path)
+            logger.info("Back up created (%s).", full_path)
             self.backup_created = True
         except OSError as err:
             logger.warning("Failed to create back up of %s (%s)", self.path, err)
