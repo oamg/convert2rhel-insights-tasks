@@ -1,5 +1,5 @@
 import pytest
-from scripts.c2r_script import is_eligible_releases
+from convert2rhel_insights_tasks.main import is_eligible_releases
 
 
 @pytest.mark.parametrize(

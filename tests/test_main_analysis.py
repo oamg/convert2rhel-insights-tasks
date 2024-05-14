@@ -3,28 +3,28 @@
 import pytest
 from mock import patch, mock_open, Mock
 
-from scripts.c2r_script import main, ProcessError
+from convert2rhel_insights_tasks.main import main, ProcessError
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, 1))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", return_value=("", 0))
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
-@patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="")
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.gather_json_report", side_effect=[{"actions": []}])
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(False, 1))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
+@patch("convert2rhel_insights_tasks.main.transform_raw_data", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
@@ -74,24 +74,24 @@ def test_main_success_c2r_installed(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, None))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", return_value=("", 0))
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
-@patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="")
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.gather_json_report", side_effect=[{"actions": []}])
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(False, None))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("successfully", False)))
+@patch("convert2rhel_insights_tasks.main.transform_raw_data", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_updated(
@@ -141,23 +141,23 @@ def test_main_success_c2r_updated(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", new_callable=mock_open())
-@patch("scripts.c2r_script.gather_json_report", return_value={})
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.gather_json_report", return_value={})
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(True, 1))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", side_effect=ProcessError("test", "Process error"))
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("failed", False)))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_process_error(
@@ -203,22 +203,22 @@ def test_main_process_error(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("failed", False)))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(True, 1))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("failed", False)))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 def test_main_general_exception(
     mock_setup_logger_handler,
@@ -259,23 +259,23 @@ def test_main_general_exception(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=False)
-@patch("scripts.c2r_script._check_ini_file_modified", return_value=True)
-@patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("", False)))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main._check_ini_file_modified", return_value=True)
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_ini_modified(
@@ -319,22 +319,22 @@ def test_main_inhibited_ini_modified(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
 @patch("__builtin__.open", mock_open(read_data="not json serializable"))
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(True, 1))
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(True, 1))
 @patch("os.path.exists", return_value=True)
-@patch("scripts.c2r_script.run_convert2rhel", side_effect=Mock())
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("", False)))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("", False)))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 def test_main_inhibited_custom_ini(
     mock_setup_logger_handler,
@@ -375,23 +375,23 @@ def test_main_inhibited_custom_ini(
 
 
 # fmt: off
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": [], "status": "ERROR"}])
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, 1))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.run_convert2rhel", return_value=("", 1))
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="")
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.gather_json_report", side_effect=[{"actions": [], "status": "ERROR"}])
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(False, 1))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.run_convert2rhel", return_value=("", 1))
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.transform_raw_data", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_no_rollback_err(
@@ -443,23 +443,23 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
         (1),
     ),
 )
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.gather_json_report", side_effect=[{"actions": []}])
-@patch("scripts.c2r_script.install_or_update_convert2rhel", return_value=(False, 1))
-@patch("scripts.c2r_script.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
-@patch("scripts.c2r_script.gather_textual_report", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.generate_report_message", side_effect=Mock(return_value=("ERROR", False)))
-@patch("scripts.c2r_script.transform_raw_data", side_effect=Mock(return_value=""))
-@patch("scripts.c2r_script.cleanup", side_effect=Mock())
-@patch("scripts.c2r_script.get_system_distro_version", return_value=("centos", "7.9"))
-@patch("scripts.c2r_script.is_eligible_releases", return_value=True)
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.check_for_inhibitors_in_rollback", return_value="rollback error")
-@patch("scripts.c2r_script.update_insights_inventory", side_effect=Mock())
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.gather_json_report", side_effect=[{"actions": []}])
+@patch("convert2rhel_insights_tasks.main.install_or_update_convert2rhel", return_value=(False, 1))
+@patch("convert2rhel_insights_tasks.main.check_convert2rhel_inhibitors_before_run", return_value=("", 0))
+@patch("convert2rhel_insights_tasks.main.gather_textual_report", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.generate_report_message", side_effect=Mock(return_value=("ERROR", False)))
+@patch("convert2rhel_insights_tasks.main.transform_raw_data", side_effect=Mock(return_value=""))
+@patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
+@patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="rollback error")
+@patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_rollback_errors(
@@ -483,7 +483,8 @@ def test_main_inhibited_c2r_installed_rollback_errors(
 ):
 
     with patch(
-        "scripts.c2r_script.run_convert2rhel", return_value=("", run_return_code)
+        "convert2rhel_insights_tasks.main.run_convert2rhel",
+        return_value=("", run_return_code),
     ) as mock_run_convert2rhel:
         main()
 

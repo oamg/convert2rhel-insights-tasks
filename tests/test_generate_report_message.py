@@ -1,7 +1,7 @@
 from mock import patch
 
 import pytest
-from scripts.c2r_script import generate_report_message
+from convert2rhel_insights_tasks.main import generate_report_message
 
 
 @pytest.mark.parametrize(
@@ -41,8 +41,8 @@ from scripts.c2r_script import generate_report_message
         ),
     ],
 )
-@patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
-@patch("scripts.c2r_script.IS_CONVERSION", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "CONVERSION")
+@patch("convert2rhel_insights_tasks.main.IS_CONVERSION", True)
 def test_generate_report_message_conversion(
     highest_status,
     expected_message,
@@ -82,7 +82,7 @@ def test_generate_report_message_conversion(
         ),
     ],
 )
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
 def test_generate_report_message_analysis(highest_status, expected_message, has_alert):
     assert generate_report_message(highest_status) == (expected_message, has_alert)

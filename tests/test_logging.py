@@ -1,9 +1,9 @@
 import os
 import logging
 from mock import patch
-import scripts
+import convert2rhel_insights_tasks
 
-from scripts.c2r_script import (
+from convert2rhel_insights_tasks.main import (
     setup_sos_report,
     setup_logger_handler,
     archive_old_logger_files,
@@ -12,7 +12,9 @@ from scripts.c2r_script import (
 
 def test_setup_sos_report(monkeypatch, tmpdir):
     sos_report_folder = str(tmpdir)
-    monkeypatch.setattr(scripts.c2r_script, "SOS_REPORT_FOLDER", sos_report_folder)
+    monkeypatch.setattr(
+        convert2rhel_insights_tasks.main, "SOS_REPORT_FOLDER", sos_report_folder
+    )
 
     setup_sos_report()
 
@@ -29,13 +31,15 @@ def test_setup_sos_report(monkeypatch, tmpdir):
         )
 
 
-@patch("scripts.c2r_script.os.makedirs")
-@patch("scripts.c2r_script.os.path.exists", side_effect=[False, True])
+@patch("convert2rhel_insights_tasks.main.os.makedirs")
+@patch("convert2rhel_insights_tasks.main.os.path.exists", side_effect=[False, True])
 def test_setup_sos_report_no_sos_report_folder(
     patch_exists, patch_makedirs, monkeypatch, tmpdir
 ):
     sos_report_folder = str(tmpdir)
-    monkeypatch.setattr(scripts.c2r_script, "SOS_REPORT_FOLDER", sos_report_folder)
+    monkeypatch.setattr(
+        convert2rhel_insights_tasks.main, "SOS_REPORT_FOLDER", sos_report_folder
+    )
 
     setup_sos_report()
 
@@ -49,9 +53,9 @@ def test_setup_logger_handler_incorrect_log_level(monkeypatch, tmpdir):
     logger = logging.getLogger(__name__)
     monkeypatch.setenv("RHC_WORKER_LOG_LEVEL", "INVALID_LOG_LEVEL")
     log_dir = str(tmpdir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "filelog.log")
-    monkeypatch.setattr(scripts.c2r_script, "logger", logger)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "filelog.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "logger", logger)
 
     setup_logger_handler()
 
@@ -60,8 +64,8 @@ def test_setup_logger_handler_incorrect_log_level(monkeypatch, tmpdir):
 
 def test_setup_logger_handler(monkeypatch, tmpdir):
     log_dir = str(tmpdir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "filelog.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "filelog.log")
 
     setup_logger_handler()
     logger = logging.getLogger(__name__)
@@ -75,8 +79,8 @@ def test_setup_logger_handler(monkeypatch, tmpdir):
 
 def test_setup_logger_handler_no_log_dir_folder(monkeypatch, tmpdir):
     log_dir = os.path.join(str(tmpdir), "missing-folder")
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "filelog.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "filelog.log")
 
     setup_logger_handler()
     logger = logging.getLogger(__name__)
@@ -91,8 +95,8 @@ def test_setup_logger_handler_no_log_dir_folder(monkeypatch, tmpdir):
 def test_archive_old_logger_files(monkeypatch, tmpdir):
     log_dir = str(tmpdir)
     archive_dir = os.path.join(log_dir, "archive")
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "test.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "test.log")
 
     original_log_file = tmpdir.join("test.log")
     original_log_file.write("test")
@@ -108,8 +112,8 @@ def test_archive_old_logger_files_archive_dir_exists(monkeypatch, tmpdir):
     log_dir = str(tmpdir)
     archive_dir = os.path.join(log_dir, "archive")
     os.makedirs(archive_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "test.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "test.log")
 
     original_log_file = tmpdir.join("test.log")
     original_log_file.write("test")
@@ -123,8 +127,8 @@ def test_archive_old_logger_files_archive_dir_exists(monkeypatch, tmpdir):
 
 def test_archive_old_logger_files_no_log_file(monkeypatch, tmpdir):
     log_dir = str(tmpdir.join("something-else"))
-    monkeypatch.setattr(scripts.c2r_script, "LOG_DIR", log_dir)
-    monkeypatch.setattr(scripts.c2r_script, "LOG_FILENAME", "test.log")
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_DIR", log_dir)
+    monkeypatch.setattr(convert2rhel_insights_tasks.main, "LOG_FILENAME", "test.log")
 
     archive_old_logger_files()
 

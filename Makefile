@@ -52,7 +52,7 @@ endif
 install-deps:
 	virtualenv -p '$(PYTHON)' $(PYTHON_VENV); \
 	. $(PYTHON_VENV)/bin/activate; \
-	pip install --upgrade -r requirements.txt
+	pip install --upgrade -r requirements/centos7.requirements.txt
 	touch $@
 
 pre-commit:

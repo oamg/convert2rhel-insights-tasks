@@ -16,19 +16,15 @@ repos:
     hooks:
     - id: black
 
-  - repo: local
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.1.0
     hooks:
       - id: pylint
-        name: pylint
-        entry: pylint
-        types: [python]
-        language: python
-        # dependencies are based on freezed versions in requirements.txt
-        additional_dependencies: [pylint==2.17.5, mock==3.0.5, pytest==4.6.11, jsonschema==3.2.0]
+        additional_dependencies: [mock==3.0.5, jsonschema==3.2.0]
         args: [
-            "-sn", # Don't display the score
-            "--rcfile=.pylintrc", # Link to your config file
-          ]
+          "-sn", # Don't display the score
+          "--rcfile=.pylintrc", # Link to your config file
+        ]
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.2
