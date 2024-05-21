@@ -2,7 +2,7 @@ import os
 import ruamel.yaml
 
 # Scripts located in this project
-SCRIPT_PATH = "scripts/c2r_script.py"
+SCRIPT_PATH = "convert2rhel_insights_tasks/main.py"
 
 # Yaml playbooks in rhc-worker-script
 PRE_CONVERSION_YAML_PATH = os.path.join(

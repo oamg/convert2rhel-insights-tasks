@@ -1,7 +1,7 @@
 from mock import patch, mock_open
 
 
-from scripts.c2r_script import check_for_inhibitors_in_rollback
+from convert2rhel_insights_tasks.main import check_for_inhibitors_in_rollback
 
 
 @patch(

@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = scripts
+source = convert2rhel_insights_tasks
 
 [report]
 fail_under = 80

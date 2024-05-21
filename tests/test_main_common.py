@@ -1,15 +1,15 @@
 import pytest
 from mock import patch, Mock
 
-from scripts.c2r_script import OutputCollector, main
+from convert2rhel_insights_tasks.main import OutputCollector, main
 
 
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
-@patch("scripts.c2r_script.cleanup")
-@patch("scripts.c2r_script.OutputCollector")
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.cleanup")
+@patch("convert2rhel_insights_tasks.main.OutputCollector")
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # pylint: disable=too-many-arguments
 def test_main_invalid_script_value(
     mock_setup_logger_handler,
@@ -38,16 +38,16 @@ def test_main_invalid_script_value(
 
 
 @pytest.mark.parametrize(("script_type"), [("ANALYSIS"), ("CONVERSION")])
-@patch("scripts.c2r_script.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
 @patch(
-    "scripts.c2r_script.get_system_distro_version",
+    "convert2rhel_insights_tasks.main.get_system_distro_version",
     return_value=("centos", "7"),
 )
-@patch("scripts.c2r_script.cleanup")
-@patch("scripts.c2r_script.OutputCollector")
-@patch("scripts.c2r_script.setup_sos_report", side_effect=Mock())
-@patch("scripts.c2r_script.archive_old_logger_files", side_effect=Mock())
-@patch("scripts.c2r_script.setup_logger_handler", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.cleanup")
+@patch("convert2rhel_insights_tasks.main.OutputCollector")
+@patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 # pylint: disable=too-many-arguments
 def test_main_non_eligible_release(
     mock_setup_logger_handler,
@@ -61,7 +61,7 @@ def test_main_non_eligible_release(
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
 
-    with patch("scripts.c2r_script.SCRIPT_TYPE", script_type):
+    with patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", script_type):
         main()
 
     mock_get_system_distro_version.assert_called_once()

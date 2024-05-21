@@ -1,6 +1,6 @@
 import json
 import jsonschema
-from scripts.c2r_script import OutputCollector, STATUS_CODE
+from convert2rhel_insights_tasks.main import OutputCollector, STATUS_CODE
 
 
 def test_output_schema():

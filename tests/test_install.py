@@ -1,7 +1,7 @@
 import pytest
 from mock import patch, call
 
-from scripts.c2r_script import (
+from convert2rhel_insights_tasks.main import (
     install_or_update_convert2rhel,
     ProcessError,
 )
@@ -18,19 +18,20 @@ def test_install_or_update_convert2rhel(
     subprocess_mock, pkg_installed_mock, should_undo_transaction
 ):
     with patch(
-        "scripts.c2r_script.run_subprocess",
+        "convert2rhel_insights_tasks.main.run_subprocess",
         return_value=subprocess_mock,
     ) as mock_run_subprocess:
         with patch(
-            "scripts.c2r_script._check_if_package_installed",
+            "convert2rhel_insights_tasks.main._check_if_package_installed",
             return_value=pkg_installed_mock,
         ) as mock_run_pkg_check:
             with patch(
-                "scripts.c2r_script.setup_convert2rhel",
+                "convert2rhel_insights_tasks.main.setup_convert2rhel",
                 return_value=pkg_installed_mock,
             ) as mock_download_files:
                 with patch(
-                    "scripts.c2r_script._get_last_yum_transaction_id", return_value=1
+                    "convert2rhel_insights_tasks.main._get_last_yum_transaction_id",
+                    return_value=1,
                 ) as mock_transaction_get:
                     should_undo, _ = install_or_update_convert2rhel([])
 
@@ -51,8 +52,10 @@ def test_install_or_update_convert2rhel(
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
 
 
-@patch("scripts.c2r_script._check_if_package_installed", return_value=False)
-@patch("scripts.c2r_script.run_subprocess", return_value=(b"failed", 1))
+@patch(
+    "convert2rhel_insights_tasks.main._check_if_package_installed", return_value=False
+)
+@patch("convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"failed", 1))
 def test_install_or_update_convert2rhel_raise_exception(
     mock_run_subprocess, mock_pkg_check
 ):
@@ -68,8 +71,10 @@ def test_install_or_update_convert2rhel_raise_exception(
     assert mock_run_subprocess.call_args_list == [call(args) for args in expected_calls]
 
 
-@patch("scripts.c2r_script._check_if_package_installed", return_value=True)
-@patch("scripts.c2r_script.run_subprocess", return_value=(b"failed", 1))
+@patch(
+    "convert2rhel_insights_tasks.main._check_if_package_installed", return_value=True
+)
+@patch("convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"failed", 1))
 def test_update_convert2rhel_raise_exception(mock_run_subprocess, mock_pkg_check):
     with pytest.raises(
         ProcessError,

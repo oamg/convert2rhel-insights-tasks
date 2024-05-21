@@ -1,15 +1,15 @@
 from mock import patch
 
-from scripts.c2r_script import run_convert2rhel
+from convert2rhel_insights_tasks.main import run_convert2rhel
 
 
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
 def test_run_convert2rhel_custom_variables():
     mock_env = {"FOO": "BAR", "BAR": "BAZ", "RHC_WORKER_LALA": "LAND"}
 
     with patch("os.environ", mock_env), patch(
-        "scripts.c2r_script.run_subprocess", return_value=(b"", 0)
+        "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
         run_convert2rhel()
 
@@ -19,7 +19,7 @@ def test_run_convert2rhel_custom_variables():
     )
 
 
-@patch("scripts.c2r_script.SCRIPT_TYPE", "CONVERSION")
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "CONVERSION")
 def test_run_convert2rhel_conversion():
     mock_env = {
         "PATH": "/fake/path",
@@ -29,7 +29,7 @@ def test_run_convert2rhel_conversion():
     }
 
     with patch("os.environ", mock_env), patch(
-        "scripts.c2r_script.run_subprocess", return_value=(b"", 0)
+        "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
         run_convert2rhel()
 
@@ -44,13 +44,13 @@ def test_run_convert2rhel_conversion():
     )
 
 
-@patch("scripts.c2r_script.SCRIPT_TYPE", "ANALYSIS")
-@patch("scripts.c2r_script.IS_ANALYSIS", True)
+@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
+@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
 def test_run_convert2rhel_analysis():
     mock_env = {"PATH": "/fake/path", "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1"}
 
     with patch("os.environ", mock_env), patch(
-        "scripts.c2r_script.run_subprocess", return_value=(b"", 0)
+        "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
         run_convert2rhel()
 

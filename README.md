@@ -9,16 +9,15 @@ Scripts themselves shouldn't have any additional requirements = they are relying
 Structure of repository is following:
 
 ```txt
-├── requirements.txt  # DEV requirements - tests & lint
+├── requirements  # DEV requirements - tests & lint
+│   └── ...
 ├── schemas # All expected json outputs in the scripts stdouts
 |   |   ...
 │   └── preconversion_assessment_schema_1.1.json
-├── scripts # All available scripts
-|   |   ...
-│   └── preconversion_assessment_script.py
+├── convert2rhel_insights_tasks # All available scripts
+│   └── main.py
 └── tests
     |   ...
-    └── preconversion_assessment  # Unit tests for given script
 ```
 
 ## Schemas

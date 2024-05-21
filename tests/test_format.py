@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.c2r_script import (
+from convert2rhel_insights_tasks.main import (
     _generate_message_key,
     _generate_detail_block,
     _rename_dictionary_key,

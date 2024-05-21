@@ -3,7 +3,7 @@ from mock import Mock
 from urllib2 import URLError
 
 
-from scripts.c2r_script import setup_convert2rhel, ProcessError
+from convert2rhel_insights_tasks.main import setup_convert2rhel, ProcessError
 
 
 class MockRequiredFile(object):
