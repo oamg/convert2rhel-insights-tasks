@@ -20,7 +20,9 @@ disable=
  unspecified-encoding,
  line-too-long,
  # Temporary solution
- duplicate-code
+ duplicate-code,
+ # We can't split the functions into smaller modules for now.
+ too-many-lines,
 
 [REPORTS]
 

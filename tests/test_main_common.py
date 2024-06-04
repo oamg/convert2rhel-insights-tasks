@@ -4,7 +4,7 @@ from mock import patch, Mock
 from convert2rhel_insights_tasks.main import OutputCollector, main
 
 
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.cleanup")
 @patch("convert2rhel_insights_tasks.main.OutputCollector")
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
@@ -38,7 +38,7 @@ def test_main_invalid_script_value(
 
 
 @pytest.mark.parametrize(("script_type"), [("ANALYSIS"), ("CONVERSION")])
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch(
     "convert2rhel_insights_tasks.main.get_system_distro_version",
     return_value=("centos", "7"),

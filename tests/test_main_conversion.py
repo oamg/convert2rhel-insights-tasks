@@ -20,7 +20,7 @@ from convert2rhel_insights_tasks.main import main
 @patch("convert2rhel_insights_tasks.main.run_subprocess", return_value=("", 1))
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
@@ -30,7 +30,7 @@ def test_main_success_c2r_installed(
     mock_setup_logger_handler,
     mock_setup_sos_report,
     mock_archive_old_logger_files,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
@@ -53,7 +53,7 @@ def test_main_success_c2r_installed(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -61,18 +61,17 @@ def test_main_success_c2r_installed(
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_transform_raw_data.call_count == 0
+    assert mock_gather_textual_report.call_count == 1
+    assert mock_transform_raw_data.call_count == 1
     # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
     assert mock_cleanup_pkg_call.call_count == 0
-    # 2x for archive
-    assert mock_os_exists.call_count == 2
+    assert mock_os_exists.call_count == 1
 
 
 # fmt: off
 @patch("convert2rhel_insights_tasks.main.IS_CONVERSION", True)
 @patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "CONVERSION")
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
 @patch("convert2rhel_insights_tasks.main.gather_json_report", side_effect=[{"actions": [], "status": "SUCCESS"}])
@@ -105,7 +104,7 @@ def test_main_success_c2r_updated(
     mock_gather_json_report,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     capsys,  # to check for rollback info in stdout
 ):
     main()
@@ -117,7 +116,7 @@ def test_main_success_c2r_updated(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -125,12 +124,11 @@ def test_main_success_c2r_updated(
     assert mock_run_convert2rhel.call_count == 1
     assert mock_update_insights_inventory.call_count == 1
     assert mock_gather_json_report.call_count == 1
-    assert mock_gather_textual_report.call_count == 0
-    assert mock_transform_raw_data.call_count == 0
+    assert mock_gather_textual_report.call_count == 1
+    assert mock_transform_raw_data.call_count == 1
     # NOTE: we should expect below one call once we don't require rpm because of insights conversion statistics
     assert mock_cleanup_pkg_call.call_count == 0
-    # 2x for archive
-    assert mock_os_exists.call_count == 2
+    assert mock_os_exists.call_count == 1
 
 
 # fmt: off
@@ -144,7 +142,7 @@ def test_main_success_c2r_updated(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -155,7 +153,7 @@ def test_main_process_error_no_report(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -176,7 +174,7 @@ def test_main_process_error_no_report(
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
     # Zero because os.path.exists is not mocked and reports do not exist
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -199,7 +197,7 @@ def test_main_process_error_no_report(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -210,7 +208,7 @@ def test_main_general_exception(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -230,8 +228,7 @@ def test_main_general_exception(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    # Zero because os.path.exists is not mocked and reports do not exist
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1
@@ -255,7 +252,7 @@ def test_main_general_exception(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -267,7 +264,7 @@ def test_main_inhibited_ini_modified(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -288,12 +285,11 @@ def test_main_inhibited_ini_modified(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_custom_ini.call_count == 1
-    # 2x for archive check + 1 inside in inhibitor check + 1 gather json
-    assert mock_os_exists.call_count == 4
+    assert mock_os_exists.call_count == 3
     assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0
@@ -314,7 +310,7 @@ def test_main_inhibited_ini_modified(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -326,7 +322,7 @@ def test_main_inhibited_custom_ini(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -347,11 +343,10 @@ def test_main_inhibited_custom_ini(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_archive_analysis_report.call_count == 2
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    # Twice for archiving reports + 1 inside inhibitor check
-    assert mock_os_exists.call_count == 3
+    assert mock_os_exists.call_count == 2
     assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_json_report.call_count == 1
@@ -420,8 +415,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_transform_raw_data.call_count == 1
     assert mock_gather_textual_report.call_count == 0
     assert mock_cleanup_pkg_call.call_count == 1
-    # 2x for archive
-    assert mock_os_exists.call_count == 2
+    assert mock_os_exists.call_count == 5
     assert mock_update_insights_inventory.call_count == 0
 
 
@@ -486,6 +480,5 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup_pkg_call.call_count == 1
-    # 2x for archive
-    assert mock_os_exists.call_count == 2
+    assert mock_os_exists.call_count == 5
     assert mock_update_insights_inventory.call_count == 0

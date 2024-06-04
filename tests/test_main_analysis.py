@@ -19,7 +19,7 @@ from convert2rhel_insights_tasks.main import main, ProcessError
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
@@ -33,7 +33,7 @@ def test_main_success_c2r_installed(
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_rollback_inhibitor_check,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -69,7 +69,7 @@ def test_main_success_c2r_installed(
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_transform_raw_data.call_count == 1
 
 
@@ -86,7 +86,7 @@ def test_main_success_c2r_installed(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
@@ -100,7 +100,7 @@ def test_main_success_c2r_updated(
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_rollback_inhibitor_check,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -136,7 +136,7 @@ def test_main_success_c2r_updated(
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_transform_raw_data.call_count == 1
 
 
@@ -153,7 +153,7 @@ def test_main_success_c2r_updated(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -165,7 +165,7 @@ def test_main_process_error(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -199,7 +199,7 @@ def test_main_process_error(
     assert mock_open_func.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
 
 
 # fmt: off
@@ -214,7 +214,7 @@ def test_main_process_error(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -225,7 +225,7 @@ def test_main_general_exception(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -255,7 +255,7 @@ def test_main_general_exception(
     assert mock_cleanup.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
 
 
 # fmt: off
@@ -271,7 +271,7 @@ def test_main_general_exception(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -283,7 +283,7 @@ def test_main_inhibited_ini_modified(
     mock_setup_sos_report,
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -291,7 +291,7 @@ def test_main_inhibited_ini_modified(
     mock_gather_textual_report,
     mock_run_convert2rhel,
     mock_custom_ini,
-    mock_ini_modified,
+    mock_path_exists,
     mock_install_or_update_convert2rhel,
     capsys,
 ):
@@ -305,17 +305,17 @@ def test_main_inhibited_ini_modified(
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_custom_ini.call_count == 1
-    assert mock_ini_modified.call_count == 4
+    assert mock_path_exists.call_count == 2
     assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
 
 
 # fmt: off
@@ -330,7 +330,7 @@ def test_main_inhibited_ini_modified(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
@@ -338,17 +338,17 @@ def test_main_inhibited_ini_modified(
 # fmt: on
 def test_main_inhibited_custom_ini(
     mock_setup_logger_handler,
-    mock_setup_sos_report,
     mock_archive_old_logger_files,
+    mock_setup_sos_report,
     mock_update_insights_inventory,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
     mock_generate_report_message,
     mock_gather_textual_report,
     mock_run_convert2rhel,
-    mock_inhibitor_check,
+    mock_path_exists,
     mock_install_or_update_convert2rhel,
     capsys,
 ):
@@ -362,16 +362,15 @@ def test_main_inhibited_custom_ini(
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
-    assert mock_archive_analysis_report.call_count == 2
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_inhibitor_check.call_count == 4
+    assert mock_path_exists.call_count == 2
     assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0
     assert mock_generate_report_message.call_count == 0
     assert mock_cleanup.call_count == 1
-    assert mock_archive_analysis_report.call_count == 2
+    assert mock_archive_report_file.call_count == 4
 
 
 # fmt: off
@@ -386,7 +385,7 @@ def test_main_inhibited_custom_ini(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
@@ -400,7 +399,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_rollback_inhibitor_check,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -429,7 +428,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_transform_raw_data.call_count == 1
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
@@ -454,7 +453,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 @patch("convert2rhel_insights_tasks.main.cleanup", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.archive_analysis_report", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.archive_report_file", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="rollback error")
 @patch("convert2rhel_insights_tasks.main.update_insights_inventory", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
@@ -468,7 +467,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_archive_old_logger_files,
     mock_update_insights_inventory,
     mock_rollback_inhibitor_check,
-    mock_archive_analysis_report,
+    mock_archive_report_file,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup,
@@ -508,4 +507,4 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_transform_raw_data.call_count == 0
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
-    assert mock_archive_analysis_report.call_count == 0
+    assert mock_archive_report_file.call_count == 4
