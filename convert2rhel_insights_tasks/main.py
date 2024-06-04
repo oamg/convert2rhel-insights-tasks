@@ -122,7 +122,7 @@ class RequiredFile(object):
         return True
 
     def restore(self):
-        """Restores file backup (rename). Returns True if resto red, otherwise False."""
+        """Restores file backup (rename). Returns True if restored, otherwise False."""
         if not self.backup_created:
             return False
 
@@ -159,7 +159,7 @@ class RequiredFile(object):
 
 
 class ProcessError(Exception):
-    """Custom exception to report errors during setup and run of conver2r hel"""
+    """Custom exception to report errors during setup and run of conver2rhel"""
 
     def __init__(self, message, report):
         super(ProcessError, self).__init__(report)
