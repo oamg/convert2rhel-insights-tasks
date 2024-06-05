@@ -4,6 +4,7 @@
 	verify \
 	install \
 	sync \
+	sync-advisor \
 	image7 \
 	tests7 \
 
@@ -62,8 +63,10 @@ pre-commit:
 install: install-deps pre-commit
 
 sync: install-deps
-	. $(PYTHON_VENV)/bin/activate; \
-	python misc/sync_scripts.py
+	python misc/sync_scripts.py worker
+
+sync-advisor: install-deps
+	python misc/sync_scripts.py advisor
 
 .fetch-image7:
 	@echo "Pulling $(IMAGE)-centos7"
