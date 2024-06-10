@@ -17,7 +17,7 @@ repos:
     - id: black
 
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.2.2
+    rev: v3.2.3
     hooks:
       - id: pylint
         additional_dependencies: [mock==3.0.5, jsonschema==3.2.0]
