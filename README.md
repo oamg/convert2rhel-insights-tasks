@@ -51,3 +51,29 @@ Script itself and tests are written for `python 2.7`. Goal of script is to print
 make install # install pre-commit hooks and python virtualenv
 make tests # run pytest
 ```
+
+### Syncing scripts
+
+We have a script to sync the changes from convert2rhel_insights_tasks/main.py
+to the appropriate yaml files (pre-analysis and conversion) in both
+advisor-backend and rhc-worker-script.
+
+To make it work, you need to first install the ruamel.yaml library through your
+package manager, for example, if using Fedora or RHEL:
+
+```
+dnf install python3-ruamel-yaml
+```
+
+We sync the files to rhc-worker-script mostly on development or testing with
+the following command:
+```
+make sync
+```
+
+While for the advisor-backend, we mainly want to sync after we do a new
+release. So for that, only call this command if checked out to a tag after the
+release.
+```
+make sync-advisor
+```
