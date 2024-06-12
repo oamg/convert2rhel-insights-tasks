@@ -10,6 +10,7 @@ from convert2rhel_insights_tasks.main import get_rollback_failures
     new_callable=mock_open,
     read_data="\n".join(
         [
+            "[202X-YY-ZZT13:00:00+0000] DEBUG - /var/run/lock/convert2rhel.pid PID 42 unlocked.",
             "Some lines before the warning",
             "CRITICAL - Rollback of system wasn't completed successfully.",
             "The system is left in an undetermined state that Convert2RHEL cannot fix.",
@@ -17,6 +18,7 @@ from convert2rhel_insights_tasks.main import get_rollback_failures
             "Following errors were captured during rollback:",
             "Error message 1",
             "Error message 2",
+            "[202X-YY-ZZT13:00:00+0000] DEBUG - /var/run/lock/convert2rhel.pid PID 42 unlocked.",
             "[202X-YY-ZZT13:00:00+0000] DEBUG - /var/run/lock/convert2rhel.pid PID 42 unlocked.",
             "Some lines after the report",
         ]

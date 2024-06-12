@@ -289,7 +289,7 @@ def test_main_inhibited_ini_modified(
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_custom_ini.call_count == 1
-    assert mock_os_exists.call_count == 2
+    assert mock_os_exists.call_count == 3
     assert mock_install_or_update_convert2rhel.call_count == 1
     assert mock_run_convert2rhel.call_count == 0
     assert mock_gather_textual_report.call_count == 0

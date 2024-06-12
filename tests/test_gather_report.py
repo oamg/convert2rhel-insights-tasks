@@ -25,7 +25,7 @@ def test_gather_json_report(tmpdir):
     file.write(json.dumps({"test": "hi"}))
     file = str(file)
     with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", file):
-        report_data = gather_json_report(file, returncode=0)
+        report_data = gather_json_report(file)
 
     assert report_data == {"test": "hi"}
 
@@ -45,14 +45,14 @@ def test_gather_json_report_bad_content(content, expected, tmpdir):
     file.write(content)
     file = str(file)
     with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", file):
-        assert gather_json_report(file, returncode=1) == expected
+        assert gather_json_report(file) == expected
 
 
 def test_gather_json_report_missing_file():
     with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", "/missing/file"):
-        assert gather_json_report("/missing/file", returncode=0) == {}
+        assert gather_json_report("/missing/file") == {}
 
 
 def test_gather_json_report_return_code():
     with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", "/missing/file"):
-        assert gather_json_report("/missing/file", returncode=1) == {}
+        assert gather_json_report("/missing/file") == {}
