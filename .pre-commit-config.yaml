@@ -1,3 +1,6 @@
+ci:
+  skip: [sync-scripts]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -9,12 +12,12 @@ repos:
       - id: check-json
       - id: requirements-txt-fixer
       - id: no-commit-to-branch
-        args: ['--branch', 'main']
+        args: ["--branch", "main"]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
     hooks:
-    - id: black
+      - id: black
 
   - repo: https://github.com/pylint-dev/pylint
     rev: v3.2.3
@@ -22,12 +25,22 @@ repos:
       - id: pylint
         additional_dependencies: [mock==3.0.5, jsonschema==3.2.0]
         args: [
-          "-sn", # Don't display the score
-          "--rcfile=.pylintrc", # Link to your config file
-        ]
+            "-sn", # Don't display the score
+            "--rcfile=.pylintrc", # Link to your config file
+          ]
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.4
     hooks:
       - id: gitleaks-docker
         stages: [manual, push]
+
+  - repo: local
+    hooks:
+      - id: sync-scripts
+        name: sync-scripts
+        entry: python misc/sync_scripts.py
+        args: ["tasks"]
+        language: system
+        types: [python]
+        pass_filenames: false

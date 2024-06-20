@@ -10,6 +10,7 @@ SYNC_PROJECT = sys.argv[1:][-1] if sys.argv[1:] else "worker"
 SCRIPT_PATH = "convert2rhel_insights_tasks/main.py"
 
 SCRIPTS_YAML_PATH = {
+    # TODO(r0x0d): Deprecate this in the future
     "worker": (
         os.path.join(
             "..", "rhc-worker-script/development/nginx/data/convert2rhel_analysis.yml"
@@ -17,6 +18,10 @@ SCRIPTS_YAML_PATH = {
         os.path.join(
             "..", "rhc-worker-script/development/nginx/data/convert2rhel_conversion.yml"
         ),
+    ),
+    "tasks": (
+        "playbooks/convert-to-rhel-analysis.yml",
+        "playbooks/convert-to-rhel-conversion.yml",
     ),
     "advisor": (
         os.path.join(
@@ -58,7 +63,7 @@ def _write_content(config, path, mapping=None, offset=None):
 
 
 def main():
-    if SYNC_PROJECT not in ("worker", "advisor"):
+    if SYNC_PROJECT not in ("worker", "advisor", "tasks"):
         raise SystemExit(
             f"'{SYNC_PROJECT}' not recognized. Valid values are 'worker' or 'advisor'"
         )

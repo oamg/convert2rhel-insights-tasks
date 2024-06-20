@@ -1,10 +1,16 @@
 {
-  "title": "Convert2rhel pre-conversion script schema",
-  "description": "Script is expected to set up Convert2rhel and run pre-conversion assessment. This schema defines the output format that is expected by Red Hat Insights Task UI.",
+  "title": "Convert2RHEL Insights Tasks Schema",
+  "description": "The Insights Task is  expected to set up convert2rhel and run either analysis or conversion. This schema defines the output format that is expected by Red Hat Insights Task UI.",
   "type": "object",
   "properties": {
     "status": {
       "$ref": "#/$defs/status_codes"
+    },
+    "alert": {
+      "type": "boolean"
+    },
+    "error": {
+      "type": "boolean"
     },
     "report": {
       "type": "string"
@@ -41,11 +47,11 @@
   },
   "required": [
     "status",
+    "alert",
     "message",
     "report",
     "report_json"
   ],
-  "additionalProperties": false,
   "$defs": {
     "status_codes": {
       "description": "The severity of the results and messages",
