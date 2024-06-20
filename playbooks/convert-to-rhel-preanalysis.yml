@@ -1,9 +1,11 @@
+# Auto-generated file, please do not edit manually.
+# Any updates should be made to upstream https://github.com/oamg/convert2rhel-insights-tasks.
 - name: Convert2RHEL Analysis
   vars:
     insights_signature: |
       ascii_armored gpg signature
-    insights_signature_exclude: /vars/insights_signature,/vars/content_vars
-    interpreter: /usr/bin/python
+    insights_signature_exclude: "/vars/insights_signature"
+    interpreter: /usr/bin/python2
     content: |
       import json
       import logging
@@ -1009,7 +1011,4 @@
       if __name__ == "__main__":
           main()
     content_vars:
-      # variables that will be handed to the script as environment vars
-      # will be prefixed with RHC_WORKER_*
-      CONVERT2RHEL_DISABLE_TELEMETRY: 1
       SCRIPT_MODE: ANALYSIS
