@@ -20,7 +20,7 @@ SCRIPTS_YAML_PATH = {
         ),
     ),
     "tasks": (
-        "playbooks/convert-to-rhel-analysis.yml",
+        "playbooks/convert-to-rhel-preanalysis.yml",
         "playbooks/convert-to-rhel-conversion.yml",
     ),
     "advisor": (

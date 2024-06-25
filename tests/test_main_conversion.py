@@ -261,8 +261,8 @@ def test_main_general_exception(
 # pylint: disable=too-many-locals
 def test_main_inhibited_ini_modified(
     mock_setup_logger_handler,
-    mock_setup_sos_report,
     mock_archive_old_logger_files,
+    mock_setup_sos_report,
     mock_update_insights_inventory,
     mock_archive_report_file,
     mock_is_eligible_releases,
@@ -371,7 +371,7 @@ def test_main_inhibited_custom_ini(
 @patch("convert2rhel_insights_tasks.main.run_subprocess", return_value=("", 1))
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="")
+@patch("convert2rhel_insights_tasks.main.get_rollback_failures", return_value="")
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
@@ -381,7 +381,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     mock_setup_logger_handler,
     mock_setup_sos_report,
     mock_archive_old_logger_files,
-    mock_rollback_inhibitor_check,
+    mock_get_rollback_failures,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
@@ -401,7 +401,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert "The conversion cannot proceed" in output
     assert '"alert": true' in output
 
-    mock_rollback_inhibitor_check.assert_called_once()
+    mock_get_rollback_failures.assert_called_once()
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -435,7 +435,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 @patch("convert2rhel_insights_tasks.main.run_subprocess", return_value=("", 1))
 @patch("convert2rhel_insights_tasks.main.get_system_distro_version", return_value=("centos", "7.9"))
 @patch("convert2rhel_insights_tasks.main.is_eligible_releases", return_value=True)
-@patch("convert2rhel_insights_tasks.main.check_for_inhibitors_in_rollback", return_value="rollback error")
+@patch("convert2rhel_insights_tasks.main.get_rollback_failures", return_value="rollback error")
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
@@ -445,7 +445,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     mock_setup_logger_handler,
     mock_setup_sos_report,
     mock_archive_old_logger_files,
-    mock_rollback_inhibitor_check,
+    mock_get_rollback_failures,
     mock_is_eligible_releases,
     mock_get_system_distro_version,
     mock_cleanup_pkg_call,
@@ -469,7 +469,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    mock_rollback_inhibitor_check.assert_called_once()
+    mock_get_rollback_failures.assert_called_once()
     assert mock_get_system_distro_version.call_count == 1
     assert mock_is_eligible_releases.call_count == 1
     assert mock_inhibitor_check.call_count == 1

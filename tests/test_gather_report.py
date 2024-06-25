@@ -51,3 +51,8 @@ def test_gather_json_report_bad_content(content, expected, tmpdir):
 def test_gather_json_report_missing_file():
     with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", "/missing/file"):
         assert gather_json_report("/missing/file") == {}
+
+
+def test_gather_json_report_return_code():
+    with patch("convert2rhel_insights_tasks.main.C2R_PRE_REPORT_FILE", "/missing/file"):
+        assert gather_json_report("/missing/file") == {}

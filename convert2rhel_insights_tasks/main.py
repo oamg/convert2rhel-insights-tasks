@@ -301,36 +301,55 @@ def archive_old_logger_files():
     shutil.move(current_log_file, archive_log_file)
 
 
-def check_for_inhibitors_in_rollback():
+def get_rollback_failures(returncode):
     """Returns lines with errors in rollback section of c2r log file, or empty string."""
+    rollback_failures = ""
+
+    if returncode != 1 or returncode is None:
+        return rollback_failures
+
     logger.info(
         "Checking content of '%s' for possible rollback problems ...", C2R_LOG_FILE
     )
-    matches = ""
-    start_of_rollback_section = "WARNING - Abnormal exit! Performing rollback ..."
+
+    start_of_rollback_failures_section = (
+        "Following errors were captured during rollback:"
+    )
+    end_of_rollback_failures_section = "DEBUG - /var/run/lock/convert2rhel.pid"
     try:
         with open(C2R_LOG_FILE, mode="r") as handler:
-            lines = [line.strip() for line in handler.readlines()]
-            # Find index of first string in the logs that we care about.
-            start_index = lines.index(start_of_rollback_section)
-            # Find index of last string in the logs that we care about.
-            end_index = [
-                i for i, s in enumerate(lines) if "Pre-conversion analysis report" in s
-            ][0]
+            # Skip the empty lines and strip white chars from start and end of the string.
+            lines = [line.strip() for line in handler.readlines() if line.strip()]
 
-            actual_data = lines[start_index + 1 : end_index]
-            matches = list(filter(DETECT_ERROR_IN_ROLLBACK_PATTERN.match, actual_data))
-            matches = "\n".join(matches)
+            # Find index of first string in the logs that we care about.
+            start_index = lines.index(start_of_rollback_failures_section)
+
+            # Get the end index of the rollback failures section.
+            # Find indexes of the "DEBUG - /var/run/lock/convert2rhel.pid" occurrences.
+            end_message_occurrences = [
+                i for i, s in enumerate(lines) if end_of_rollback_failures_section in s
+            ]
+            end_index = None
+            # Find the first occurence of the end message after the beggining of rollback failures section.
+            for occurence_index in end_message_occurrences:
+                if occurence_index > start_index:
+                    end_index = occurence_index
+                    break
+            # If the end message wasn't found, use the rest of the log.
+            if not end_index:
+                end_index = None
+
+            rollback_failures = lines[start_index + 1 : end_index]
     except ValueError:
         logger.info(
             "Failed to find rollback section ('%s') in '%s' file.",
-            start_of_rollback_section,
+            start_of_rollback_failures_section,
             C2R_LOG_FILE,
         )
     except IOError:
         logger.warning("Failed to read '%s' file.", C2R_LOG_FILE)
 
-    return matches
+    return "\n".join(rollback_failures)
 
 
 def _check_ini_file_modified():
@@ -827,6 +846,8 @@ def main():
     # Switched to True only after setup is called
     do_cleanup = False
 
+    returncode = None
+
     setup_sos_report()
     archive_old_logger_files()
     setup_logger_handler()
@@ -862,32 +883,33 @@ def main():
         check_convert2rhel_inhibitors_before_run()
         stdout, returncode = run_convert2rhel()
         execution_successful = returncode == 0
-        rollback_errors = check_for_inhibitors_in_rollback()
 
-        # Check if there are any inhibitors in the rollback logging. This is
-        # necessary in the case where the analysis was done successfully, but
-        # there was an error in the rollback log.
-        if rollback_errors:
-            raise ProcessError(
-                message=(
-                    "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
-                    "Recover the system from a backup or contact Red Hat support."
-                ),
-                report=(
-                    "\nFor details, refer to the convert2rhel log file on the host at "
-                    "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
-                )
-                % rollback_errors,
-            )
-
-        # Returncode other than 0 can happen in two states in analysis mode:
+        # Returncode other than 0 can happen in three states in analysis mode:
         #  1. In case there is another instance of convert2rhel running
         #  2. In case of KeyboardInterrupt, SystemExit (misplaced by mistaked),
         #     Exception not catched before.
+        #  3. There was an error during rollback. This result in return code 1.
         # In any case, we should treat this as separate and give it higher
         # priority. In case the returncode was non zero, we don't care about
         # the rest and we should jump to the exception handling immediatly
         if not execution_successful:
+            rollback_errors = get_rollback_failures(returncode)
+            # Check if there are any inhibitors in the rollback logging. This is
+            # necessary in the case where the analysis was done successfully, but
+            # there was an error in the rollback log.
+            if rollback_errors:
+                raise ProcessError(
+                    message=(
+                        "A rollback of changes performed by convert2rhel failed. The system is in an undefined state. "
+                        "Recover the system from a backup or contact Red Hat support."
+                    ),
+                    report=(
+                        "\nFor details, refer to the convert2rhel log file on the host at "
+                        "/var/log/convert2rhel/convert2rhel.log. Relevant lines from log file: \n%s\n"
+                    )
+                    % rollback_errors,
+                )
+
             step = "pre-conversion analysis" if IS_ANALYSIS else "conversion"
             raise ProcessError(
                 message=(
@@ -940,7 +962,7 @@ def main():
             json_report_file = C2R_POST_REPORT_FILE
             txt_report_file = C2R_POST_REPORT_TXT_FILE
 
-        # Gather JSON & Textual report
+        # Gather JSON report
         data = gather_json_report(json_report_file)
 
         if data:
