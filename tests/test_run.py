@@ -1,60 +1,160 @@
+import pytest
+
 from mock import patch
 
+from convert2rhel_insights_tasks import main
 from convert2rhel_insights_tasks.main import run_convert2rhel
 
 
-@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
-@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
-def test_run_convert2rhel_custom_variables():
-    mock_env = {"FOO": "BAR", "BAR": "BAZ", "RHC_WORKER_LALA": "LAND"}
+def test_run_convert2rhel_custom_variables(monkeypatch):
+    monkeypatch.setattr(main, "IS_ANALYSIS", True)
+    mock_env = {"FOO": "BAR", "BAR": "BAZ", "LALA": "LAND"}
 
-    with patch("os.environ", mock_env), patch(
+    with patch(
         "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
-        run_convert2rhel()
+        run_convert2rhel(mock_env)
 
     mock_popen.assert_called_once_with(
-        ["/usr/bin/convert2rhel", "analyze", "-y"],
+        ["/usr/bin/convert2rhel", "analyze", "-y", "--els"],
         env={"FOO": "BAR", "BAR": "BAZ", "LALA": "LAND"},
     )
 
 
-@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "CONVERSION")
-def test_run_convert2rhel_conversion():
+def test_run_convert2rhel_conversion(monkeypatch):
+    monkeypatch.setattr(main, "SCRIPT_TYPE", "CONVERSION")
     mock_env = {
         "PATH": "/fake/path",
-        "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1",
-        "RHC_WORKER_FOO": "1",
-        "RHC_WORKER_RHC_WORKER_BAR": "1",
+        "CONVERT2RHEL_DISABLE_TELEMETRY": "1",
+        "FOO": "1",
     }
 
-    with patch("os.environ", mock_env), patch(
+    with patch(
         "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
-        run_convert2rhel()
+        run_convert2rhel(mock_env)
 
     mock_popen.assert_called_once_with(
-        ["/usr/bin/convert2rhel", "-y"],
+        ["/usr/bin/convert2rhel", "-y", "--els"],
         env={
             "PATH": "/fake/path",
             "CONVERT2RHEL_DISABLE_TELEMETRY": "1",
             "FOO": "1",
-            "BAR": "1",
         },
     )
 
 
-@patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", "ANALYSIS")
-@patch("convert2rhel_insights_tasks.main.IS_ANALYSIS", True)
-def test_run_convert2rhel_analysis():
-    mock_env = {"PATH": "/fake/path", "RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY": "1"}
+def test_run_convert2rhel_analysis(monkeypatch):
+    monkeypatch.setattr(main, "IS_ANALYSIS", True)
+    mock_env = {"PATH": "/fake/path", "CONVERT2RHEL_DISABLE_TELEMETRY": "1"}
 
-    with patch("os.environ", mock_env), patch(
+    with patch(
         "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
     ) as mock_popen:
-        run_convert2rhel()
+        run_convert2rhel(mock_env)
 
     mock_popen.assert_called_once_with(
-        ["/usr/bin/convert2rhel", "analyze", "-y"],
+        ["/usr/bin/convert2rhel", "analyze", "-y", "--els"],
         env={"PATH": "/fake/path", "CONVERT2RHEL_DISABLE_TELEMETRY": "1"},
+    )
+
+
+@pytest.mark.parametrize(
+    (
+        "is_analysis",
+        "els_disabled",
+        "expected_cmd",
+    ),
+    (
+        (True, "True", ["/usr/bin/convert2rhel", "analyze", "-y"]),
+        (True, "true", ["/usr/bin/convert2rhel", "analyze", "-y"]),
+        (True, "False", ["/usr/bin/convert2rhel", "analyze", "-y", "--els"]),
+        (True, "false", ["/usr/bin/convert2rhel", "analyze", "-y", "--els"]),
+        # Make sure that this also pass for conversion
+        (False, "True", ["/usr/bin/convert2rhel", "-y"]),
+        (False, "true", ["/usr/bin/convert2rhel", "-y"]),
+        (False, "False", ["/usr/bin/convert2rhel", "-y", "--els"]),
+        (False, "false", ["/usr/bin/convert2rhel", "-y", "--els"]),
+    ),
+)
+def test_run_convert2rhel_els_option(
+    is_analysis, els_disabled, expected_cmd, monkeypatch
+):
+    monkeypatch.setattr(main, "IS_ANALYSIS", is_analysis)
+    mock_env = {"PATH": "/fake/path", "ELS_DISABLED": els_disabled}
+
+    with patch(
+        "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
+    ) as mock_popen:
+        run_convert2rhel(mock_env)
+
+    mock_popen.assert_called_once_with(
+        expected_cmd,
+        env={"PATH": "/fake/path"},
+    )
+
+
+@pytest.mark.parametrize(
+    (
+        "is_analysis",
+        "optional_repositories",
+        "expected_cmd",
+    ),
+    (
+        (
+            True,
+            "rhel-7-server-rpm",
+            [
+                "/usr/bin/convert2rhel",
+                "analyze",
+                "-y",
+                "--els",
+                "--enablerepo=rhel-7-server-rpm",
+            ],
+        ),
+        (
+            True,
+            "rhel-7-server-rpm, rhel-7-server-rpm-extras",
+            [
+                "/usr/bin/convert2rhel",
+                "analyze",
+                "-y",
+                "--els",
+                "--enablerepo=rhel-7-server-rpm",
+                "--enablerepo=rhel-7-server-rpm-extras",
+            ],
+        ),
+        # Make sure that this also pass for conversion
+        (
+            False,
+            "rhel-7-server-rpm",
+            ["/usr/bin/convert2rhel", "-y", "--els", "--enablerepo=rhel-7-server-rpm"],
+        ),
+        (
+            False,
+            "rhel-7-server-rpm, rhel-7-server-rpm-extras",
+            [
+                "/usr/bin/convert2rhel",
+                "-y",
+                "--els",
+                "--enablerepo=rhel-7-server-rpm",
+                "--enablerepo=rhel-7-server-rpm-extras",
+            ],
+        ),
+    ),
+)
+def test_run_convert2rhel_optional_repositories(
+    is_analysis, optional_repositories, expected_cmd, monkeypatch
+):
+    monkeypatch.setattr(main, "IS_ANALYSIS", is_analysis)
+    mock_env = {"PATH": "/fake/path", "OPTIONAL_REPOSITORIES": optional_repositories}
+
+    with patch(
+        "convert2rhel_insights_tasks.main.run_subprocess", return_value=(b"", 0)
+    ) as mock_popen:
+        run_convert2rhel(mock_env)
+
+    mock_popen.assert_called_once_with(
+        expected_cmd,
+        env={"PATH": "/fake/path"},
     )
