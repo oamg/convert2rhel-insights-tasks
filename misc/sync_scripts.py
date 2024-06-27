@@ -20,13 +20,13 @@ SCRIPTS_YAML_PATH = {
         ),
     ),
     "tasks": (
-        "playbooks/convert-to-rhel-preanalysis.yml",
+        "playbooks/convert-to-rhel-analysis.yml",
         "playbooks/convert-to-rhel-conversion.yml",
     ),
     "advisor": (
         os.path.join(
             "..",
-            "advisor-backend/api/advisor/tasks/playbooks/convert-to-rhel-preanalysis.yml",
+            "advisor-backend/api/advisor/tasks/playbooks/convert-to-rhel-analysis.yml",
         ),
         os.path.join(
             "..",
