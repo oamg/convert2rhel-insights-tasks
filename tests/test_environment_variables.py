@@ -33,3 +33,43 @@ def test_parse_environment_variables_empty(monkeypatch):
     monkeypatch.setattr(os, "environ", {})
     result = main.parse_environment_variables()
     assert not result
+
+
+@pytest.mark.parametrize(
+    ("env", "expected"),
+    (
+        (
+            {},
+            {},
+        ),
+        (
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0},
+            {},
+        ),
+        (
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 1},
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 1},
+        ),
+        (
+            {"CONVERT2RHEL_CONFIGURE_HOST_METERING": "auto"},
+            {"CONVERT2RHEL_CONFIGURE_HOST_METERING": "auto"},
+        ),
+        (
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0, "SCRIPT_MODE": "ANALYSIS"},
+            {"SCRIPT_MODE": "ANALYSIS"},
+        ),
+        (
+            {
+                "CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": 1,
+                "CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0,
+                "SCRIPT_MODE": "ANALYSIS",
+            },
+            {"CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": 1, "SCRIPT_MODE": "ANALYSIS"},
+        ),
+    ),
+)
+def test_prepare_environment_variables(env, expected, monkeypatch):
+    monkeypatch.setattr(os, "environ", env)
+    result = main.prepare_environment_variables(env)
+
+    assert result == expected

@@ -666,6 +666,28 @@
           return False, None
 
 
+      def prepare_environment_variables(env):
+          """Prepare environment variables to be used in subprocess
+
+          This metod will prepare any environment variables before they are sent down
+          to the subprocess that will convert2rhel. Currently, this is meant to be a
+          workaround since convert2rhel does not parse the value of the environment
+          variables, but only check the presence of them in os.environ.
+
+          With this function, we are make sure that any variables that have the value
+          0 are ignored before setting them in the subprocess env context, this will
+          prevent convert2rhel to wrongly skipping checks because it was pre-defined
+          in the insights playbook.
+
+          :param env: The environment variables before setting them in subprocess.
+          :type env: dict[str, Any]
+          """
+          for variable, value in env.items():
+              if variable.startswith("CONVERT2RHEL_") and value == 0:
+                  env.pop(variable)
+          return env
+
+
       def run_convert2rhel(env):
           """
           Run the convert2rhel tool assigning the correct environment variables.
@@ -696,6 +718,7 @@
               ]
               command.extend(repositories)
 
+          env = prepare_environment_variables(env)
           output, returncode = run_subprocess(command, env=env)
           return output, returncode
 
@@ -1057,6 +1080,12 @@
       if __name__ == "__main__":
           main()
     content_vars:
+      CONVERT2RHEL_THROUGH_INSIGHTS: 1
       SCRIPT_MODE: ANALYSIS
+      CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS: 0
+      CONVERT2RHEL_UNSUPPORTED_SKIP_KERNEL_CURRENCY_CHECK: 0
+      CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP: 0
       ELS_DISABLED: false
-      OPTIONAL_REPOSITORIES: rhel-7-server-rpm, rhel-7-server-extra-rpms
+      # Multiple optional repository parameter values will be comma separated, for example:
+      # rhel-7-server-optional-rpms,rhel-7-server-extras-rpms,rhel-7-server-supplementary-rpms
+      OPTIONAL_REPOSITORIES: None
