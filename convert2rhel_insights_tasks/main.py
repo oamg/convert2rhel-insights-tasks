@@ -657,12 +657,65 @@ def install_or_update_convert2rhel(required_files):
     return False, None
 
 
-def run_convert2rhel():
+def prepare_environment_variables(env):
+    """Prepare environment variables to be used in subprocess
+
+    This metod will prepare any environment variables before they are sent down
+    to the subprocess that will convert2rhel. Currently, this is meant to be a
+    workaround since convert2rhel does not parse the value of the environment
+    variables, but only check the presence of them in os.environ.
+
+    With this function, we are make sure that any variables that have the value
+    0 are ignored before setting them in the subprocess env context, this will
+    prevent convert2rhel to wrongly skipping checks because it was pre-defined
+    in the insights playbook.
+
+    :param env: The environment variables before setting them in subprocess.
+    :type env: dict[str, Any]
+    """
+    for variable, value in env.items():
+        if variable.startswith("CONVERT2RHEL_") and value == 0:
+            env.pop(variable)
+    return env
+
+
+def run_convert2rhel(env):
     """
     Run the convert2rhel tool assigning the correct environment variables.
+
+    :param env: Dictionary of possible environment variables to passed down to
+        the process.
+    :type env: dict[str]
     """
     logger.info("Running Convert2RHEL %s", (SCRIPT_TYPE.title()))
 
+    command = ["/usr/bin/convert2rhel"]
+    if IS_ANALYSIS:
+        command.append("analyze")
+
+    command.append("-y")
+
+    # This will always be represented as either false/true, since this option
+    # comes from the input parameters through Insights UI.
+    els_disabled = json.loads(env.pop("ELS_DISABLED", "false").lower())
+    if not bool(els_disabled):
+        command.append("--els")
+
+    optional_repositories = env.pop("OPTIONAL_REPOSITORIES", [])
+    if optional_repositories:
+        repositories = optional_repositories.split(",")
+        repositories = [
+            "--enablerepo=%s" % repository.strip() for repository in repositories
+        ]
+        command.extend(repositories)
+
+    env = prepare_environment_variables(env)
+    output, returncode = run_subprocess(command, env=env)
+    return output, returncode
+
+
+def parse_environment_variables():
+    """Read the environment variable from os.environ and return them."""
     new_env = {}
     for key, value in os.environ.items():
         valid_prefix = "RHC_WORKER_"
@@ -671,14 +724,7 @@ def run_convert2rhel():
             new_env[key.replace(valid_prefix, "")] = value
         else:
             new_env[key] = value
-
-    command = ["/usr/bin/convert2rhel"]
-    if IS_ANALYSIS:
-        command.append("analyze")
-
-    command.append("-y")
-    output, returncode = run_subprocess(command, env=new_env)
-    return output, returncode
+    return new_env
 
 
 def cleanup(required_files):
@@ -881,7 +927,8 @@ def main():
             YUM_TRANSACTIONS_TO_UNDO.add(transaction_id)
 
         check_convert2rhel_inhibitors_before_run()
-        stdout, returncode = run_convert2rhel()
+        new_env = parse_environment_variables()
+        stdout, returncode = run_convert2rhel(new_env)
         execution_successful = returncode == 0
 
         # Returncode other than 0 can happen in three states in analysis mode:
