@@ -683,7 +683,13 @@
           :type env: dict[str, Any]
           """
           for variable, value in env.items():
-              if variable.startswith("CONVERT2RHEL_") and value == 0:
+              # We can pop out of context both the OPTIONAL_REPOSITORIES and
+              # ELS_DISABLED envs as they are not necessary for convert2rhel
+              # execution.
+              if variable in ("OPTIONAL_REPOSITORIES", "ELS_DISABLED"):
+                  env.pop(variable)
+
+              if variable.startswith("CONVERT2RHEL_") and value == "0":
                   env.pop(variable)
           return env
 
@@ -710,8 +716,15 @@
           if not bool(els_disabled):
               command.append("--els")
 
-          optional_repositories = env.pop("OPTIONAL_REPOSITORIES", [])
-          if optional_repositories:
+          optional_repositories = env.pop("OPTIONAL_REPOSITORIES", None)
+          # The `None` value that comes from the playbook gets converted to "None"
+          # when we parse it from the environment variable, to not mess with casting
+          # and converting, the easiest option is to check against that value for
+          # now.
+          # TODO(r0x0d): The ideal solution here would be coming with a pre-defined
+          # dictionary of values that have the correct values and types. Maybe for
+          # the future.
+          if optional_repositories and optional_repositories != "None":
               repositories = optional_repositories.split(",")
               repositories = [
                   "--enablerepo=%s" % repository.strip() for repository in repositories
