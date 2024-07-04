@@ -43,28 +43,43 @@ def test_parse_environment_variables_empty(monkeypatch):
             {},
         ),
         (
-            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0},
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": "0"},
             {},
         ),
         (
-            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 1},
-            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 1},
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": "1"},
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": "1"},
         ),
         (
             {"CONVERT2RHEL_CONFIGURE_HOST_METERING": "auto"},
             {"CONVERT2RHEL_CONFIGURE_HOST_METERING": "auto"},
         ),
         (
-            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0, "SCRIPT_MODE": "ANALYSIS"},
+            {"CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": "0", "SCRIPT_MODE": "ANALYSIS"},
             {"SCRIPT_MODE": "ANALYSIS"},
         ),
         (
             {
-                "CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": 1,
-                "CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": 0,
+                "CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": "1",
+                "CONVERT2RHEL_ALLOW_UNAVAILABLE_KMODS": "0",
                 "SCRIPT_MODE": "ANALYSIS",
             },
-            {"CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": 1, "SCRIPT_MODE": "ANALYSIS"},
+            {
+                "CONVERT2RHEL_OUTDATED_PACKAGE_CHECK_SKIP": "1",
+                "SCRIPT_MODE": "ANALYSIS",
+            },
+        ),
+        (
+            {"OPTIONAL_REPOSITORIES": "None"},
+            {},
+        ),
+        (
+            {"ELS_DISABLED": "True"},
+            {},
+        ),
+        (
+            {"ELS_DISABLED": "True", "OPTIONAL_REPOSITORIES": "None"},
+            {},
         ),
     ),
 )
