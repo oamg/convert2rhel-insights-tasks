@@ -1102,3 +1102,5 @@
       # Multiple optional repository parameter values will be comma separated, for example:
       # rhel-7-server-optional-rpms,rhel-7-server-extras-rpms,rhel-7-server-supplementary-rpms
       OPTIONAL_REPOSITORIES: None
+      # Disable color for logging
+      NO_COLOR: 1
