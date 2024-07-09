@@ -1,6 +1,8 @@
 import pytest
 from mock import patch, Mock
 
+from utils import extract_json
+
 from convert2rhel_insights_tasks.main import OutputCollector, main
 
 
@@ -28,6 +30,7 @@ def test_main_invalid_script_value(
     output = capsys.readouterr().out
     assert "Exiting because RHC_WORKER_SCRIPT_MODE" in caplog.text
     assert '"alert": false' in output
+    assert extract_json(output) is not None
 
     mock_output_collector.assert_called()
     mock_cleanup.assert_not_called()
@@ -58,11 +61,15 @@ def test_main_non_eligible_release(
     mock_get_system_distro_version,
     mock_archive,
     script_type,
+    capsys,
 ):
     mock_output_collector.return_value = OutputCollector(entries=["non-empty"])
 
     with patch("convert2rhel_insights_tasks.main.SCRIPT_TYPE", script_type):
         main()
+
+    output = capsys.readouterr().out
+    assert extract_json(output) is not None
 
     mock_get_system_distro_version.assert_called_once()
     mock_output_collector.assert_called()

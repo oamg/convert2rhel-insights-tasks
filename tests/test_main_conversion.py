@@ -2,6 +2,8 @@
 
 from mock import patch, Mock
 
+from utils import extract_json
+
 from convert2rhel_insights_tasks.main import main
 
 
@@ -49,6 +51,7 @@ def test_main_success_c2r_installed(
     output = capsys.readouterr().out
     assert "No problems found. The system was converted successfully." in output
     assert '"alert": false' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -112,6 +115,7 @@ def test_main_success_c2r_updated(
     output = capsys.readouterr().out
     assert "No problems found. The system was converted successfully." in output
     assert '"alert": false' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -169,6 +173,7 @@ def test_main_process_error_no_report(
     output = capsys.readouterr().out
     assert "An error occurred during the conversion" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -224,6 +229,7 @@ def test_main_general_exception(
     output = capsys.readouterr().out
     assert "An unexpected error occurred" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -281,6 +287,7 @@ def test_main_inhibited_ini_modified(
     output = capsys.readouterr().out
     assert "/etc/convert2rhel.ini was modified" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -339,6 +346,7 @@ def test_main_inhibited_custom_ini(
     output = capsys.readouterr().out
     assert ".convert2rhel.ini was found" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
@@ -400,6 +408,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     output = capsys.readouterr().out
     assert "The conversion cannot proceed" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     mock_get_rollback_failures.assert_called_once()
 
@@ -465,6 +474,7 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     output = capsys.readouterr().out
     assert "A rollback of changes performed by convert2rhel failed" in output
     assert '"alert": true' in output
+    assert extract_json(output) is not None
 
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
