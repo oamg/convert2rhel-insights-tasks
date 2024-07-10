@@ -45,12 +45,6 @@ C2R_ARCHIVE_DIR = "%s/archive" % C2R_LOG_FOLDER
 # Set of yum transactions that will be rolled back after the operation is done.
 YUM_TRANSACTIONS_TO_UNDO = set()
 
-# Define regex to look for specific errors in the rollback phase in
-# convert2rhel.
-DETECT_ERROR_IN_ROLLBACK_PATTERN = re.compile(
-    r".*(error|fail|denied|traceback|couldn't find a backup)",
-    flags=re.MULTILINE | re.I,
-)
 # Detect the last transaction id in yum.
 LATEST_YUM_TRANSACTION_PATTERN = re.compile(r"^(\s+)?(\d+)", re.MULTILINE)
 
@@ -877,6 +871,41 @@ def update_insights_inventory():
     logger.info("System registered with insights-client successfully.")
 
 
+def check_repos_are_valid():
+    """Check if the repositories under /etc/yum.repos.d are available.
+
+    :raises ProcessExit: In case any of the repositories defined in that folder
+        is not available.
+    """
+    logger.info("Checking for system repositories accessbility")
+    output, return_code = run_subprocess(
+        cmd=["/usr/bin/yum", "makecache", "--setopt=*.skip_if_unavailable=False"]
+    )
+
+    if return_code != 0:
+        # This will always print, and we know it is the last command before it
+        # tells us what is wrong.
+        match = "yum-config-manager --save"
+        output_lines = [line.strip() for line in output.split("\n") if line]
+
+        # Retrieve the index of the match by searching for that substring
+        # inside of the output_lines.
+        failure_index = [
+            index for index, failure in enumerate(output_lines) if match in failure
+        ][0]
+
+        # For showing the errors, we actually want the index + 1, as the index
+        # itself will be the match, and we don't care about that part.
+        failures = output_lines[failure_index + 1 :]
+        raise ProcessError(
+            message="Failed to verify accessibility of system repositories.",
+            report="The following repositories are not accessible: %s.\n\nFor more information, please visit https://access.redhat.com/solutions/7077708."
+            % "\n".join(failures),
+        )
+
+    logger.info("System repositories are acessible.")
+
+
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-locals
@@ -925,6 +954,8 @@ def main():
         # Just try (pre)conversion if we can't read the dist or version
         # (e.g. /etc/system-release is missing), such state is logged in get_system_distro_version
         check_dist_version(dist, version)
+
+        check_repos_are_valid()
 
         archive_report_file(C2R_PRE_REPORT_FILE)
         archive_report_file(C2R_POST_REPORT_FILE)
