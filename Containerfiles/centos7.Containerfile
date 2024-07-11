@@ -9,10 +9,14 @@ ENV APP_DEV_DEPS "requirements/centos7.requirements.txt"
 
 WORKDIR /data
 
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 FROM base as install_main_deps
 RUN yum update -y && yum clean all
 
 FROM install_main_deps as install_dev_deps
+
 COPY $APP_DEV_DEPS $APP_DEV_DEPS
 RUN curl $URL_GET_PIP | $PYTHON && $PIP install -r $APP_DEV_DEPS
 
