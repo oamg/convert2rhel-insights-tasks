@@ -27,9 +27,11 @@ from convert2rhel_insights_tasks.main import main
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_installed(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -72,6 +74,7 @@ def test_main_success_c2r_installed(
     assert mock_cleanup_pkg_call.call_count == 0
     assert mock_os_exists.call_count == 1
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -94,9 +97,11 @@ def test_main_success_c2r_installed(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_success_c2r_updated(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -139,6 +144,7 @@ def test_main_success_c2r_updated(
     assert mock_cleanup_pkg_call.call_count == 0
     assert mock_os_exists.call_count == 1
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -158,9 +164,11 @@ def test_main_success_c2r_updated(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_process_error_no_report(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -199,6 +207,7 @@ def test_main_process_error_no_report(
     assert mock_cleanup.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -218,9 +227,11 @@ def test_main_process_error_no_report(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_general_exception(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -258,6 +269,7 @@ def test_main_general_exception(
     assert mock_cleanup.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -278,9 +290,11 @@ def test_main_general_exception(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_ini_modified(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_archive_old_logger_files,
@@ -320,6 +334,7 @@ def test_main_inhibited_ini_modified(
     assert mock_cleanup.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -340,9 +355,11 @@ def test_main_inhibited_ini_modified(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_custom_ini(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -382,6 +399,7 @@ def test_main_inhibited_custom_ini(
     assert mock_cleanup.call_count == 1
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -404,9 +422,11 @@ def test_main_inhibited_custom_ini(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_no_rollback_err(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -449,6 +469,7 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
     assert mock_os_exists.call_count == 5
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1
 
 
 # fmt: off
@@ -472,9 +493,11 @@ def test_main_inhibited_c2r_installed_no_rollback_err(
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
+@patch("convert2rhel_insights_tasks.main.clean_yum_cache", side_effect=Mock())
 # fmt: on
 # pylint: disable=too-many-locals
 def test_main_inhibited_c2r_installed_rollback_errors(
+    mock_clean_yum_cache,
     mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
@@ -518,3 +541,4 @@ def test_main_inhibited_c2r_installed_rollback_errors(
     assert mock_os_exists.call_count == 5
     assert mock_update_insights_inventory.call_count == 0
     assert mock_check_repos_are_valid.call_count == 1
+    assert mock_clean_yum_cache.call_count == 1

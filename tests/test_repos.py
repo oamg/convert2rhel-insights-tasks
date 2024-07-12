@@ -162,3 +162,27 @@ def test_repos_are_not_accessible(monkeypatch, output_error, expected_msg):
         % expected_msg
         in execinfo._excinfo[1].report
     )
+
+
+def test_clean_yum_cache(monkeypatch, caplog):
+    monkeypatch.setattr(main, "run_subprocess", lambda cmd: ("", 0))
+
+    main.clean_yum_cache()
+
+    assert (
+        "Cached repositories metadata cleaned successfully."
+        in caplog.records[-1].message
+    )
+
+
+def test_failed_to_clean_yum_cache(monkeypatch, caplog):
+    monkeypatch.setattr(
+        main, "run_subprocess", lambda cmd: ("error cleaning metadata", 1)
+    )
+
+    main.clean_yum_cache()
+
+    assert (
+        "Failed to clean yum metadata:\nerror cleaning metadata"
+        in caplog.records[-1].message
+    )

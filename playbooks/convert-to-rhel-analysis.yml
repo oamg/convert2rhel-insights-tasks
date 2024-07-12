@@ -880,6 +880,20 @@
           logger.info("System registered with insights-client successfully.")
 
 
+      def clean_yum_cache():
+          """Clean the yum cache metadata to start with clean checks"""
+          output, ret_code = run_subprocess(
+              cmd=["/usr/bin/yum", "clean", "metadata", "--enablerepo=*", "--quiet"]
+          )
+          logger.debug("Output of yum clean metadata:\n%s", output)
+
+          if ret_code != 0:
+              logger.warning("Failed to clean yum metadata:\n%s", output)
+              return
+
+          logger.info("Cached repositories metadata cleaned successfully.")
+
+
       def check_repos_are_valid():
           """Check if the repositories under /etc/yum.repos.d are available.
 
@@ -964,6 +978,9 @@
               # (e.g. /etc/system-release is missing), such state is logged in get_system_distro_version
               check_dist_version(dist, version)
 
+              # First clean the yum cache metadata before trying to check for
+              # repositories availability.
+              clean_yum_cache()
               check_repos_are_valid()
 
               archive_report_file(C2R_PRE_REPORT_FILE)

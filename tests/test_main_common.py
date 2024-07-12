@@ -12,10 +12,8 @@ from convert2rhel_insights_tasks.main import OutputCollector, main
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
-@patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
 # pylint: disable=too-many-arguments
 def test_main_invalid_script_value(
-    mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
     mock_archive_old_logger_files,
@@ -40,7 +38,6 @@ def test_main_invalid_script_value(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_check_repos_are_valid.call_count == 0
 
 
 @pytest.mark.parametrize(("script_type"), [("ANALYSIS"), ("CONVERSION")])
@@ -54,10 +51,8 @@ def test_main_invalid_script_value(
 @patch("convert2rhel_insights_tasks.main.setup_sos_report", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.archive_old_logger_files", side_effect=Mock())
 @patch("convert2rhel_insights_tasks.main.setup_logger_handler", side_effect=Mock())
-@patch("convert2rhel_insights_tasks.main.check_repos_are_valid", side_effect=Mock())
 # pylint: disable=too-many-arguments
 def test_main_non_eligible_release(
-    mock_check_repos_are_valid,
     mock_setup_logger_handler,
     mock_setup_sos_report,
     mock_archive_old_logger_files,
@@ -83,4 +78,3 @@ def test_main_non_eligible_release(
     assert mock_setup_logger_handler.call_count == 1
     assert mock_setup_sos_report.call_count == 1
     assert mock_archive_old_logger_files.call_count == 1
-    assert mock_check_repos_are_valid.call_count == 0
