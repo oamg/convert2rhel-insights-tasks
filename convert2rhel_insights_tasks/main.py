@@ -928,7 +928,7 @@ def main():
     output = OutputCollector()
     gpg_key_file = RequiredFile(
         path="/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
-        host="https://www.redhat.com/security/data/fd431d51.txt",
+        host="https://security.access.redhat.com/data/fd431d51.txt",
     )
     c2r_repo = RequiredFile(
         path="/etc/yum.repos.d/convert2rhel.repo",
