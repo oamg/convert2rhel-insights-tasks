@@ -1,14 +1,14 @@
+import copy
 import json
 import logging
 import os
 import re
 import shutil
 import subprocess
-import copy
 import sys
 from time import gmtime, strftime
 
-from urllib2 import urlopen, URLError
+from urllib2 import URLError, urlopen
 
 # SCRIPT_TYPE is either 'CONVERSION' or 'ANALYSIS'
 # Value is set in signed yaml envelope in content_vars (SCRIPT_MODE)
@@ -62,6 +62,9 @@ SOS_REPORT_FOLDER = "/etc/sos.extras.d"
 SOS_REPORT_FILE = "convert2rhel-insights-tasks-%s-logs" % (
     "conversion" if IS_CONVERSION else "analysis"
 )
+
+DEFAULT_RHSM_CONVERT2RHEL_REPOS = "rhel-7-server-rpms"
+DEFAULT_RHSM_CONVERT2RHEL_ELS_REPOS = "rhel-7-server-els-rpms"
 
 logger = logging.getLogger(__name__)
 
@@ -511,7 +514,7 @@ def generate_report_message(highest_status):
     conversion_succes_msg = (
         "No problems found. The system was converted successfully. Please,"
         " reboot your system at your earliest convenience to make sure that"
-        " the system is using the RHEL kernel."
+        " the system is using the RHEL Kernel."
     )
 
     if STATUS_CODE[highest_status] < STATUS_CODE["WARNING"]:
@@ -695,13 +698,17 @@ def run_convert2rhel(env):
 
     command.append("-y")
 
+    repositories = []
+
     # This will always be represented as either false/true, since this option
     # comes from the input parameters through Insights UI.
     els_disabled = json.loads(env.pop("ELS_DISABLED", "false").lower())
     if not bool(els_disabled):
         command.append("--els")
+        repositories.append(DEFAULT_RHSM_CONVERT2RHEL_ELS_REPOS)
+    else:
+        repositories.append(DEFAULT_RHSM_CONVERT2RHEL_REPOS)
 
-    optional_repositories = env.pop("OPTIONAL_REPOSITORIES", None)
     # The `None` value that comes from the playbook gets converted to "None"
     # when we parse it from the environment variable, to not mess with casting
     # and converting, the easiest option is to check against that value for
@@ -709,12 +716,17 @@ def run_convert2rhel(env):
     # TODO(r0x0d): The ideal solution here would be coming with a pre-defined
     # dictionary of values that have the correct values and types. Maybe for
     # the future.
+    optional_repositories = env.pop("OPTIONAL_REPOSITORIES", [])
     if optional_repositories and optional_repositories != "None":
-        repositories = optional_repositories.split(",")
-        repositories = [
-            "--enablerepo=%s" % repository.strip() for repository in repositories
-        ]
-        command.extend(repositories)
+        enablerepo_cmd = []
+        repositories.extend(optional_repositories.split(","))
+        # Normalize the values removing whitespace. This is important for turning them into a set.
+        repositories = [repository.strip() for repository in repositories]
+        for repository in set(repositories):
+            enablerepo_cmd.append("--enablerepo")
+            enablerepo_cmd.append(repository)
+
+        command.extend(enablerepo_cmd)
 
     env = prepare_environment_variables(env)
     output, returncode = run_subprocess(command, env=env)
