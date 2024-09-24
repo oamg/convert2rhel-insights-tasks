@@ -1,5 +1,4 @@
 import pytest
-
 from mock import patch
 
 from convert2rhel_insights_tasks import main
@@ -80,7 +79,10 @@ def test_run_convert2rhel_analysis(monkeypatch):
                 "analyze",
                 "-y",
                 "--els",
-                "--enablerepo=rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-els-rpms",
             ],
         ),
         (
@@ -92,8 +94,12 @@ def test_run_convert2rhel_analysis(monkeypatch):
                 "analyze",
                 "-y",
                 "--els",
-                "--enablerepo=rhel-7-server-rpm",
-                "--enablerepo=rhel-7-server-rpm-extras",
+                "--enablerepo",
+                "rhel-7-server-rpm-extras",
+                "--enablerepo",
+                "rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-els-rpms",
             ],
         ),
         # Make sure that this also pass for conversion
@@ -109,7 +115,10 @@ def test_run_convert2rhel_analysis(monkeypatch):
                 "/usr/bin/convert2rhel",
                 "-y",
                 "--els",
-                "--enablerepo=rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-els-rpms",
             ],
         ),
         (
@@ -120,8 +129,29 @@ def test_run_convert2rhel_analysis(monkeypatch):
                 "/usr/bin/convert2rhel",
                 "-y",
                 "--els",
-                "--enablerepo=rhel-7-server-rpm",
-                "--enablerepo=rhel-7-server-rpm-extras",
+                "--enablerepo",
+                "rhel-7-server-rpm-extras",
+                "--enablerepo",
+                "rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-els-rpms",
+            ],
+        ),
+        # Make sure we don't have duplicates
+        (
+            False,
+            "False",
+            "rhel-7-server-rpm, rhel-7-server-rpm, rhel-7-server-rpm-extras",
+            [
+                "/usr/bin/convert2rhel",
+                "-y",
+                "--els",
+                "--enablerepo",
+                "rhel-7-server-rpm-extras",
+                "--enablerepo",
+                "rhel-7-server-rpm",
+                "--enablerepo",
+                "rhel-7-server-els-rpms",
             ],
         ),
     ),
