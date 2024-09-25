@@ -12,7 +12,7 @@ from convert2rhel_insights_tasks.main import generate_report_message
             (
                 "No problems found. The system was converted successfully. Please,"
                 " reboot your system at your earliest convenience to make sure that"
-                " the system is using the RHEL Kernel."
+                " the system is using the RHEL kernel."
             ),
             False,
         ),
@@ -21,7 +21,7 @@ from convert2rhel_insights_tasks.main import generate_report_message
             (
                 "No problems found. The system was converted successfully. Please,"
                 " reboot your system at your earliest convenience to make sure that"
-                " the system is using the RHEL Kernel."
+                " the system is using the RHEL kernel."
             ),
             False,
         ),
@@ -30,7 +30,7 @@ from convert2rhel_insights_tasks.main import generate_report_message
             (
                 "No problems found. The system was converted successfully. Please,"
                 " reboot your system at your earliest convenience to make sure that"
-                " the system is using the RHEL Kernel."
+                " the system is using the RHEL kernel."
             ),
             False,
         ),
