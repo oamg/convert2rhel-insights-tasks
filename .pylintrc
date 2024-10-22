@@ -23,6 +23,7 @@ disable=
  duplicate-code,
  # We can't split the functions into smaller modules for now.
  too-many-lines,
+ too-many-positional-arguments
 
 [REPORTS]
 

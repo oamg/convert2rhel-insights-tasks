@@ -33,7 +33,7 @@ repos:
     rev: v8.21.1
     hooks:
       - id: gitleaks-docker
-        stages: [manual, Nonepre-pushNone]
+        stages: [manual, pre-push]
 
   - repo: local
     hooks:
