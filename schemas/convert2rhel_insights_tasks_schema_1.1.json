@@ -1,6 +1,6 @@
 {
-  "title": "Convert2RHEL Insights Tasks Schema",
-  "description": "The Insights Task is  expected to set up convert2rhel and run either analysis or conversion. This schema defines the output format that is expected by Red Hat Insights Task UI.",
+  "title": "Convert2RHEL Red Hat Lightspeed Tasks Schema",
+  "description": "The Red Hat Lightspeed Task is expected to set up convert2rhel and run either analysis or conversion. This schema defines the output format that is expected by Red Hat Lightspeed Task UI.",
   "type": "object",
   "properties": {
     "status": {

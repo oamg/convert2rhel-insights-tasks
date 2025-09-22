@@ -494,7 +494,7 @@ def gather_textual_report(report_file):
 
         .. note::
             We are checking if file exists here as the textual report is not
-            that important as the JSON report for the script and for Insights.
+            that important as the JSON report for the script and for Lightspeed.
             It's fine if the textual report does not exist, but the JSON one is
             required.
     """
@@ -701,7 +701,7 @@ def run_convert2rhel(env):
     repositories = []
 
     # This will always be represented as either false/true, since this option
-    # comes from the input parameters through Insights UI.
+    # comes from the input parameters through Lightspeed UI.
     els_disabled = json.loads(env.pop("ELS_DISABLED", "false").lower())
     if not bool(els_disabled):
         command.append("--els")
@@ -870,12 +870,12 @@ def update_insights_inventory():
     """
     Call insights-client to update insights inventory.
     """
-    logger.info("Updating system status in Red Hat Insights.")
+    logger.info("Updating system status in Red Hat Lightspeed.")
     output, returncode = run_subprocess(cmd=["/usr/bin/insights-client"])
 
     if returncode:
         raise ProcessError(
-            message="Conversion succeeded but update of Insights Inventory by registering the system again failed.",
+            message="Conversion succeeded but update of Red Hat Lightspeed Inventory by registering the system again failed.",
             report="insights-client execution exited with code '%s' and output:\n%s"
             % (returncode, output.rstrip("\n")),
         )

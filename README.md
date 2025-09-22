@@ -1,10 +1,10 @@
 [![codecov](https://codecov.io/gh/oamg/convert2rhel-insights-tasks/graph/badge.svg?token=Q187FG2S5Z)](https://codecov.io/gh/oamg/convert2rhel-insights-tasks)
 
-# Convert2RHEL Inights Tasks
+# Convert2RHEL Red Hat Lightspeed Tasks
 
 Scripts related to [convert2rhel](https://github.com/oamg/convert2rhel) to be
 run via [rhc-worker-script](https://github.com/oamg/rhc-worker-script) on Red
-Hat Insights.
+Hat Lightspeed.
 
 Scripts themselves shouldn't have any additional requirements = they are
 relying on python standard library.
@@ -26,7 +26,7 @@ Structure of repository is following:
 ## Schemas
 
 Currently there is given format of the scripts stdout that is expected to be
-parsed by the Red Hat Insights Task UI. This stdout is JSON structure wrapped
+parsed by the Red Hat Lightspeed Task UI. This stdout is JSON structure wrapped
 between agreed on separators. Schemas of the JSONs for each script can be found
 in [schemas](schemas) folder.
 
@@ -36,12 +36,12 @@ in [schemas](schemas) folder.
 
 ## Scripts
 
-### Convert2RHEL Insights Tasks
+### Convert2RHEL Lightspeed Tasks
 
 Script itself and tests are written for `python 2.7`. Goal of script is to
 print to stdout in specified format, the script itself is executed by
 [rhc-worker-script](https://github.com/oamg/rhc-worker-script) and stdout is
-collected and send back to Insights Tasks UI.
+collected and send back to Lightspeed Tasks UI.
 
 * [JSON schema](schemas/convert2rhel_insights_tasks_schema_1.1.json)
 * [convert2rhel-insights-tasks script](convert2rhel_insights_tasks/main.py)
